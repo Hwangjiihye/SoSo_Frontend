@@ -12,6 +12,7 @@ const LoginPage = () => {
     loginType, 
     setLoginType, 
     formData, 
+    errors,
     options,
     handleInputChange, 
     handleOptionChange,
@@ -67,8 +68,8 @@ const LoginPage = () => {
           </button>
         </div>
 
-        {/* 로그인 입력 폼: 요소 간 세로 여백(space-y-5)을 유지하여 깔끔함을 유지합니다. */}
-        <form className="space-y-5" onSubmit={handleLoginSubmit}>
+        {/* 로그인 입력 영역: 요소 간 세로 여백(space-y-5)을 유지하여 깔끔함을 유지합니다. */}
+        <div className="space-y-5">
           <div className="space-y-5">
             {/* 아이디 입력란 */}
             <div>
@@ -79,12 +80,20 @@ const LoginPage = () => {
                 id="userId"
                 name="userId"
                 type="text"
-                required
                 value={formData.userId}
                 onChange={handleInputChange}
-                className="block w-full px-5 py-3 rounded-2xl border border-gray-200 focus:ring-2 focus:ring-[#1D9E75] focus:border-transparent outline-none transition-all bg-gray-50 focus:bg-white"
+                className={`block w-full px-5 py-3 rounded-2xl border transition-all outline-none bg-gray-50 focus:bg-white ${
+                  errors.userId 
+                    ? 'border-red-400 focus:ring-2 focus:ring-red-100 focus:border-red-400' 
+                    : 'border-gray-200 focus:ring-2 focus:ring-[#1D9E75] focus:border-transparent'
+                }`}
                 placeholder="아이디를 입력하세요"
               />
+              {errors.userId && (
+                <p className="mt-1.5 ml-1 text-[12px] font-semibold text-red-500 animate-in fade-in slide-in-from-top-1">
+                  {errors.userId}
+                </p>
+              )}
             </div>
             {/* 비밀번호 입력란 */}
             <div>
@@ -95,12 +104,20 @@ const LoginPage = () => {
                 id="password"
                 name="password"
                 type="password"
-                required
                 value={formData.password}
                 onChange={handleInputChange}
-                className="block w-full px-5 py-3 rounded-2xl border border-gray-200 focus:ring-2 focus:ring-[#1D9E75] focus:border-transparent outline-none transition-all bg-gray-50 focus:bg-white"
+                className={`block w-full px-5 py-3 rounded-2xl border transition-all outline-none bg-gray-50 focus:bg-white ${
+                  errors.password 
+                    ? 'border-red-400 focus:ring-2 focus:ring-red-100 focus:border-red-400' 
+                    : 'border-gray-200 focus:ring-2 focus:ring-[#1D9E75] focus:border-transparent'
+                }`}
                 placeholder="비밀번호를 입력하세요"
               />
+              {errors.password && (
+                <p className="mt-1.5 ml-1 text-[12px] font-semibold text-red-500 animate-in fade-in slide-in-from-top-1">
+                  {errors.password}
+                </p>
+              )}
             </div>
           </div>
 
@@ -126,16 +143,16 @@ const LoginPage = () => {
             
             {/* 계정 찾기 링크: 체크박스 그룹과 수직 중앙 정렬 유지 */}
             <div className="flex items-center gap-4 font-bold text-[#158A64] text-[13.5px] whitespace-nowrap">
-              <span className="hover:text-[#0D6B50] cursor-pointer transition-colors">아이디 찾기</span>
+              <span className="hover:text-[#0D6B50] cursor-pointer transition-colors hover:underline underline-offset-4">아이디 찾기</span>
               <span className="text-gray-200 font-normal select-none">|</span>
-              <span className="hover:text-[#0D6B50] cursor-pointer transition-colors">비밀번호 찾기</span>
+              <span className="hover:text-[#0D6B50] cursor-pointer transition-colors hover:underline underline-offset-4">비밀번호 찾기</span>
             </div>
           </div>
 
           {/* 로그인 버튼: 크기와 높이를 키워 사용자 액션을 강력하게 유도합니다. */}
           <div className="pt-1">
             <button
-              type="submit"
+              onClick={handleLoginSubmit}
               className="w-full flex justify-center py-3.5 px-4 border border-transparent text-lg font-black rounded-2xl text-white shadow-lg transition-all transform active:scale-[0.98]"
               style={{ backgroundColor: '#1D9E75', padding: '12px' }}
               onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#158A64')}
@@ -144,7 +161,7 @@ const LoginPage = () => {
               로그인
             </button>
           </div>
-        </form>
+        </div>
 
         {/* 하단 회원가입 유도 영역: 상단에 회색 구분선 추가 */}
         <div className="text-center pt-6 border-t border-gray-400">
