@@ -90,10 +90,17 @@ function PartnerMain({ setRole }) {
       {/* Header 영역 */}
       <header className="flex justify-between items-center py-3 px-8 border-b border-gray-200 bg-white sticky top-0 z-50">
         <div className="flex items-center gap-8">
-          <div className="flex items-center gap-2">
-            <img src={logo} alt="SoSo Logo" className="w-7 h-7 object-contain" />
-            <div className="text-xl font-bold text-emerald-600 tracking-tighter">SoSo</div>
-          </div>
+          <div className="flex items-center gap-1">
+                      {/* 🛠️ relative와 top-[1px] 또는 top-[2px]를 주어 눈대중으로 완벽히 맞추기 */}
+                      <img
+                        src={logo}
+                        alt="SoSo Logo"
+                        className="w-12 h-12 object-contain relative top-[5px]"
+                      />
+                      <div className="text-[40px] font-black text-[#1d9e75] tracking-tighter leading-none">
+                        SoSo
+                      </div>
+                    </div>
           <nav className="hidden md:flex gap-1 border border-gray-100 rounded-lg p-1 bg-gray-50">
             <a href="#" className="px-4 py-1.5 text-sm font-semibold bg-white text-gray-900 rounded shadow-sm border border-gray-200">홈</a>
             {['발주 관리', '수금 관리', '공동 발주', '업체 홍보', '통계'].map(m => (

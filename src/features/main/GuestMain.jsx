@@ -121,9 +121,16 @@ function GuestMain({ setRole }) {
       {/* --- Header & Hero Section (Emerald Soft Background) --- */}
       <div className="bg-[#F2FBFA]">
         <header className="flex justify-between items-center py-5 px-6 md:px-12">
-          <div className="flex items-center gap-2">
-            <img src={logo} alt="SoSo Logo" className="w-7 h-7 object-contain" />
-            <div className="text-2xl font-black text-emerald-600 tracking-tighter">SoSo</div>
+          <div className="flex items-center gap-1">
+            {/* 🛠️ relative와 top-[1px] 또는 top-[2px]를 주어 눈대중으로 완벽히 맞추기 */}
+            <img
+              src={logo}
+              alt="SoSo Logo"
+              className="w-12 h-12 object-contain relative top-[5px]"
+            />
+            <div className="text-[40px] font-black text-[#1d9e75] tracking-tighter leading-none">
+              SoSo
+            </div>
           </div>
           <div className="flex gap-4 items-center">
             <div className="hidden md:flex gap-8 text-sm font-bold text-gray-500 mr-4">
@@ -186,8 +193,8 @@ function GuestMain({ setRole }) {
                 onClick={() => handleFeatureClick(f.id)}
                 // 🛠️ 각 카드가 일정한 크기(예: 280px)를 유지하도록 lg:w-[280px] sm:w-full 설정 추가
                 className={`bg-white border-2 rounded-[2.5rem] p-10 shadow-sm transition-all cursor-pointer flex flex-col items-center text-center group w-full lg:w-[280px] ${selectedFeature === f.id && showPreview
-                    ? 'border-emerald-500 shadow-emerald-100 shadow-2xl'
-                    : 'border-gray-50 hover:border-emerald-100 hover:shadow-lg'
+                  ? 'border-emerald-500 shadow-emerald-100 shadow-2xl'
+                  : 'border-gray-50 hover:border-emerald-100 hover:shadow-lg'
                   }`}
               >
                 <div className="text-5xl mb-8 group-hover:scale-110 transition-transform">{f.icon}</div>
