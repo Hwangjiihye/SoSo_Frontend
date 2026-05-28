@@ -152,7 +152,12 @@ const LoginPage = () => {
                 아이디 찾기
               </span>
               <span className="text-gray-200 font-normal select-none">|</span>
-              <span className="hover:text-[#0D6B50] cursor-pointer transition-colors hover:underline underline-offset-4">비밀번호 찾기</span>
+              <span 
+                onClick={() => navigate('/find-password')}
+                className="hover:text-[#0D6B50] cursor-pointer transition-colors hover:underline underline-offset-4"
+              >
+                비밀번호 찾기
+              </span>
             </div>
           </div>
 
