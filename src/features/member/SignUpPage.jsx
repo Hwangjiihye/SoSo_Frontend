@@ -10,8 +10,8 @@ const SignUpPage = () => {
 
   const sectionStyle = "bg-white p-6 rounded-xl border border-gray-100 shadow-sm space-y-4";
   const labelStyle = "block text-sm font-bold text-gray-700 mb-1";
-  const inputStyle = "w-full p-3 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all";
-  const btnActionStyle = "px-4 py-2 bg-gray-800 text-white rounded-lg text-sm font-medium hover:bg-gray-700 transition-colors whitespace-nowrap";
+  const inputStyle = "w-full p-3 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-[#1D9E75] outline-none transition-all";
+  const btnActionStyle = "px-4 py-2 bg-[#1D9E75] text-white rounded-lg text-sm font-medium hover:opacity-90 transition-colors whitespace-nowrap";
   const errorStyle = "text-xs text-red-500 mt-1";
 
   return (
@@ -30,7 +30,7 @@ const SignUpPage = () => {
               onClick={() => handleChange({ target: { name: 'userType', value: 'BUSINESS' } })}
               className={`p-4 rounded-xl border-2 transition-all text-center space-y-2 ${
                 formData.userType === 'BUSINESS'
-                  ? 'border-blue-500 bg-blue-50 text-blue-700'
+                  ? 'border-[#1D9E75] bg-[#1D9E75]/5 text-[#1D9E75]'
                   : 'border-gray-200 bg-white text-gray-400 hover:border-gray-300'
               }`}
             >
@@ -42,7 +42,7 @@ const SignUpPage = () => {
               onClick={() => handleChange({ target: { name: 'userType', value: 'PARTNER' } })}
               className={`p-4 rounded-xl border-2 transition-all text-center space-y-2 ${
                 formData.userType === 'PARTNER'
-                  ? 'border-blue-500 bg-blue-50 text-blue-700'
+                  ? 'border-[#1D9E75] bg-[#1D9E75]/5 text-[#1D9E75]'
                   : 'border-gray-200 bg-white text-gray-400 hover:border-gray-300'
               }`}
             >
@@ -144,7 +144,7 @@ const SignUpPage = () => {
                 <input name="corpName" value={formData.corpName} onChange={handleChange} className={inputStyle} />
               </div>
             </div>
-            <button type="button" onClick={verifyBusiness} className={`w-full py-3 rounded-lg font-bold transition-all ${apiStatus.bizVerified ? 'bg-green-100 text-green-700 border border-green-200' : 'bg-blue-600 text-white hover:bg-blue-700'}`}>
+            <button type="button" onClick={verifyBusiness} className={`w-full py-3 rounded-lg font-bold transition-all ${apiStatus.bizVerified ? 'bg-green-50 text-[#1D9E75] border border-[#1D9E75]/20' : 'bg-[#1D9E75] text-white hover:opacity-90'}`}>
               {apiStatus.bizVerified ? (formData.userType === 'BUSINESS' ? '사업자 인증 완료 ✓' : '거래처 인증 완료 ✓') : '국세청 사업자 진위 확인'}
             </button>
           </section>
@@ -170,7 +170,7 @@ const SignUpPage = () => {
                 </span>
                 <div className="relative border-2 border-dashed border-gray-200 rounded-lg p-4 text-center hover:bg-gray-50 transition-all">
                   <input type="file" onChange={(e) => handleFileChange(e, 'exterior')} className="absolute inset-0 opacity-0 cursor-pointer" accept="image/jpeg,image/png" />
-                  <span className="text-xs text-blue-600">{images.exterior ? images.exterior.name : '파일 선택 (JPG/PNG)'}</span>
+                  <span className="text-xs text-[#1D9E75] font-medium">{images.exterior ? images.exterior.name : '파일 선택 (JPG/PNG)'}</span>
                 </div>
               </div>
               <div className="space-y-1">
@@ -179,7 +179,7 @@ const SignUpPage = () => {
                 </span>
                 <div className="relative border-2 border-dashed border-gray-200 rounded-lg p-4 text-center hover:bg-gray-50 transition-all">
                   <input type="file" onChange={(e) => handleFileChange(e, 'interior')} className="absolute inset-0 opacity-0 cursor-pointer" accept="image/jpeg,image/png" />
-                  <span className="text-xs text-blue-600">{images.interior ? images.interior.name : '파일 선택 (JPG/PNG)'}</span>
+                  <span className="text-xs text-[#1D9E75] font-medium">{images.interior ? images.interior.name : '파일 선택 (JPG/PNG)'}</span>
                 </div>
               </div>
             </div>
@@ -188,7 +188,7 @@ const SignUpPage = () => {
           {/* 약관 동의 */}
           <section className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
             <div className="flex items-center gap-3 mb-4 p-3 bg-gray-50 rounded-lg">
-              <input type="checkbox" checked={terms.all} onChange={() => handleTermsChange('all')} id="all" className="w-5 h-5 accent-blue-600 cursor-pointer" />
+              <input type="checkbox" checked={terms.all} onChange={() => handleTermsChange('all')} id="all" className="w-5 h-5 accent-[#1D9E75] cursor-pointer" />
               <label htmlFor="all" className="font-bold text-gray-800 cursor-pointer">전체 약관에 동의합니다</label>
             </div>
             <div className="space-y-3 px-3">
@@ -199,7 +199,7 @@ const SignUpPage = () => {
               ].map((term) => (
                 <div key={term.id} className="flex justify-between items-center text-sm">
                   <div className="flex items-center gap-2">
-                    <input type="checkbox" checked={terms[term.id]} onChange={() => handleTermsChange(term.id)} id={term.id} className="accent-blue-600" />
+                    <input type="checkbox" checked={terms[term.id]} onChange={() => handleTermsChange(term.id)} id={term.id} className="accent-[#1D9E75]" />
                     <label htmlFor={term.id} className="text-gray-600">{term.label}</label>
                   </div>
                   <button type="button" className="text-gray-400 underline text-xs">보기</button>
@@ -211,7 +211,7 @@ const SignUpPage = () => {
           <button
             type="submit"
             disabled={!terms.service || !terms.privacy || !apiStatus.bizVerified || !apiStatus.idChecked || !apiStatus.emailChecked}
-            className="w-full py-4 bg-gray-900 text-white rounded-xl text-lg font-bold hover:bg-black transition-all disabled:bg-gray-300 disabled:cursor-not-allowed shadow-lg"
+            className="w-full py-4 bg-[#1D9E75] text-white rounded-xl text-lg font-bold hover:opacity-90 transition-all disabled:bg-gray-300 disabled:cursor-not-allowed shadow-lg"
           >
             {formData.userType === 'BUSINESS' ? '사업자 회원가입 요청' : '거래처 회원가입 요청'}
           </button>
