@@ -17,7 +17,6 @@ export const useLogin = () => {
   // 체크박스 옵션 상태 (추가됨)
   const [options, setOptions] = useState({
     rememberMe: false, // 로그인 상태 유지
-    rememberId: false, // 아이디 기억하기
   });
 
   /**
