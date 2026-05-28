@@ -88,32 +88,35 @@ function PartnerMain({ setRole }) {
   return (
     <div className="min-h-screen bg-gray-50 text-gray-800 font-sans pb-12">
       {/* Header 영역 */}
-      <header className="flex justify-between items-center py-3 px-8 border-b border-gray-200 bg-white sticky top-0 z-50">
-        <div className="flex items-center gap-8">
-          <div className="flex items-center gap-1">
-                      {/* 🛠️ relative와 top-[1px] 또는 top-[2px]를 주어 눈대중으로 완벽히 맞추기 */}
-                      <img
-                        src={logo}
-                        alt="SoSo Logo"
-                        className="w-12 h-12 object-contain relative top-[5px]"
-                      />
-                      <div className="text-[40px] font-black text-[#1d9e75] tracking-tighter leading-none">
-                        SoSo
-                      </div>
+      <header className="grid grid-cols-3 items-center py-5 px-6 md:px-12 border-b border-gray-200 bg-white sticky top-0 z-50">
+        {/* Left: Logo (GuestMain과 위치/크기 통일) */}
+        <div className="flex items-center gap-1">
+                    {/* 🛠️ relative와 top-[1px] 또는 top-[2px]를 주어 눈대중으로 완벽히 맞추기 */}
+                    <img
+                      src={logo}
+                      alt="SoSo Logo"
+                      className="w-12 h-12 object-contain relative top-[5px]"
+                    />
+                    <div className="text-[40px] font-black text-[#1d9e75] tracking-tighter leading-none">
+                      SoSo
                     </div>
-          <nav className="hidden md:flex gap-1 border border-gray-100 rounded-lg p-1 bg-gray-50">
-            <a href="#" className="px-4 py-1.5 text-sm font-semibold bg-white text-gray-900 rounded shadow-sm border border-gray-200">홈</a>
-            {['발주 관리', '수금 관리', '공동 발주', '업체 홍보', '통계'].map(m => (
-              <a key={m} href="#" className="px-4 py-1.5 text-sm font-medium text-gray-500 hover:text-emerald-600 transition-colors">{m}</a>
-            ))}
-          </nav>
-        </div>
-        <div className="flex items-center gap-4">
+                  </div>
+
+        {/* Center: Navigation (가운데 정렬) */}
+        <nav className="hidden md:flex justify-center gap-1 border border-gray-100 rounded-lg p-1 bg-gray-50 w-fit mx-auto">
+          <a href="#" className="px-4 py-1.5 text-sm font-semibold bg-white text-gray-900 rounded shadow-sm border border-gray-200">홈</a>
+          {['발주 관리', '수금 관리', '공동 발주', '업체 홍보', '통계'].map(m => (
+            <a key={m} href="#" className="px-4 py-1.5 text-sm font-medium text-gray-500 hover:text-emerald-600 transition-colors whitespace-nowrap">{m}</a>
+          ))}
+        </nav>
+
+        {/* Right: Profile & Actions */}
+        <div className="flex items-center justify-end gap-4">
           <div className="flex items-center gap-2 border border-gray-200 rounded-full py-1.5 px-3 bg-white">
             <div className="w-6 h-6 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-[10px] font-bold">백</div>
-            <span className="text-sm font-semibold">백서연 <span className="text-xs text-gray-400 font-normal">한빛 식품 유통</span></span>
+            <span className="text-sm font-semibold whitespace-nowrap">백서연 <span className="text-xs text-gray-400 font-normal">한빛 식품 유통</span></span>
           </div>
-          <button onClick={() => setRole('guest')} className="text-xs text-gray-400 hover:underline border-l border-gray-200 pl-4 ml-2">로그아웃</button>
+          <button onClick={() => setRole('guest')} className="text-xs text-gray-400 hover:underline border-l border-gray-200 pl-4 ml-2 whitespace-nowrap">로그아웃</button>
         </div>
       </header>
 
@@ -200,7 +203,7 @@ function PartnerMain({ setRole }) {
               </div>
            </div>
 
-           {/* 실시간 알림 (요청하신 부분 추가) */}
+           {/* 실시간 알림 */}
            <div className="bg-white rounded-2xl border border-gray-200 p-6">
               <h3 className="font-bold mb-6 flex justify-between items-center">
                 실시간 알림

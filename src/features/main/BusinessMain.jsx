@@ -25,36 +25,39 @@ function BusinessMain({ setRole }) {
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-800 font-sans">
-      <header className="flex justify-between items-center py-3 px-8 border-b border-gray-200 bg-white sticky top-0 z-50">
-        <div className="flex items-center gap-8">
-          <div className="flex items-center gap-1">
-                      {/* 🛠️ relative와 top-[1px] 또는 top-[2px]를 주어 눈대중으로 완벽히 맞추기 */}
-                      <img
-                        src={logo}
-                        alt="SoSo Logo"
-                        className="w-12 h-12 object-contain relative top-[5px]"
-                      />
-                      <div className="text-[40px] font-black text-[#1d9e75] tracking-tighter leading-none">
-                        SoSo
-                      </div>
+      <header className="grid grid-cols-3 items-center py-5 px-6 md:px-12 border-b border-gray-200 bg-white sticky top-0 z-50">
+        {/* Left: Logo (GuestMain과 위치 통일) */}
+        <div className="flex items-center gap-1">
+                    {/* 🛠️ relative와 top-[1px] 또는 top-[2px]를 주어 눈대중으로 완벽히 맞추기 */}
+                    <img
+                      src={logo}
+                      alt="SoSo Logo"
+                      className="w-12 h-12 object-contain relative top-[5px]"
+                    />
+                    <div className="text-[40px] font-black text-[#1d9e75] tracking-tighter leading-none">
+                      SoSo
                     </div>
-          <nav className="hidden md:flex gap-1 border border-gray-100 rounded-lg p-1 bg-gray-50">
-            <a href="#" className="px-4 py-1.5 text-sm font-semibold bg-white text-gray-900 rounded shadow-sm border border-gray-200">홈</a>
-            {['재고 관리', '입/출고', '공동 발주', '공고', '통계'].map(m => (
-              <a key={m} href="#" className="px-4 py-1.5 text-sm font-medium text-gray-500 hover:text-emerald-600 transition-colors">{m}</a>
-            ))}
-          </nav>
-        </div>
-        <div className="flex items-center gap-4">
+                  </div>
+
+        {/* Center: Navigation (가운데 정렬) */}
+        <nav className="hidden md:flex justify-center gap-1 border border-gray-100 rounded-lg p-1 bg-gray-50 w-fit mx-auto">
+          <a href="#" className="px-4 py-1.5 text-sm font-semibold bg-white text-gray-900 rounded shadow-sm border border-gray-200">홈</a>
+          {['재고 관리', '입/출고', '공동 발주', '공고', '통계'].map(m => (
+            <a key={m} href="#" className="px-4 py-1.5 text-sm font-medium text-gray-500 hover:text-emerald-600 transition-colors whitespace-nowrap">{m}</a>
+          ))}
+        </nav>
+
+        {/* Right: Profile & Actions */}
+        <div className="flex items-center justify-end gap-4">
           <button className="text-gray-400 hover:text-emerald-600 relative">
             <span className="text-xl">🔔</span>
             <span className="absolute -top-1 -right-1 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"></span>
           </button>
           <div className="flex items-center gap-2 border border-gray-200 rounded-full py-1.5 px-3 bg-white">
             <div className="w-6 h-6 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-[10px] font-bold">김</div>
-            <span className="text-sm font-semibold">김민준 <span className="text-xs text-gray-400 font-normal">강남 본점</span></span>
+            <span className="text-sm font-semibold whitespace-nowrap">김민준 <span className="text-xs text-gray-400 font-normal">강남 본점</span></span>
           </div>
-          <button onClick={() => setRole('guest')} className="text-xs text-gray-400 hover:underline">로그아웃</button>
+          <button onClick={() => setRole('guest')} className="text-xs text-gray-400 hover:underline border-l border-gray-200 pl-4 ml-2 whitespace-nowrap">로그아웃</button>
         </div>
       </header>
 
@@ -127,6 +130,7 @@ function BusinessMain({ setRole }) {
                 <div key={o.id} className="border border-gray-100 rounded-xl p-4 hover:border-emerald-200 transition-colors">
                   <div className="flex justify-between mb-3"><h4 className="text-sm font-bold">{o.title}</h4><span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${o.status === '모집 중' ? 'text-emerald-600 border-emerald-100 bg-emerald-50' : 'text-red-500 border-red-100 bg-red-50'}`}>{o.status}</span></div>
                   <div className="w-full bg-gray-100 h-1.5 rounded-full mb-2"><div className={`${o.color} h-full rounded-full`} style={{ width: `${o.progress}%` }}></div></div>
+                  <div className="flex justify-between items-center mb-4 text-[10px] text-gray-400"><span>참여 {o.current} / {o.min}개</span><span>{o.progress}% · {o.dDay}</span></div>
                   <div className="flex justify-between items-center mb-4 text-[10px] text-gray-400"><span>참여 {o.current} / {o.min}개</span><span>{o.progress}% · {o.dDay}</span></div>
                   <button className="w-full py-2 bg-emerald-50 text-emerald-600 rounded-lg text-xs font-bold hover:bg-emerald-500 hover:text-white transition-colors">{o.btn}</button>
                 </div>
