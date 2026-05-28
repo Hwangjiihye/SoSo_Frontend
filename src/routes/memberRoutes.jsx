@@ -1,4 +1,5 @@
 import LoginPage from '../features/member/LoginPage';
+import FindIdPage from '../features/member/FindIdPage';
 
 /**
  * @file memberRoutes.jsx
@@ -8,6 +9,10 @@ const memberRoutes = [
   {
     path: '/login', // 로그인 페이지 명시적 경로 설정
     element: <LoginPage />,
+  },
+  {
+    path: '/find-id', // 아이디 찾기 페이지 경로
+    element: <FindIdPage />,
   },
 ];
 

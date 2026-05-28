@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useLogin } from './hooks/useLogin';
 
 /**
@@ -7,6 +8,7 @@ import { useLogin } from './hooks/useLogin';
  * 지정된 그린 계열 색상과 정교한 간격 조정을 통해 시각적 완성도를 높였습니다.
  */
 const LoginPage = () => {
+  const navigate = useNavigate();
   // 비즈니스 로직(상태 관리, 이벤트 핸들러)은 커스텀 훅으로 100% 분리하여 사용합니다.
   const { 
     loginType, 
@@ -143,7 +145,12 @@ const LoginPage = () => {
             
             {/* 계정 찾기 링크: 체크박스 그룹과 수직 중앙 정렬 유지 */}
             <div className="flex items-center gap-4 font-bold text-[#158A64] text-[13.5px] whitespace-nowrap">
-              <span className="hover:text-[#0D6B50] cursor-pointer transition-colors hover:underline underline-offset-4">아이디 찾기</span>
+              <span 
+                onClick={() => navigate('/find-id')}
+                className="hover:text-[#0D6B50] cursor-pointer transition-colors hover:underline underline-offset-4"
+              >
+                아이디 찾기
+              </span>
               <span className="text-gray-200 font-normal select-none">|</span>
               <span className="hover:text-[#0D6B50] cursor-pointer transition-colors hover:underline underline-offset-4">비밀번호 찾기</span>
             </div>
