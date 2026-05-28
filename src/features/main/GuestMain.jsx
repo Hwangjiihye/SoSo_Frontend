@@ -1,361 +1,257 @@
 /**
  * @file GuestMain.jsx
- * @description 로그인 전 비회원 사용자에게 보여지는 서비스 소개(랜딩) 페이지입니다.
- * 사업자와 거래처 각각이 얻을 수 있는 이점을 탭(Tab)으로 나누어 소개하고, 
- * 하단에 가상의 대시보드 화면을 목업(Mockup)으로 제공하여 서비스 이해도를 높입니다.
+ * @description 비회원 사용자용 랜딩 페이지입니다.
+ * 에메랄드 테마를 적용하였으며, 주요 기능의 버튼을 클릭하면 해당 기능의 실제 화면 목업이 
+ * 중앙 영역에 동적으로 나타나거나 사라지는 토글 기능을 포함합니다.
  */
 import { useState } from 'react';
+import logo from '../../assets/soso로고.png';
 
 function GuestMain({ setRole }) {
   // 활성화된 탭 상태 ('business' 또는 'partner')
   const [activeTab, setActiveTab] = useState('business');
+  
+  // 현재 어떤 기능의 프리뷰(목업)를 보여줄지 관리하는 상태
+  const [selectedFeature, setSelectedFeature] = useState(null);
+  
+  // 프리뷰 영역 전체 노출 여부
+  const [showPreview, setShowPreview] = useState(false);
 
-  // 사업자 탭 선택 시 보여줄 주요 기능 소개 데이터
+  // --- 기능별 데이터 정의 ---
   const businessFeatures = [
-    {
-      title: '실시간 재고 현황',
-      desc: '품목별 재고 수량을 실시간으로 확인하고 부족 재고를 즉시 파악',
-      btn: '현황 보기',
-      icon: (
-        <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-        </svg>
-      )
-    },
-    {
-      title: '입/출고 통계',
-      desc: '일별/기간별 입출고 흐름을 차트로 분석하고 추세 예측',
-      btn: '통계 보기',
-      icon: (
-        <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-        </svg>
-      )
-    },
-    {
-      title: '스마트 알림',
-      desc: '재고 임계치 도달, 거래처 요청 등 알림 자동화',
-      btn: '알림 설정',
-      icon: (
-        <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-        </svg>
-      )
-    },
-    {
-      title: '공고 관리',
-      desc: '구매 공고, 판매 공고를 등록하고 거래처와 빠르게 연결',
-      btn: '공고 보기',
-      icon: (
-        <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-        </svg>
-      )
-    }
+    { id: 'stock', title: '실시간 재고 현황', desc: '품목별 재고 수량을 실시간으로 확인하고 부족 재고를 즉시 파악', btn: '현황 보기', icon: '📦' },
+    { id: 'stats', title: '입/출고 통계', desc: '일별/기간별 입출고 흐름을 차트로 분석하고 추세 예측', btn: '통계 보기', icon: '📊' },
+    { id: 'alarm', title: '스마트 알림', desc: '재고 임계치 도달, 거래처 요청 등 알림 자동화', btn: '알림 설정', icon: '🔔' },
+    { id: 'notice', title: '공고 관리', desc: '구매 공고, 판매 공고를 등록하고 거래처와 빠르게 연결', btn: '공고 보기', icon: '📢' }
   ];
 
-  // 거래처 탭 선택 시 보여줄 주요 기능 소개 데이터
   const partnerFeatures = [
-    {
-      title: '재고 관리',
-      desc: '거래처로 연결된 사업자의 재고를 함께 조회하고 발주 요청',
-      btn: '재고 확인',
-      icon: (
-        <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-        </svg>
-      )
-    },
-    {
-      title: '업체 홍보',
-      desc: '업체 프로필 페이지로 취급 품목, 단가, 신상품을 효과적으로 홍보',
-      btn: '홍보 등록',
-      icon: (
-        <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
-        </svg>
-      )
-    },
-    {
-      title: '공동 구매',
-      desc: '여러 업체와 묶음 발주로 단가를 낮추고 배송비를 절감',
-      btn: '공구 참여',
-      icon: (
-        <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-        </svg>
-      )
-    }
+    { id: 'stock', title: '재고 관리', desc: '거래처로 연결된 사업자의 재고를 함께 조회하고 발주 요청', btn: '재고 확인', icon: '🏢' },
+    { id: 'promo', title: '업체 홍보', desc: '업체 프로필 페이지로 취급 품목, 단가, 신상품을 효과적으로 홍보', btn: '홍보 등록', icon: '✨' },
+    { id: 'group', title: '공동 구매', desc: '여러 업체와 묶음 발주로 단가를 낮추고 배송비를 절감', btn: '공구 참여', icon: '🤝' }
   ];
 
-  // 활성화된 탭에 따라 렌더링할 데이터 배열 결정
   const currentFeatures = activeTab === 'business' ? businessFeatures : partnerFeatures;
 
-  return (
-    <div className="min-h-screen bg-gray-50 text-gray-800 font-sans overflow-x-hidden">
-      {/* 
-        Header 영역: 
-        상단 고정 네비게이션 바. 로그인/회원가입 메뉴 및 권한 테스트용 버튼 배치.
-      */}
-      <header className="flex justify-between items-center py-4 px-6 md:px-12 border-b border-gray-200 bg-white sticky top-0 z-50">
-        <div className="flex items-center gap-2">
-          <svg className="w-6 h-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-          </svg>
-          <div className="text-xl font-bold text-gray-900 tracking-tighter">SoSo</div>
-        </div>
-        <div className="flex gap-4 items-center">
-          <div className="hidden md:flex gap-6 text-sm font-medium text-gray-600 mr-4">
-            <a href="#" className="hover:text-blue-600">서비스 소개</a>
-            <a href="#" className="hover:text-blue-600">로그인</a>
-            <a href="#" className="hover:text-blue-600">회원가입</a>
-          </div>
-          {/* 테스트용: 로그인 없이 권한을 즉시 변경하는 버튼들 */}
-          <div className="flex gap-2 border-l border-gray-300 pl-4">
-            <button 
-              onClick={() => setRole('business')}
-              className="px-3 py-1.5 text-xs font-medium text-blue-600 border border-blue-600 rounded hover:bg-blue-50 transition-colors"
-            >
-              사업자 테스트
-            </button>
-            <button 
-              onClick={() => setRole('partner')}
-              className="px-3 py-1.5 text-xs font-medium text-green-600 border border-green-600 rounded hover:bg-green-50 transition-colors"
-            >
-              거래처 테스트
-            </button>
-          </div>
-        </div>
-      </header>
+  // --- 기능 버튼 클릭 핸들러 (토글 로직) ---
+  const handleFeatureClick = (id) => {
+    if (selectedFeature === id && showPreview) {
+      // 이미 열려있는 기능을 다시 누르면 닫음
+      setShowPreview(false);
+      setSelectedFeature(null);
+    } else {
+      // 새로운 기능을 누르거나 닫혀있을 때 누르면 해당 기능으로 교체 후 열음
+      setSelectedFeature(id);
+      setShowPreview(true);
+    }
+  };
 
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
-        {/* 
-          1. Hero Section: 
-          가장 크게 시선을 끄는 캐치프레이즈와 가입 유도 버튼이 위치하는 영역 
-        */}
-        <section className="flex flex-col items-center text-center mb-16">
-          <span className="px-5 py-2 text-sm font-semibold text-gray-600 bg-white border border-gray-300 rounded-full mb-6 shadow-sm">
-            AI 기반 스마트 재고 관리 플랫폼
-          </span>
-          <h1 className="text-3xl md:text-5xl font-bold text-gray-900 tracking-tight mb-6">
-            재고 관리, 이제 더 스마트하게
+  // --- [목업 컴포넌트들] ---
+
+  // 1. 실시간 재고 현황 목업
+  const StockMockup = () => (
+    <div className="animate-fade-in">
+      <div className="bg-emerald-600 px-6 py-4 flex justify-between items-center text-white">
+        <h3 className="font-bold">현재 재고 현황</h3>
+        <span className="text-xs opacity-80">기준일 2025-07-21</span>
+      </div>
+      <div className="p-6 grid grid-cols-3 gap-4 border-b border-gray-100 text-center">
+        <div><div className="text-[10px] text-gray-400 mb-1">전체 품목</div><div className="text-xl font-bold">24품</div></div>
+        <div><div className="text-[10px] text-orange-400 mb-1">임박 품목</div><div className="text-xl font-bold text-orange-500">3품</div></div>
+        <div><div className="text-[10px] text-red-400 mb-1">소진 품목</div><div className="text-xl font-bold text-red-500">1품</div></div>
+      </div>
+      <div className="p-6 space-y-4">
+        {['소고기', '냉동 닭', '마늘'].map((name, i) => (
+          <div key={name} className="flex justify-between items-center">
+            <span className="text-sm font-bold w-16">{name}</span>
+            <span className="text-xs text-gray-500">{i === 2 ? 0 : 20 + i*28}개</span>
+            <div className="flex-grow mx-4 bg-gray-100 h-1.5 rounded-full overflow-hidden">
+               <div className={`h-full ${i === 1 ? 'bg-emerald-500' : 'bg-red-400'}`} style={{ width: i === 2 ? '0%' : (i === 1 ? '100%' : '20%') }}></div>
+            </div>
+            <span className={`text-[10px] font-bold ${i === 1 ? 'text-emerald-500' : 'text-red-500'}`}>{i === 1 ? '정상' : (i === 2 ? '소진' : '경고')}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  // 2. 입출고 통계 목업
+  const StatsMockup = () => (
+    <div className="animate-fade-in p-8 text-center">
+      <h3 className="font-bold text-gray-800 mb-8 text-left">월별 입/출고 현황</h3>
+      <div className="h-48 flex items-end justify-between gap-2 px-4 border-b border-gray-100 mb-4">
+        {[40, 70, 55, 90, 60, 85].map((h, i) => (
+          <div key={i} className="flex gap-1 items-end h-full w-full max-w-[25px]">
+            <div className="bg-emerald-200 w-1/2 rounded-t-sm" style={{ height: `${h-15}%` }}></div>
+            <div className="bg-emerald-500 w-1/2 rounded-t-sm" style={{ height: `${h}%` }}></div>
+          </div>
+        ))}
+      </div>
+      <div className="flex justify-between text-[10px] text-gray-400 px-2 uppercase font-bold tracking-tighter">
+        {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'].map(m => <span key={m}>{m}</span>)}
+      </div>
+    </div>
+  );
+
+  // 3. 스마트 알림 목업
+  const AlarmMockup = () => (
+    <div className="animate-fade-in p-8">
+      <h3 className="font-bold text-gray-800 mb-6">실시간 알림</h3>
+      <div className="space-y-5">
+        {[
+          { t: '부족 재고 알림', d: '냉동삼겹살 1kg의 재고가 부족합니다.', c: 'bg-red-500' },
+          { t: '유통기한 경고', d: '두부(면두부)의 유통기한이 3일 남았습니다.', c: 'bg-orange-500' },
+          { t: '발주 접수 알림', d: '강남 본점으로부터 신규 발주가 접수되었습니다.', c: 'bg-emerald-500' }
+        ].map((n, i) => (
+          <div key={i} className="flex gap-4 items-start border-b border-gray-50 pb-4 last:border-0">
+            <div className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${n.c}`}></div>
+            <div>
+              <div className="text-xs font-bold text-gray-900">{n.t}</div>
+              <div className="text-[10px] text-gray-400 mt-0.5">{n.d}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="min-h-screen bg-white text-gray-800 font-sans overflow-x-hidden">
+      
+      {/* --- Header & Hero Section (Emerald Soft Background) --- */}
+      <div className="bg-[#F2FBFA]">
+        <header className="flex justify-between items-center py-5 px-6 md:px-12">
+          <div className="flex items-center gap-2">
+            <img src={logo} alt="SoSo Logo" className="w-8 h-8 object-contain" />
+            <div className="text-2xl font-black text-emerald-600 tracking-tighter">SoSo</div>
+          </div>
+          <div className="flex gap-4 items-center">
+            <div className="hidden md:flex gap-8 text-sm font-bold text-gray-500 mr-4">
+              <a href="#" className="hover:text-emerald-600 transition-colors">서비스 소개</a>
+              <a href="#" className="hover:text-emerald-600 transition-colors">로그인</a>
+              <a href="#" className="hover:text-emerald-600 transition-colors">회원가입</a>
+            </div>
+            <div className="flex gap-2">
+              <button onClick={() => setRole('business')} className="px-4 py-2 text-xs font-bold text-gray-400 border border-gray-200 bg-white rounded-full hover:bg-emerald-50 hover:text-emerald-600 transition-all shadow-sm">사업자 테스트</button>
+              <button onClick={() => setRole('partner')} className="px-4 py-2 text-xs font-bold text-gray-400 border border-gray-200 bg-white rounded-full hover:bg-emerald-50 hover:text-emerald-600 transition-all shadow-sm">거래처 테스트</button>
+            </div>
+          </div>
+        </header>
+
+        <section className="flex flex-col items-center text-center pt-20 pb-32 px-4">
+          <span className="px-5 py-2 text-xs font-bold text-emerald-700 bg-emerald-100/50 rounded-full mb-10 shadow-sm">✦ AI 기반 스마트 재고 관리 플랫폼</span>
+          <h1 className="text-4xl md:text-6xl font-bold text-gray-900 tracking-tight mb-8 leading-[1.1]">
+            재고 관리,<br/>이제 더 <span className="text-emerald-600 relative inline-block underline underline-offset-8 decoration-emerald-100">스마트</span>하게
           </h1>
-          <p className="text-base md:text-lg text-gray-500 max-w-2xl mb-8 leading-relaxed">
-            실시간 재고 현황부터 입/출고 통계, 스마트 알림까지<br/>
-            사업자와 거래처를 연결하는 올인원 재고 솔루션
+          <p className="text-base md:text-lg text-gray-500 max-w-2xl mb-12 leading-relaxed">
+            실시간 재고 현황부터 입/출고 통계, 스마트 알림까지<br/>사업자와 거래처를 연결하는 올인원 재고 솔루션
           </p>
           <button 
             onClick={() => setRole('business')}
-            className="px-8 py-3 bg-white text-gray-800 border border-gray-300 text-lg rounded-full font-semibold shadow-sm hover:bg-gray-50 transition-all duration-200"
+            className="px-10 py-5 bg-white text-emerald-600 text-lg rounded-full font-black shadow-xl shadow-emerald-100 hover:scale-105 transition-transform border border-emerald-50"
           >
-            무료로 시작하기
+            무료로 시작하기 →
           </button>
         </section>
+      </div>
 
-        {/* 
-          2. Tab System: 
-          사업자와 거래처 기능 소개를 전환하는 탭 버튼 영역 
-        */}
-        <section className="mb-12">
-          <div className="border-b border-gray-300 flex justify-center mb-8 gap-12">
-            <button
-              onClick={() => setActiveTab('business')}
-              className={`pb-4 text-lg font-bold px-4 transition-all duration-200 border-b-4 ${
-                activeTab === 'business'
-                  ? 'border-gray-900 text-gray-900'
-                  : 'border-transparent text-gray-400 hover:text-gray-600'
+      {/* --- Main Contents Area --- */}
+      <main className="max-w-6xl mx-auto px-4 py-20">
+        
+        {/* Tab Selection */}
+        <div className="flex justify-center gap-5 mb-16">
+          {['business', 'partner'].map(type => (
+            <button 
+              key={type} 
+              onClick={() => { setActiveTab(type); setShowPreview(false); }}
+              className={`px-10 py-4 rounded-full text-lg font-black transition-all border-2 ${
+                activeTab === type 
+                ? 'border-emerald-500 text-emerald-600 bg-emerald-50' 
+                : 'border-gray-100 text-gray-300 hover:text-gray-500'
               }`}
             >
-              사업자
+              {type === 'business' ? '사업자' : '거래처'}
             </button>
-            <button
-              onClick={() => setActiveTab('partner')}
-              className={`pb-4 text-lg font-bold px-4 transition-all duration-200 border-b-4 ${
-                activeTab === 'partner'
-                  ? 'border-gray-900 text-gray-900'
-                  : 'border-transparent text-gray-400 hover:text-gray-600'
-              }`}
-            >
-              거래처
-            </button>
-          </div>
-
-          {/* 
-            3. Features Cards Section: 
-            현재 활성화된 탭(currentFeatures)의 데이터를 순회(map)하여 기능 소개 카드로 렌더링
-          */}
-          <div className="mb-4">
-            <h2 className="text-sm font-semibold text-gray-500 mb-4 px-2">주요 기능</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {currentFeatures.map((feature, idx) => (
-                <div 
-                  key={idx} 
-                  className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm flex flex-col h-full hover:border-gray-400 transition-colors"
-                >
-                  <div className="text-gray-700 mb-4">
-                    {feature.icon}
-                  </div>
-                  <h3 className="text-lg font-bold text-gray-900 mb-2">{feature.title}</h3>
-                  <p className="text-gray-500 mb-6 flex-grow text-sm leading-relaxed">
-                    {feature.desc}
-                  </p>
-                  <div className="mt-auto">
-                    <button className="px-4 py-2 text-sm font-semibold text-gray-700 border border-gray-300 rounded-full hover:bg-gray-50 w-full">
-                      {feature.btn}
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-            
-            <div className="flex flex-col items-center mt-8 text-gray-400 text-sm">
-              <svg className="w-6 h-6 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-              </svg>
-              <p>주요 기능을 누르면 스마트재고의 위엄이 아래로 내려가고</p>
-              <p>'실시간 재고 현황'이 아래에 자세히 설명된다.</p>
-            </div>
-          </div>
-        </section>
-
-        {/* 
-          4. Dashboard Mockup UI: 
-          실제 서비스 가입 시 보게 될 화면을 미리보기 형식으로 제공하는 목업 테이블
-        */}
-        <section className="bg-white rounded-2xl border border-gray-200 p-6 md:p-8 shadow-sm mb-16">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 border-b border-gray-100 pb-4 gap-4">
-            <div>
-              <h2 className="text-xl font-bold text-gray-900 mb-1">현재 재고 현황</h2>
-              <p className="text-xs text-gray-400">기준일 2025-07-21 · 전년도 동월대비</p>
-            </div>
-            <div className="relative">
-              <input 
-                type="text" 
-                placeholder="품목 검색" 
-                className="pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm w-full md:w-64 focus:outline-none focus:border-gray-400"
-              />
-              <svg className="w-4 h-4 text-gray-400 absolute left-3 top-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </div>
-          </div>
-
-          <div className="flex gap-4 mb-8 overflow-x-auto pb-2">
-            {/* 요약 통계 박스 */}
-            <div className="bg-gray-50 border border-gray-100 rounded-xl p-4 min-w-[120px] flex-1">
-              <div className="text-xs text-gray-500 mb-2">전체 품목</div>
-              <div className="text-xl font-bold text-gray-900">24<span className="text-sm font-normal">품</span></div>
-            </div>
-            <div className="bg-orange-50 border border-orange-100 rounded-xl p-4 min-w-[120px] flex-1">
-              <div className="text-xs text-orange-600 mb-2">임박 품목</div>
-              <div className="text-xl font-bold text-orange-600">3<span className="text-sm font-normal">품</span></div>
-              <div className="text-[10px] text-orange-400 mt-1">안전 재고 미달</div>
-            </div>
-            <div className="bg-red-50 border border-red-100 rounded-xl p-4 min-w-[120px] flex-1">
-              <div className="text-xs text-red-600 mb-2">소진 품목</div>
-              <div className="text-xl font-bold text-red-600">1<span className="text-sm font-normal">품</span></div>
-            </div>
-          </div>
-
-          <div className="overflow-x-auto">
-            {/* 데이터 테이블 목업 */}
-            <table className="w-full text-sm text-left">
-              <thead>
-                <tr className="border-b border-gray-200 text-gray-500">
-                  <th className="py-3 px-4 font-medium">품목명</th>
-                  <th className="py-3 px-4 font-medium text-center">현재고</th>
-                  <th className="py-3 px-4 font-medium text-center">안전재고</th>
-                  <th className="py-3 px-4 font-medium text-center">재고 상태</th>
-                  <th className="py-3 px-4 font-medium">재고 바</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr className="border-b border-gray-100">
-                  <td className="py-4 px-4 font-medium text-gray-900">
-                    <span className="px-2 py-1 bg-blue-50 text-blue-600 rounded text-xs">소고기</span>
-                  </td>
-                  <td className="py-4 px-4 text-center text-gray-900 font-semibold">20개</td>
-                  <td className="py-4 px-4 text-center text-gray-400">100개</td>
-                  <td className="py-4 px-4 text-center">
-                    <span className="text-xs font-bold text-red-500">경고</span>
-                  </td>
-                  <td className="py-4 px-4">
-                    <div className="w-full bg-gray-200 rounded-full h-1.5">
-                      {/* 인라인 스타일로 임시 진행률(width) 지정 */}
-                      <div className="bg-red-500 h-1.5 rounded-full" style={{ width: '20%' }}></div>
-                    </div>
-                  </td>
-                </tr>
-                <tr className="border-b border-gray-100">
-                  <td className="py-4 px-4 font-medium text-gray-900">
-                    <span className="px-2 py-1 bg-blue-50 text-blue-600 rounded text-xs">냉동 닭</span>
-                  </td>
-                  <td className="py-4 px-4 text-center text-gray-900 font-semibold">48개</td>
-                  <td className="py-4 px-4 text-center text-gray-400">30개</td>
-                  <td className="py-4 px-4 text-center">
-                    <span className="text-xs font-bold text-green-500">정상</span>
-                  </td>
-                  <td className="py-4 px-4">
-                    <div className="w-full bg-gray-200 rounded-full h-1.5">
-                      <div className="bg-green-500 h-1.5 rounded-full" style={{ width: '100%' }}></div>
-                    </div>
-                  </td>
-                </tr>
-                <tr>
-                  <td className="py-4 px-4 font-medium text-gray-900">
-                    <span className="px-2 py-1 bg-orange-50 text-orange-600 rounded text-xs">마늘</span>
-                  </td>
-                  <td className="py-4 px-4 text-center text-gray-900 font-semibold">0개</td>
-                  <td className="py-4 px-4 text-center text-gray-400">10개</td>
-                  <td className="py-4 px-4 text-center">
-                    <span className="text-xs font-bold text-red-500">소진</span>
-                  </td>
-                  <td className="py-4 px-4">
-                    <div className="w-full bg-gray-200 rounded-full h-1.5">
-                      <div className="bg-gray-800 h-1.5 rounded-full" style={{ width: '0%' }}></div>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </section>
-
-        {/* 
-          5. Stats Section: 
-          서비스의 신뢰도를 높여주는 통계 수치 표시 배너 
-        */}
-        <section className="mb-12">
-          <h2 className="text-xl font-bold text-center text-gray-900 mb-8">스마트재고의 위엄</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-white p-6 rounded-2xl border border-gray-200 text-center shadow-sm">
-              <div className="text-2xl font-bold text-gray-900 mb-2">[3,842명]의</div>
-              <p className="text-gray-500 text-sm">소상공인과 거래처가 함께<br/>숨 쉬고 있습니다.</p>
-            </div>
-            <div className="bg-white p-6 rounded-2xl border border-gray-200 text-center shadow-sm">
-              <div className="text-2xl font-bold text-gray-900 mb-2">[22% 감소]</div>
-              <p className="text-gray-500 text-sm">식자재 폐기율 평균<br/>시뮬레이션 결과</p>
-            </div>
-            <div className="bg-white p-6 rounded-2xl border border-gray-200 text-center shadow-sm">
-              <div className="text-2xl font-bold text-gray-900 mb-2">18% 절감</div>
-              <p className="text-gray-500 text-sm">공동구매 발주 비용 평균</p>
-            </div>
-          </div>
-        </section>
-      </main>
-      
-      {/* 
-        Footer: 
-        페이지 최하단 저작권 및 링크 영역 
-      */}
-      <footer className="border-t border-gray-200 bg-white py-6 px-6 md:px-12 flex flex-col md:flex-row justify-between items-center text-xs text-gray-400 gap-4">
-        <div>
-          © 2026 스마트 재고. 모든 권리 보유.
+          ))}
         </div>
-        <div className="flex gap-4">
-          <a href="#" className="hover:text-gray-600">이용약관</a>
-          <a href="#" className="hover:text-gray-600">개인정보처리방침</a>
-          <a href="#" className="hover:text-gray-600">고객지원</a>
+
+        {/* Feature Cards Grid */}
+        <div className="mb-20">
+          <h2 className="text-xs font-black text-emerald-600 mb-8 uppercase tracking-[0.2em] px-2 text-center">Main Features</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            {currentFeatures.map((f) => (
+              <div 
+                key={f.id} 
+                onClick={() => handleFeatureClick(f.id)}
+                className={`bg-white border-2 rounded-[2.5rem] p-10 shadow-sm transition-all cursor-pointer flex flex-col items-center text-center group ${
+                  selectedFeature === f.id && showPreview 
+                  ? 'border-emerald-500 shadow-emerald-100 shadow-2xl' 
+                  : 'border-gray-50 hover:border-emerald-100 hover:shadow-lg'
+                }`}
+              >
+                <div className="text-5xl mb-8 group-hover:scale-110 transition-transform">{f.icon}</div>
+                <h3 className="text-xl font-bold text-gray-900 mb-4">{f.title}</h3>
+                <p className="text-gray-400 text-sm leading-relaxed mb-10 flex-grow">{f.desc}</p>
+                <div className={`text-sm font-black flex items-center gap-2 transition-colors ${selectedFeature === f.id && showPreview ? 'text-emerald-600' : 'text-gray-200'}`}>
+                  {f.btn} {selectedFeature === f.id && showPreview ? '↑' : '→'}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* --- Dynamic Preview Section (Toggled by Card Clicks) --- */}
+        {showPreview && (
+          <section className="mb-32 animate-fade-in-up flex flex-col items-center">
+             <div className="w-full max-w-2xl bg-white rounded-[2.5rem] border-4 border-emerald-50 shadow-[0_20px_50px_rgba(16,185,129,0.1)] overflow-hidden">
+                {selectedFeature === 'stock' && <StockMockup />}
+                {selectedFeature === 'stats' && <StatsMockup />}
+                {selectedFeature === 'alarm' && <AlarmMockup />}
+                {selectedFeature === 'notice' || selectedFeature === 'group' ? (
+                   <div className="p-10 text-center">
+                      <h3 className="font-bold text-gray-800 mb-6 text-left">공고/공구 관리</h3>
+                      <div className="bg-emerald-50 rounded-2xl p-6 text-emerald-700 text-sm font-bold border border-emerald-100">
+                        준비 중인 목업 화면입니다. <br/>실제 서비스에서 만나보실 수 있습니다.
+                      </div>
+                   </div>
+                ) : null}
+                {selectedFeature === 'promo' && <div className="p-20 text-center text-gray-300 font-bold">업체 홍보 페이지 목업 준비 중...</div>}
+             </div>
+             <p className="mt-8 text-emerald-600/40 text-xs font-bold animate-pulse">CLiCK CARD TO CLOSE PREViEW</p>
+          </section>
+        )}
+
+      </main>
+
+      {/* --- Stats Banner (Emerald Soft Background) --- */}
+      <div className="bg-[#F2FBFA] py-24">
+        <div className="max-w-5xl mx-auto px-6">
+          <h2 className="text-3xl font-black text-center text-gray-900 mb-16">스마트재고의 위엄</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+             {[
+               { v: '[3,842명]의', d: '소상공인과 거래처가 함께\n쓰고 있습니다.' },
+               { v: '[22%] 감소', d: '식자재 폐기율 평균\n시뮬레이션 결과' },
+               { v: '18% 절감', d: '공동구매 발주 비용\n평균' }
+             ].map((stat, i) => (
+               <div key={i} className="bg-white p-12 rounded-[3rem] text-center shadow-sm hover:shadow-xl transition-all border border-emerald-50">
+                 <div className="text-4xl lg:text-5xl font-black text-emerald-600 mb-6">{stat.v}</div>
+                 <p className="text-gray-500 text-sm font-bold leading-relaxed whitespace-pre-line">{stat.d}</p>
+               </div>
+             ))}
+          </div>
+        </div>
+      </div>
+      
+      {/* Footer Area */}
+      <footer className="bg-white py-12 border-t border-gray-50">
+        <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
+          <div className="text-lg font-black text-gray-200">SoSo.</div>
+          <div className="flex gap-8 text-xs font-bold text-gray-300">
+            <a href="#" className="hover:text-emerald-500 transition-colors">이용약관</a>
+            <a href="#" className="hover:text-emerald-500 transition-colors">개인정보처리방침</a>
+            <a href="#" className="hover:text-emerald-500 transition-colors">고객지원</a>
+          </div>
+          <div className="text-[10px] text-gray-200">© 2026 SMART STOCK ALL RiGHTS RESERVED.</div>
         </div>
       </footer>
     </div>
