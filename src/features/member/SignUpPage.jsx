@@ -3,9 +3,9 @@ import { useSignUp } from './hooks/useSignUp';
 
 const SignUpPage = () => {
   const {
-    formData, errors, apiStatus, emailSuggestions, images, terms,
+    formData, errors, apiStatus, images, terms,
     handleChange, checkDuplicate, verifyBusiness, searchAddress,
-    handleFileChange, handleTermsChange, selectEmailSuggestion
+    handleFileChange, handleTermsChange
   } = useSignUp();
 
   const sectionStyle = "bg-white p-6 rounded-xl border border-gray-100 shadow-sm space-y-4";
@@ -26,7 +26,6 @@ const SignUpPage = () => {
           {/* 계정 정보 */}
           <section className={sectionStyle}>
             <h2 className="text-lg font-bold text-gray-800 border-b pb-2">계정 정보</h2>
-            
             <div>
               <label className={labelStyle}>아이디</label>
               <div className="flex gap-2">
@@ -53,7 +52,6 @@ const SignUpPage = () => {
           {/* 인적 사항 */}
           <section className={sectionStyle}>
             <h2 className="text-lg font-bold text-gray-800 border-b pb-2">인적 사항</h2>
-            
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className={labelStyle}>이름 (실명)</label>
@@ -70,31 +68,27 @@ const SignUpPage = () => {
 
             <div>
               <label className={labelStyle}>휴대전화</label>
-              <div className="flex gap-2">
-                <input name="phone" value={formData.phone} onChange={handleChange} className={inputStyle} placeholder="010-XXXX-XXXX" />
-                <button type="button" onClick={() => checkDuplicate('phone')} className={btnActionStyle}>중복확인</button>
-              </div>
+              <input name="phone" value={formData.phone} onChange={handleChange} className={inputStyle} placeholder="010-XXXX-XXXX" />
               {errors.phone && <p className={errorStyle}>{errors.phone}</p>}
             </div>
 
             <div>
-              <label className={labelStyle}>주민등록번호 앞 7자리</label>
-              <input name="ssn" value={formData.ssn} onChange={handleChange} className={inputStyle} placeholder="YYMMDD-G" />
-              {errors.ssn && <p className={errorStyle}>{errors.ssn}</p>}
+              <label className={labelStyle}>주민등록번호</label>
+              <div className="flex items-center gap-2">
+                <input name="ssnFront" value={formData.ssnFront} onChange={handleChange} className={inputStyle} placeholder="앞 6자리" maxLength={6} />
+                <span className="text-gray-400">-</span>
+                <input type="password" name="ssnBack" value={formData.ssnBack} onChange={handleChange} className={inputStyle} placeholder="뒤 7자리" maxLength={7} />
+              </div>
+              {(errors.ssnFront || errors.ssnBack) && <p className={errorStyle}>{errors.ssnFront || errors.ssnBack}</p>}
             </div>
 
             <div className="relative">
               <label className={labelStyle}>이메일</label>
-              <input name="email" value={formData.email} onChange={handleChange} className={inputStyle} placeholder="example@gmail.com" />
-              {emailSuggestions.length > 0 && (
-                <ul className="absolute z-20 w-full bg-white border border-gray-200 rounded-lg shadow-xl mt-1 overflow-hidden">
-                  {emailSuggestions.map((s) => (
-                    <li key={s} onClick={() => selectEmailSuggestion(s)} className="p-3 hover:bg-blue-50 cursor-pointer text-sm text-gray-700 border-b last:border-0">
-                      {s}
-                    </li>
-                  ))}
-                </ul>
-              )}
+              <div className="flex gap-2">
+                <input name="email" value={formData.email} onChange={handleChange} className={inputStyle} placeholder="example@gmail.com" />
+                <button type="button" onClick={() => checkDuplicate('email')} className={btnActionStyle}>중복확인</button>
+              </div>
+             
               {errors.email && <p className={errorStyle}>{errors.email}</p>}
             </div>
           </section>
@@ -155,7 +149,7 @@ const SignUpPage = () => {
             </div>
           </section>
 
-          {/* 약관 동ify */}
+          {/* 약관 동의 */}
           <section className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
             <div className="flex items-center gap-3 mb-4 p-3 bg-gray-50 rounded-lg">
               <input type="checkbox" checked={terms.all} onChange={() => handleTermsChange('all')} id="all" className="w-5 h-5 accent-blue-600 cursor-pointer" />
@@ -180,7 +174,7 @@ const SignUpPage = () => {
 
           <button
             type="submit"
-            disabled={!terms.service || !terms.privacy || !apiStatus.bizVerified}
+            disabled={!terms.service || !terms.privacy || !apiStatus.bizVerified || !apiStatus.idChecked || !apiStatus.emailChecked}
             className="w-full py-4 bg-gray-900 text-white rounded-xl text-lg font-bold hover:bg-black transition-all disabled:bg-gray-300 disabled:cursor-not-allowed shadow-lg"
           >
             회원가입 요청하기
