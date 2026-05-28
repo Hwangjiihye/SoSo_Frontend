@@ -13,6 +13,7 @@ const REGEX = {
 
 export const useSignUp = () => {
   const [formData, setFormData] = useState({
+    userType: 'BUSINESS', // 기본값 사업자
     userId: '',
     password: '',
     confirmPassword: '',
@@ -147,11 +148,17 @@ export const useSignUp = () => {
     }
   };
 
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log('회원가입 데이터 전송:', { ...formData, images, terms });
+    alert(`${formData.userType === 'BUSINESS' ? '사업자' : '거래처'} 회원가입 요청이 완료되었습니다.`);
+  };
+
 
 
   return {
     formData, errors, apiStatus, images, terms,
     handleChange, checkDuplicate, verifyBusiness, searchAddress,
-    handleFileChange, handleTermsChange
+    handleFileChange, handleTermsChange, handleSubmit
   };
 };

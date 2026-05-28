@@ -5,7 +5,7 @@ const SignUpPage = () => {
   const {
     formData, errors, apiStatus, images, terms,
     handleChange, checkDuplicate, verifyBusiness, searchAddress,
-    handleFileChange, handleTermsChange
+    handleFileChange, handleTermsChange, handleSubmit
   } = useSignUp();
 
   const sectionStyle = "bg-white p-6 rounded-xl border border-gray-100 shadow-sm space-y-4";
@@ -22,7 +22,35 @@ const SignUpPage = () => {
           <p className="text-gray-500 mt-2">서비스 이용을 위해 정보를 입력해주세요.</p>
         </header>
 
-        <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
+        <form className="space-y-6" onSubmit={handleSubmit}>
+          {/* 회원 유형 선택 */}
+          <div className="grid grid-cols-2 gap-4">
+            <button
+              type="button"
+              onClick={() => handleChange({ target: { name: 'userType', value: 'BUSINESS' } })}
+              className={`p-4 rounded-xl border-2 transition-all text-center space-y-2 ${
+                formData.userType === 'BUSINESS'
+                  ? 'border-blue-500 bg-blue-50 text-blue-700'
+                  : 'border-gray-200 bg-white text-gray-400 hover:border-gray-300'
+              }`}
+            >
+              <div className="text-2xl">🏢</div>
+              <div className="font-bold">사업자 회원</div>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleChange({ target: { name: 'userType', value: 'PARTNER' } })}
+              className={`p-4 rounded-xl border-2 transition-all text-center space-y-2 ${
+                formData.userType === 'PARTNER'
+                  ? 'border-blue-500 bg-blue-50 text-blue-700'
+                  : 'border-gray-200 bg-white text-gray-400 hover:border-gray-300'
+              }`}
+            >
+              <div className="text-2xl">🤝</div>
+              <div className="font-bold">거래처 회원</div>
+            </button>
+          </div>
+
           {/* 계정 정보 */}
           <section className={sectionStyle}>
             <h2 className="text-lg font-bold text-gray-800 border-b pb-2">계정 정보</h2>
@@ -95,7 +123,9 @@ const SignUpPage = () => {
 
           {/* 사업자 정보 */}
           <section className={sectionStyle}>
-            <h2 className="text-lg font-bold text-gray-800 border-b pb-2">사업자 정보 확인</h2>
+            <h2 className="text-lg font-bold text-gray-800 border-b pb-2">
+              {formData.userType === 'BUSINESS' ? '사업자 정보 확인' : '거래처 정보 확인'}
+            </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className={labelStyle}>사업자번호</label>
@@ -115,13 +145,15 @@ const SignUpPage = () => {
               </div>
             </div>
             <button type="button" onClick={verifyBusiness} className={`w-full py-3 rounded-lg font-bold transition-all ${apiStatus.bizVerified ? 'bg-green-100 text-green-700 border border-green-200' : 'bg-blue-600 text-white hover:bg-blue-700'}`}>
-              {apiStatus.bizVerified ? '사업자 인증 완료 ✓' : '국세청 사업자 진위 확인'}
+              {apiStatus.bizVerified ? (formData.userType === 'BUSINESS' ? '사업자 인증 완료 ✓' : '거래처 인증 완료 ✓') : '국세청 사업자 진위 확인'}
             </button>
           </section>
 
           {/* 주소 및 사진 */}
           <section className={sectionStyle}>
-            <h2 className="text-lg font-bold text-gray-800 border-b pb-2">가게 상세 정보</h2>
+            <h2 className="text-lg font-bold text-gray-800 border-b pb-2">
+              {formData.userType === 'BUSINESS' ? '가게 상세 정보' : '영업소 상세 정보'}
+            </h2>
             <div className="space-y-2">
               <div className="flex gap-2">
                 <input name="zipCode" value={formData.zipCode} readOnly className={`${inputStyle} bg-gray-100`} placeholder="우편번호" />
@@ -133,14 +165,18 @@ const SignUpPage = () => {
 
             <div className="grid grid-cols-2 gap-4 mt-4">
               <div className="space-y-1">
-                <span className="text-xs font-bold text-gray-500">가게 외부 사진</span>
+                <span className="text-xs font-bold text-gray-500">
+                  {formData.userType === 'BUSINESS' ? '가게 외부 사진' : '영업소 전경 사진'}
+                </span>
                 <div className="relative border-2 border-dashed border-gray-200 rounded-lg p-4 text-center hover:bg-gray-50 transition-all">
                   <input type="file" onChange={(e) => handleFileChange(e, 'exterior')} className="absolute inset-0 opacity-0 cursor-pointer" accept="image/jpeg,image/png" />
                   <span className="text-xs text-blue-600">{images.exterior ? images.exterior.name : '파일 선택 (JPG/PNG)'}</span>
                 </div>
               </div>
               <div className="space-y-1">
-                <span className="text-xs font-bold text-gray-500">가게 내부 사진</span>
+                <span className="text-xs font-bold text-gray-500">
+                  {formData.userType === 'BUSINESS' ? '가게 내부 사진' : '영업소 내부 사진'}
+                </span>
                 <div className="relative border-2 border-dashed border-gray-200 rounded-lg p-4 text-center hover:bg-gray-50 transition-all">
                   <input type="file" onChange={(e) => handleFileChange(e, 'interior')} className="absolute inset-0 opacity-0 cursor-pointer" accept="image/jpeg,image/png" />
                   <span className="text-xs text-blue-600">{images.interior ? images.interior.name : '파일 선택 (JPG/PNG)'}</span>
@@ -177,7 +213,7 @@ const SignUpPage = () => {
             disabled={!terms.service || !terms.privacy || !apiStatus.bizVerified || !apiStatus.idChecked || !apiStatus.emailChecked}
             className="w-full py-4 bg-gray-900 text-white rounded-xl text-lg font-bold hover:bg-black transition-all disabled:bg-gray-300 disabled:cursor-not-allowed shadow-lg"
           >
-            회원가입 요청하기
+            {formData.userType === 'BUSINESS' ? '사업자 회원가입 요청' : '거래처 회원가입 요청'}
           </button>
         </form>
       </div>
