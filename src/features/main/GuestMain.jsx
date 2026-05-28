@@ -122,9 +122,7 @@ function GuestMain({ setRole }) {
       <div className="bg-[#F2FBFA]">
         <header className="flex justify-between items-center py-5 px-6 md:px-12">
           <div className="flex items-center gap-2">
-            <svg className="w-6 h-6 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-            </svg>
+            <img src={logo} alt="SoSo Logo" className="w-7 h-7 object-contain" />
             <div className="text-2xl font-black text-emerald-600 tracking-tighter">SoSo</div>
           </div>
           <div className="flex gap-4 items-center">
@@ -161,14 +159,14 @@ function GuestMain({ setRole }) {
       <main className="max-w-[90rem] mx-auto px-4 pt-14 pb-0">
 
         {/* Tab Selection */}
-        <div className="flex justify-center gap-10 mb-16">
+        <div className="flex justify-center gap-10 mb-10">
           {['business', 'partner'].map(type => (
             <button
               key={type}
               onClick={() => { setActiveTab(type); setShowPreview(false); }}
               className={`px-10 py-4 rounded-full text-lg font-black transition-all border-2 ${activeTab === type
-                  ? 'border-emerald-500 text-emerald-600 bg-emerald-50'
-                  : 'border-gray-100 text-gray-300 hover:text-gray-500'
+                ? 'border-emerald-500 text-emerald-600 bg-emerald-50'
+                : 'border-gray-100 text-gray-300 hover:text-gray-500'
                 }`}
             >
               {type === 'business' ? '사업자' : '거래처'}
@@ -177,14 +175,17 @@ function GuestMain({ setRole }) {
         </div>
 
         {/* Feature Cards Grid */}
-        <div className="mb-20">
+        <div className="mb-15">
           <h2 className="text-xs font-black text-emerald-600 mb-8 uppercase tracking-[0.2em] px-2 text-center">Main Features</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+
+          {/* 🛠️ 모바일에선 1열, 태블릿에선 2열 grid를 쓰다가 lg 화면부턴 flex 중앙정렬로 스위칭! */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:flex-wrap lg:justify-center gap-8 w-full max-w-[1280px] mx-auto">
             {currentFeatures.map((f) => (
               <div
                 key={f.id}
                 onClick={() => handleFeatureClick(f.id)}
-                className={`bg-white border-2 rounded-[2.5rem] p-10 shadow-sm transition-all cursor-pointer flex flex-col items-center text-center group ${selectedFeature === f.id && showPreview
+                // 🛠️ 각 카드가 일정한 크기(예: 280px)를 유지하도록 lg:w-[280px] sm:w-full 설정 추가
+                className={`bg-white border-2 rounded-[2.5rem] p-10 shadow-sm transition-all cursor-pointer flex flex-col items-center text-center group w-full lg:w-[280px] ${selectedFeature === f.id && showPreview
                     ? 'border-emerald-500 shadow-emerald-100 shadow-2xl'
                     : 'border-gray-50 hover:border-emerald-100 hover:shadow-lg'
                   }`}
