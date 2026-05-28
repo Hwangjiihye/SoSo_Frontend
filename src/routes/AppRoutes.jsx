@@ -1,14 +1,14 @@
-/**
- * @file AppRoutes.jsx
- * @description 애플리케이션의 모든 라우팅(주소 이동) 설정을 담당하는 컴포넌트입니다.
- * react-router-dom의 createBrowserRouter를 사용하여 클라이언트 사이드 라우팅을 구성합니다.
- */
+import React from 'react';
 import { RouterProvider } from 'react-router-dom';
 import router from './index';
 
-// 앱 최상단에 주입될 라우터 프로바이더 컴포넌트
-function AppRoutes() {
+/**
+ * @file AppRoutes.jsx
+ * @description 애플리케이션의 최상위 라우팅 프로바이더 설정입니다.
+ * src/routes/index.jsx에서 정의된 라우터 객체를 앱 전체에 주입합니다.
+ */
+const AppRoutes = () => {
   return <RouterProvider router={router} />;
-}
+};
 
 export default AppRoutes;

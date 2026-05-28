@@ -18,15 +18,26 @@ const LoginPage = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      {/* 로그인 박스 컨테이너: 너비를 기존 max-w-md(448px)에서 500px로 확장하여 가독성 확보 */}
-      <div className="max-w-[500px] w-full space-y-8 bg-white p-10 rounded-2xl shadow-xl border border-gray-100">
+      {/* 로그인 박스 컨테이너: 너비를 600px로 대폭 확장하여 모든 콘텐츠가 여유 있게 배치되도록 수정 */}
+      <div className="max-w-[600px] w-full space-y-8 bg-white p-10 rounded-2xl shadow-xl border border-gray-100">
         
-        {/* 상단 서비스 로고 및 타이틀 */}
-        <div className="text-center">
-          <h1 className="text-3xl font-extrabold" style={{ color: '#1D9E75' }}>
-            SoSo
-          </h1>
-          <p className="mt-2 text-sm text-gray-600">
+        {/* 상단 서비스 로고 및 타이틀: 로고와 텍스트의 수직/수평 정렬을 정밀하게 조정 */}
+        <div className="text-center flex flex-col items-center pt-2">
+          <div className="flex items-center justify-center gap-1">
+            {/* 로고 이미지: 사용자의 수작업 수정에 맞춰 시각적 균형을 위해 2px 하향 조정 (translate-y-[2px]) */}
+            <img 
+              src="/images/logo.png" 
+              alt="SoSo Logo" 
+              className="w-12 h-12 object-contain transform translate-y-[4px]"
+            />
+
+            {/* 타이틀: 로고와의 중심선을 맞추기 위해 정밀 정렬 */}
+            <h1 className="text-[38px] font-black leading-none tracking-tight" style={{ color: '#1D9E75' }}>
+              SoSo
+            </h1>
+          </div>
+          {/* 하단 안내 문구와의 간격 확보 */}
+          <p className="mt-4 text-[15px] text-gray-500 font-medium">
             {loginType === 'business' ? '사업자' : '거래처'} 전용 로그인 서비스
           </p>
         </div>
@@ -90,9 +101,10 @@ const LoginPage = () => {
             </div>
           </div>
 
-          {/* 옵션 설정 및 계정 찾기: whitespace-nowrap을 추가하여 줄바꿈 방지 */}
-          <div className="flex items-center justify-between text-sm whitespace-nowrap gap-4">
-            <div className="flex items-center gap-3">
+          {/* 옵션 설정 및 계정 찾기: 박스 너비 확장에 맞춰 간격을 최적화하고 줄바꿈 절대 방지 */}
+          <div className="flex items-center justify-between text-sm whitespace-nowrap mt-8 mb-2">
+            {/* 체크박스 그룹: 항목 간 간격을 넉넉히 벌림 (gap-8) */}
+            <div className="flex items-center gap-8">
               {/* 로그인 상태 유지 */}
               <div className="flex items-center">
                 <input
@@ -103,7 +115,7 @@ const LoginPage = () => {
                   onChange={handleOptionChange}
                   className="h-4 w-4 text-[#1D9E75] border-gray-300 rounded focus:ring-[#1D9E75] cursor-pointer"
                 />
-                <label htmlFor="rememberMe" className="ml-1.5 block text-gray-700 cursor-pointer select-none text-[12px]">
+                <label htmlFor="rememberMe" className="ml-2 block text-gray-700 cursor-pointer select-none text-[13px]">
                   로그인 상태 유지
                 </label>
               </div>
@@ -117,17 +129,17 @@ const LoginPage = () => {
                   onChange={handleOptionChange}
                   className="h-4 w-4 text-[#1D9E75] border-gray-300 rounded focus:ring-[#1D9E75] cursor-pointer"
                 />
-                <label htmlFor="rememberId" className="ml-1.5 block text-gray-700 cursor-pointer select-none text-[12px]">
+                <label htmlFor="rememberId" className="ml-2 block text-gray-700 cursor-pointer select-none text-[13px]">
                   아이디 기억하기
                 </label>
               </div>
             </div>
             
-            {/* 계정 찾기 링크 */}
-            <div className="flex gap-2 font-medium text-[#158A64] text-[12px]">
-              <span className="hover:text-[#0D6B50] cursor-pointer">아이디 찾기</span>
-              <span className="text-gray-300 font-normal">|</span>
-              <span className="hover:text-[#0D6B50] cursor-pointer">비밀번호 찾기</span>
+            {/* 계정 찾기 링크: 텍스트 간 간격 유지 */}
+            <div className="flex items-center gap-4 font-medium text-[#158A64] text-[13px]">
+              <span className="hover:text-[#0D6B50] cursor-pointer transition-colors">아이디 찾기</span>
+              <span className="text-gray-200 font-normal select-none">|</span>
+              <span className="hover:text-[#0D6B50] cursor-pointer transition-colors">비밀번호 찾기</span>
             </div>
           </div>
 
