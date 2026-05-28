@@ -157,7 +157,7 @@ function GuestMain({ setRole }) {
             onClick={() => setRole('business')}
             className="px-10 py-5 bg-white text-emerald-600 text-lg rounded-full font-black shadow-xl shadow-emerald-100 hover:scale-105 transition-transform border border-emerald-50"
           >
-            무료로 시작하기 →
+            시작하기 →
           </button>
         </section>
       </div>

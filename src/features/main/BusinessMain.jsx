@@ -5,6 +5,7 @@
  */
 import React from 'react';
 import logo from '../../assets/soso로고.png';
+import MainFooter from '../../components/layout/MainFooter';
 
 function BusinessMain({ setRole }) {
   // 알림 데이터
@@ -55,9 +56,9 @@ function BusinessMain({ setRole }) {
           </button>
           <div className="flex items-center gap-2 border border-gray-200 rounded-full py-1.5 px-3 bg-white">
             <div className="w-6 h-6 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-[10px] font-bold">김</div>
-            <span className="text-sm font-semibold whitespace-nowrap">김민준 <span className="text-xs text-gray-400 font-normal">강남 본점</span></span>
+            <span className="text-sm font-semibold whitespace-nowrap text-gray-700">김민준 <span className="text-xs text-gray-400 font-normal">강남 본점</span></span>
           </div>
-          <button onClick={() => setRole('guest')} className="text-xs text-gray-400 hover:underline border-l border-gray-200 pl-4 ml-2 whitespace-nowrap">로그아웃</button>
+          <button onClick={() => setRole('guest')} className="text-xs font-bold text-gray-300 hover:text-emerald-600 hover:underline border-l border-gray-200 pl-4 ml-2 whitespace-nowrap transition-colors">로그아웃</button>
         </div>
       </header>
 
@@ -81,26 +82,26 @@ function BusinessMain({ setRole }) {
         {/* Middle Charts */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
-            <h3 className="font-bold mb-6">월별 입/출고 현황</h3>
+            <h3 className="font-bold mb-6 text-gray-700 font-bold uppercase tracking-widest text-[10px] text-gray-400 uppercase tracking-widest text-[10px] text-gray-400">월별 입/출고 현황</h3>
             <div className="h-40 flex items-end justify-around gap-2 mb-4 px-4 border-b border-gray-100">
                {[40, 60, 80, 100, 85, 95].map((h, i) => (
                  <div key={i} className="bg-emerald-300 w-full max-w-[35px] rounded-t-sm" style={{ height: `${h}%` }}></div>
                ))}
             </div>
-            <div className="flex justify-center gap-4 text-xs text-gray-400">
+            <div className="flex justify-center gap-4 text-xs text-gray-400 font-bold uppercase tracking-widest">
               <span className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-emerald-500"></div> 입고</span>
               <span className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-red-300"></div> 출고</span>
             </div>
           </div>
           <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
-            <h3 className="font-bold mb-6">월별 매출 현황</h3>
+            <h3 className="font-bold mb-6 text-gray-700 font-bold uppercase tracking-widest text-[10px] text-gray-400 uppercase tracking-widest text-[10px] text-gray-400">월별 매출 현황</h3>
             <div className="h-40 relative flex items-end justify-around gap-2 mb-4 px-4 border-b border-gray-100">
               <svg className="absolute inset-0 w-full h-full" preserveAspectRatio="none" viewBox="0 0 100 100"><polyline fill="none" stroke="#10b981" strokeWidth="1.5" points="5,80 25,40 45,60 65,20 85,50 95,10" /></svg>
               {[80, 30, 60, 40, 90, 20].map((h, i) => (
                  <div key={i} className="bg-gray-50 w-full max-w-[20px] rounded-t-sm" style={{ height: `${h}%` }}></div>
                ))}
             </div>
-             <div className="flex justify-center gap-4 text-xs text-gray-400">
+             <div className="flex justify-center gap-4 text-xs text-gray-400 font-bold uppercase tracking-widest">
               <span className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-emerald-500"></div> 매출액</span>
               <span className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-emerald-200"></div> 목표</span>
             </div>
@@ -110,35 +111,37 @@ function BusinessMain({ setRole }) {
         {/* Bottom Lists */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="bg-white rounded-2xl border border-gray-200 p-6">
-            <h3 className="font-bold mb-6">실시간 알림</h3>
+            <h3 className="font-bold mb-6 text-gray-700 font-bold uppercase tracking-widest text-[10px] text-gray-400 uppercase tracking-widest text-[10px] text-gray-400">실시간 알림</h3>
             <div className="space-y-6">
               {notifications.map(n => (
-                <div key={n.id} className="flex gap-4">
-                  <div className={`w-2 h-2 rounded-full mt-1.5 ${n.color}`}></div>
-                  <div className="flex-grow">
-                    <div className="flex justify-between items-start mb-0.5"><h4 className="text-sm font-bold">{n.title}</h4><span className="text-[10px] text-gray-300">{n.time}</span></div>
-                    <p className="text-xs text-gray-500">{n.desc}</p>
+                <div key={n.id} className="flex gap-4 group cursor-pointer">
+                  <div className={`w-1.5 h-1.5 rounded-full mt-1.5 ${n.color}`}></div>
+                  <div className="flex-grow border-b border-gray-50 pb-4 group-last:border-0">
+                    <div className="flex justify-between items-start mb-0.5"><h4 className="text-sm font-bold text-gray-800">{n.title}</h4><span className="text-[10px] text-gray-300 font-bold">{n.time}</span></div>
+                    <p className="text-xs text-gray-400 leading-relaxed">{n.desc}</p>
                   </div>
                 </div>
               ))}
             </div>
           </div>
           <div className="bg-white rounded-2xl border border-gray-200 p-6">
-            <h3 className="font-bold mb-6">공동 발주 현황</h3>
+            <h3 className="font-bold mb-6 text-gray-700 font-bold uppercase tracking-widest text-[10px] text-gray-400 uppercase tracking-widest text-[10px] text-gray-400">공동 발주 현황</h3>
             <div className="space-y-4">
               {groupOrders.map(o => (
-                <div key={o.id} className="border border-gray-100 rounded-xl p-4 hover:border-emerald-200 transition-colors">
-                  <div className="flex justify-between mb-3"><h4 className="text-sm font-bold">{o.title}</h4><span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${o.status === '모집 중' ? 'text-emerald-600 border-emerald-100 bg-emerald-50' : 'text-red-500 border-red-100 bg-red-50'}`}>{o.status}</span></div>
-                  <div className="w-full bg-gray-100 h-1.5 rounded-full mb-2"><div className={`${o.color} h-full rounded-full`} style={{ width: `${o.progress}%` }}></div></div>
-                  <div className="flex justify-between items-center mb-4 text-[10px] text-gray-400"><span>참여 {o.current} / {o.min}개</span><span>{o.progress}% · {o.dDay}</span></div>
-                  <div className="flex justify-between items-center mb-4 text-[10px] text-gray-400"><span>참여 {o.current} / {o.min}개</span><span>{o.progress}% · {o.dDay}</span></div>
-                  <button className="w-full py-2 bg-emerald-50 text-emerald-600 rounded-lg text-xs font-bold hover:bg-emerald-500 hover:text-white transition-colors">{o.btn}</button>
+                <div key={o.id} className="border border-gray-100 rounded-2xl p-5 hover:border-emerald-200 hover:shadow-md transition-all">
+                  <div className="flex justify-between mb-4"><h4 className="text-sm font-bold text-gray-900 font-bold uppercase tracking-widest text-[10px] text-gray-400">{o.title}</h4><span className={`text-[10px] font-black px-2 py-0.5 rounded-full border ${o.status === '모집 중' ? 'text-emerald-600 border-emerald-100 bg-emerald-50' : 'text-red-500 border-red-100 bg-red-50'}`}>{o.status}</span></div>
+                  <div className="w-full bg-gray-50 h-1.5 rounded-full mb-3"><div className={`${o.color} h-full rounded-full`} style={{ width: `${o.progress}%` }}></div></div>
+                  <div className="flex justify-between items-center mb-6 text-[10px] text-gray-400 font-bold uppercase tracking-tight"><span>참여 {o.current} / {o.min}개</span><span>{o.progress}% · {o.dDay}</span></div>
+                  <button className="w-full py-2.5 bg-emerald-50 text-emerald-600 rounded-xl text-xs font-black hover:bg-emerald-500 hover:text-white transition-all shadow-sm shadow-emerald-100/50">{o.btn}</button>
                 </div>
               ))}
             </div>
           </div>
         </div>
       </main>
+      
+      {/* 공통 푸터 */}
+      <MainFooter />
     </div>
   );
 }

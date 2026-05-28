@@ -5,6 +5,7 @@
  */
 import React from 'react';
 import logo from '../../assets/soso로고.png';
+import MainFooter from '../../components/layout/MainFooter';
 
 function PartnerMain({ setRole }) {
   // 알림 데이터 (거래처 시점)
@@ -86,7 +87,7 @@ function PartnerMain({ setRole }) {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-800 font-sans pb-12">
+    <div className="min-h-screen bg-gray-50 text-gray-800 font-sans flex flex-col">
       {/* Header 영역 */}
       <header className="grid grid-cols-3 items-center py-5 px-6 md:px-12 border-b border-gray-200 bg-white sticky top-0 z-50">
         {/* Left: Logo (GuestMain과 위치/크기 통일) */}
@@ -120,7 +121,7 @@ function PartnerMain({ setRole }) {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-8 py-8 space-y-6">
+      <main className="flex-grow max-w-7xl mx-auto px-8 py-8 space-y-6 w-full">
         {/* 상단 요약 카드 */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {[
@@ -226,6 +227,9 @@ function PartnerMain({ setRole }) {
            </div>
         </div>
       </main>
+
+      {/* 공통 푸터 */}
+      <MainFooter />
     </div>
   );
 }
