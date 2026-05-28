@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useFindId } from './hooks/useFindId';
 
 /**
  * @file FindIdPage.jsx
@@ -9,35 +10,19 @@ import { useNavigate } from 'react-router-dom';
 const FindIdPage = () => {
   const navigate = useNavigate();
   
-  // 상태 관리
-  const [isVerifying, setIsVerifying] = useState(false); // 인증번호 입력 영역 노출 여부
-  const [verificationCode, setVerificationCode] = useState(''); // 입력한 인증번호
-  const [isFound, setIsFound] = useState(false); // 아이디 찾기 성공 여부
-  const [foundId, setFoundId] = useState(''); // 찾은 아이디 (더미)
-
-  /**
-   * @function handleFindIdClick
-   * @description 아이디 찾기 버튼 클릭 시 이메일 인증 영역을 표시합니다.
-   */
-  const handleFindIdClick = () => {
-    // 실제로는 이메일 발송 API 호출
-    setIsVerifying(true);
-  };
-
-  /**
-   * @function handleVerifyConfirm
-   * @description 인증번호 확인 버튼 클릭 시 유효성을 검사하고 결과를 표시합니다.
-   */
-  const handleVerifyConfirm = () => {
-    // 임시 인증번호 '123456'으로 체크 (가짜 데이터)
-    if (verificationCode === '123456') {
-      setFoundId('soso****'); // 더미 데이터 설정
-      setIsFound(true);
-      setIsVerifying(false); // 인증 입력창은 닫음
-    } else {
-      alert('인증번호가 일치하지 않습니다. (임시 번호: 123456)');
-    }
-  };
+  // 비즈니스 로직(상태 관리, 유효성 검사 등)은 커스텀 훅으로 100% 격리합니다.
+  const {
+    formData,
+    errors,
+    isVerifying,
+    verificationCode,
+    isFound,
+    foundId,
+    handleInputChange,
+    handleVerificationCodeChange,
+    handleFindIdClick,
+    handleVerifyConfirm,
+  } = useFindId();
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
@@ -74,11 +59,25 @@ const FindIdPage = () => {
               </label>
               <input
                 id="name"
+                name="name"
                 type="text"
+                value={formData.name}
+                onChange={handleInputChange}
                 disabled={isVerifying}
-                className={`block w-full px-5 py-3 rounded-2xl border border-gray-200 outline-none transition-all ${isVerifying ? 'bg-gray-100 text-gray-400' : 'bg-gray-50 focus:bg-white focus:ring-2 focus:ring-[#1D9E75] focus:border-transparent'}`}
+                className={`block w-full px-5 py-3 rounded-2xl border outline-none transition-all ${
+                  isVerifying 
+                    ? 'bg-gray-100 text-gray-400 border-gray-200' 
+                    : errors.name
+                      ? 'border-red-400 focus:ring-2 focus:ring-red-100 focus:border-red-400 bg-gray-50'
+                      : 'bg-gray-50 border-gray-200 focus:bg-white focus:ring-2 focus:ring-[#1D9E75] focus:border-transparent'
+                }`}
                 placeholder="이름을 입력하세요"
               />
+              {errors.name && (
+                <p className="mt-1.5 ml-1 text-[12px] font-semibold text-red-500 animate-in fade-in slide-in-from-top-1">
+                  {errors.name}
+                </p>
+              )}
             </div>
 
             {/* 이메일 입력 */}
@@ -88,11 +87,25 @@ const FindIdPage = () => {
               </label>
               <input
                 id="email"
+                name="email"
                 type="text"
+                value={formData.email}
+                onChange={handleInputChange}
                 disabled={isVerifying}
-                className={`block w-full px-5 py-3 rounded-2xl border border-gray-200 outline-none transition-all ${isVerifying ? 'bg-gray-100 text-gray-400' : 'bg-gray-50 focus:bg-white focus:ring-2 focus:ring-[#1D9E75] focus:border-transparent'}`}
+                className={`block w-full px-5 py-3 rounded-2xl border outline-none transition-all ${
+                  isVerifying 
+                    ? 'bg-gray-100 text-gray-400 border-gray-200' 
+                    : errors.email
+                      ? 'border-red-400 focus:ring-2 focus:ring-red-100 focus:border-red-400 bg-gray-50'
+                      : 'bg-gray-50 border-gray-200 focus:bg-white focus:ring-2 focus:ring-[#1D9E75] focus:border-transparent'
+                }`}
                 placeholder="이메일을 입력하세요"
               />
+              {errors.email && (
+                <p className="mt-1.5 ml-1 text-[12px] font-semibold text-red-500 animate-in fade-in slide-in-from-top-1">
+                  {errors.email}
+                </p>
+              )}
             </div>
 
             {/* 아이디 찾기 (인증번호 발송) 버튼 */}
@@ -120,8 +133,12 @@ const FindIdPage = () => {
                       id="verificationCode"
                       type="text"
                       value={verificationCode}
-                      onChange={(e) => setVerificationCode(e.target.value)}
-                      className="flex-1 px-5 py-3 rounded-2xl border border-gray-200 focus:ring-2 focus:ring-[#1D9E75] focus:border-transparent outline-none transition-all bg-white font-bold tracking-widest"
+                      onChange={handleVerificationCodeChange}
+                      className={`flex-1 px-5 py-3 rounded-2xl border outline-none transition-all font-bold tracking-widest ${
+                        errors.verificationCode
+                          ? 'border-red-400 focus:ring-2 focus:ring-red-100 focus:border-red-400 bg-white'
+                          : 'border-gray-200 focus:ring-2 focus:ring-[#1D9E75] focus:border-transparent bg-white'
+                      }`}
                       placeholder="6자리 번호"
                       maxLength={6}
                     />
@@ -132,9 +149,15 @@ const FindIdPage = () => {
                       확인
                     </button>
                   </div>
-                  <p className="mt-3 ml-1 text-[12px] text-gray-500 font-medium">
-                    임시 인증번호는 <span className="text-[#1D9E75] font-bold">123456</span> 입니다.
-                  </p>
+                  {errors.verificationCode ? (
+                    <p className="mt-2.5 ml-1 text-[12px] font-semibold text-red-500 animate-in fade-in slide-in-from-top-1">
+                      {errors.verificationCode}
+                    </p>
+                  ) : (
+                    <p className="mt-3 ml-1 text-[12px] text-gray-500 font-medium">
+                      임시 인증번호는 <span className="text-[#1D9E75] font-bold">123456</span> 입니다.
+                    </p>
+                  )}
                 </div>
               </div>
             )}
