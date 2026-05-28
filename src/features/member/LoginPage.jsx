@@ -23,7 +23,7 @@ const LoginPage = () => {
         
         {/* 상단 서비스 로고 및 타이틀 */}
         <div className="text-center">
-          <h1 className="text-3xl font-extrabold" style={{ color: '#085041' }}>
+          <h1 className="text-3xl font-extrabold" style={{ color: '#1D9E75' }}>
             SoSo
           </h1>
           <p className="mt-2 text-sm text-gray-600">
