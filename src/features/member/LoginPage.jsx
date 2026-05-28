@@ -3,23 +3,23 @@ import { useLogin } from './hooks/useLogin';
 
 /**
  * @file LoginPage.jsx
- * @description 처음 제안드린 깔끔한 UI 스타일을 유지하면서, 아이디 찾기 기능을 추가한 로그인 페이지입니다.
- * 지정된 그린 계열 색상(#1D9E75, #158A64, #0D6B50, #085041)을 사용합니다.
+ * @description 기존의 깔끔한 디자인을 유지하며, 아이디 기억하기 체크박스를 추가한 로그인 화면입니다.
  */
 const LoginPage = () => {
-  // 로직과 UI를 분리하기 위해 커스텀 훅에서 필요한 데이터를 가져옵니다.
   const { 
     loginType, 
     setLoginType, 
     formData, 
+    options,
     handleInputChange, 
+    handleOptionChange,
     handleLoginSubmit 
   } = useLogin();
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      {/* 로그인 박스 컨테이너 */}
-      <div className="max-w-md w-full space-y-8 bg-white p-10 rounded-2xl shadow-xl border border-gray-100">
+      {/* 로그인 박스 컨테이너: 너비를 기존 max-w-md(448px)에서 500px로 확장하여 가독성 확보 */}
+      <div className="max-w-[500px] w-full space-y-8 bg-white p-10 rounded-2xl shadow-xl border border-gray-100">
         
         {/* 상단 서비스 로고 및 타이틀 */}
         <div className="text-center">
@@ -31,7 +31,7 @@ const LoginPage = () => {
           </p>
         </div>
 
-        {/* 로그인 타입 선택 탭 (사업자/거래처 전환) */}
+        {/* 로그인 타입 선택 탭 */}
         <div className="flex bg-gray-100 p-1 rounded-xl">
           <button
             onClick={() => setLoginType('business')}
@@ -58,7 +58,6 @@ const LoginPage = () => {
         {/* 로그인 입력 폼 */}
         <form className="mt-8 space-y-6" onSubmit={handleLoginSubmit}>
           <div className="space-y-4">
-            {/* 아이디 입력 */}
             <div>
               <label htmlFor="userId" className="block text-sm font-medium text-gray-700 mb-1">
                 아이디
@@ -74,7 +73,6 @@ const LoginPage = () => {
                 placeholder="아이디를 입력하세요"
               />
             </div>
-            {/* 비밀번호 입력 */}
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
                 비밀번호
@@ -92,21 +90,41 @@ const LoginPage = () => {
             </div>
           </div>
 
-          {/* 로그인 상태 유지 및 계정 찾기 링크 */}
-          <div className="flex items-center justify-between text-sm">
-            <div className="flex items-center">
-              <input
-                id="remember-me"
-                name="remember-me"
-                type="checkbox"
-                className="h-4 w-4 text-[#1D9E75] border-gray-300 rounded focus:ring-[#1D9E75] cursor-pointer"
-              />
-              <label htmlFor="remember-me" className="ml-2 block text-gray-700 cursor-pointer">
-                로그인 상태 유지
-              </label>
+          {/* 옵션 설정 및 계정 찾기: whitespace-nowrap을 추가하여 줄바꿈 방지 */}
+          <div className="flex items-center justify-between text-sm whitespace-nowrap gap-4">
+            <div className="flex items-center gap-3">
+              {/* 로그인 상태 유지 */}
+              <div className="flex items-center">
+                <input
+                  id="rememberMe"
+                  name="rememberMe"
+                  type="checkbox"
+                  checked={options.rememberMe}
+                  onChange={handleOptionChange}
+                  className="h-4 w-4 text-[#1D9E75] border-gray-300 rounded focus:ring-[#1D9E75] cursor-pointer"
+                />
+                <label htmlFor="rememberMe" className="ml-1.5 block text-gray-700 cursor-pointer select-none text-[12px]">
+                  로그인 상태 유지
+                </label>
+              </div>
+              {/* 아이디 기억하기 */}
+              <div className="flex items-center">
+                <input
+                  id="rememberId"
+                  name="rememberId"
+                  type="checkbox"
+                  checked={options.rememberId}
+                  onChange={handleOptionChange}
+                  className="h-4 w-4 text-[#1D9E75] border-gray-300 rounded focus:ring-[#1D9E75] cursor-pointer"
+                />
+                <label htmlFor="rememberId" className="ml-1.5 block text-gray-700 cursor-pointer select-none text-[12px]">
+                  아이디 기억하기
+                </label>
+              </div>
             </div>
-            {/* 아이디 찾기 및 비밀번호 찾기 (요청하신 기능 추가) */}
-            <div className="flex gap-2 font-medium text-[#158A64]">
+            
+            {/* 계정 찾기 링크 */}
+            <div className="flex gap-2 font-medium text-[#158A64] text-[12px]">
               <span className="hover:text-[#0D6B50] cursor-pointer">아이디 찾기</span>
               <span className="text-gray-300 font-normal">|</span>
               <span className="hover:text-[#0D6B50] cursor-pointer">비밀번호 찾기</span>
@@ -127,7 +145,7 @@ const LoginPage = () => {
           </div>
         </form>
 
-        {/* 하단 회원가입 유도 링크 */}
+        {/* 하단 회원가입 유도 */}
         <div className="text-center text-sm">
           <span className="text-gray-600">아직 회원이 아니신가요?</span>{' '}
           <span className="font-bold text-[#0D6B50] hover:underline cursor-pointer">
