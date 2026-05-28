@@ -10,10 +10,10 @@ import logo from '../../assets/soso로고.png';
 function GuestMain({ setRole }) {
   // 활성화된 탭 상태 ('business' 또는 'partner')
   const [activeTab, setActiveTab] = useState('business');
-  
+
   // 현재 어떤 기능의 프리뷰(목업)를 보여줄지 관리하는 상태
   const [selectedFeature, setSelectedFeature] = useState(null);
-  
+
   // 프리뷰 영역 전체 노출 여부
   const [showPreview, setShowPreview] = useState(false);
 
@@ -64,9 +64,9 @@ function GuestMain({ setRole }) {
         {['소고기', '냉동 닭', '마늘'].map((name, i) => (
           <div key={name} className="flex justify-between items-center">
             <span className="text-sm font-bold w-16">{name}</span>
-            <span className="text-xs text-gray-500">{i === 2 ? 0 : 20 + i*28}개</span>
+            <span className="text-xs text-gray-500">{i === 2 ? 0 : 20 + i * 28}개</span>
             <div className="flex-grow mx-4 bg-gray-100 h-1.5 rounded-full overflow-hidden">
-               <div className={`h-full ${i === 1 ? 'bg-emerald-500' : 'bg-red-400'}`} style={{ width: i === 2 ? '0%' : (i === 1 ? '100%' : '20%') }}></div>
+              <div className={`h-full ${i === 1 ? 'bg-emerald-500' : 'bg-red-400'}`} style={{ width: i === 2 ? '0%' : (i === 1 ? '100%' : '20%') }}></div>
             </div>
             <span className={`text-[10px] font-bold ${i === 1 ? 'text-emerald-500' : 'text-red-500'}`}>{i === 1 ? '정상' : (i === 2 ? '소진' : '경고')}</span>
           </div>
@@ -82,7 +82,7 @@ function GuestMain({ setRole }) {
       <div className="h-48 flex items-end justify-between gap-2 px-4 border-b border-gray-100 mb-4">
         {[40, 70, 55, 90, 60, 85].map((h, i) => (
           <div key={i} className="flex gap-1 items-end h-full w-full max-w-[25px]">
-            <div className="bg-emerald-200 w-1/2 rounded-t-sm" style={{ height: `${h-15}%` }}></div>
+            <div className="bg-emerald-200 w-1/2 rounded-t-sm" style={{ height: `${h - 15}%` }}></div>
             <div className="bg-emerald-500 w-1/2 rounded-t-sm" style={{ height: `${h}%` }}></div>
           </div>
         ))}
@@ -117,12 +117,14 @@ function GuestMain({ setRole }) {
 
   return (
     <div className="min-h-screen bg-white text-gray-800 font-sans overflow-x-hidden">
-      
+
       {/* --- Header & Hero Section (Emerald Soft Background) --- */}
       <div className="bg-[#F2FBFA]">
         <header className="flex justify-between items-center py-5 px-6 md:px-12">
           <div className="flex items-center gap-2">
-            <img src={logo} alt="SoSo Logo" className="w-8 h-8 object-contain" />
+            <svg className="w-6 h-6 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+            </svg>
             <div className="text-2xl font-black text-emerald-600 tracking-tighter">SoSo</div>
           </div>
           <div className="flex gap-4 items-center">
@@ -141,12 +143,12 @@ function GuestMain({ setRole }) {
         <section className="flex flex-col items-center text-center pt-20 pb-32 px-4">
           <span className="px-5 py-2 text-xs font-bold text-emerald-700 bg-emerald-100/50 rounded-full mb-10 shadow-sm">✦ AI 기반 스마트 재고 관리 플랫폼</span>
           <h1 className="text-4xl md:text-6xl font-bold text-gray-900 tracking-tight mb-8 leading-[1.1]">
-            재고 관리,<br/>이제 더 <span className="text-emerald-600 relative inline-block underline underline-offset-8 decoration-emerald-100">스마트</span>하게
+            재고 관리,<br />이제 더 <span className="text-emerald-600 relative inline-block underline underline-offset-8 decoration-emerald-100">스마트</span>하게
           </h1>
           <p className="text-base md:text-lg text-gray-500 max-w-2xl mb-12 leading-relaxed">
-            실시간 재고 현황부터 입/출고 통계, 스마트 알림까지<br/>사업자와 거래처를 연결하는 올인원 재고 솔루션
+            실시간 재고 현황부터 입/출고 통계, 스마트 알림까지<br />사업자와 거래처를 연결하는 올인원 재고 솔루션
           </p>
-          <button 
+          <button
             onClick={() => setRole('business')}
             className="px-10 py-5 bg-white text-emerald-600 text-lg rounded-full font-black shadow-xl shadow-emerald-100 hover:scale-105 transition-transform border border-emerald-50"
           >
@@ -156,19 +158,18 @@ function GuestMain({ setRole }) {
       </div>
 
       {/* --- Main Contents Area --- */}
-      <main className="max-w-6xl mx-auto px-4 py-20">
-        
+      <main className="max-w-[90rem] mx-auto px-4 pt-14 pb-0">
+
         {/* Tab Selection */}
-        <div className="flex justify-center gap-5 mb-16">
+        <div className="flex justify-center gap-10 mb-16">
           {['business', 'partner'].map(type => (
-            <button 
-              key={type} 
+            <button
+              key={type}
               onClick={() => { setActiveTab(type); setShowPreview(false); }}
-              className={`px-10 py-4 rounded-full text-lg font-black transition-all border-2 ${
-                activeTab === type 
-                ? 'border-emerald-500 text-emerald-600 bg-emerald-50' 
-                : 'border-gray-100 text-gray-300 hover:text-gray-500'
-              }`}
+              className={`px-10 py-4 rounded-full text-lg font-black transition-all border-2 ${activeTab === type
+                  ? 'border-emerald-500 text-emerald-600 bg-emerald-50'
+                  : 'border-gray-100 text-gray-300 hover:text-gray-500'
+                }`}
             >
               {type === 'business' ? '사업자' : '거래처'}
             </button>
@@ -180,14 +181,13 @@ function GuestMain({ setRole }) {
           <h2 className="text-xs font-black text-emerald-600 mb-8 uppercase tracking-[0.2em] px-2 text-center">Main Features</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {currentFeatures.map((f) => (
-              <div 
-                key={f.id} 
+              <div
+                key={f.id}
                 onClick={() => handleFeatureClick(f.id)}
-                className={`bg-white border-2 rounded-[2.5rem] p-10 shadow-sm transition-all cursor-pointer flex flex-col items-center text-center group ${
-                  selectedFeature === f.id && showPreview 
-                  ? 'border-emerald-500 shadow-emerald-100 shadow-2xl' 
-                  : 'border-gray-50 hover:border-emerald-100 hover:shadow-lg'
-                }`}
+                className={`bg-white border-2 rounded-[2.5rem] p-10 shadow-sm transition-all cursor-pointer flex flex-col items-center text-center group ${selectedFeature === f.id && showPreview
+                    ? 'border-emerald-500 shadow-emerald-100 shadow-2xl'
+                    : 'border-gray-50 hover:border-emerald-100 hover:shadow-lg'
+                  }`}
               >
                 <div className="text-5xl mb-8 group-hover:scale-110 transition-transform">{f.icon}</div>
                 <h3 className="text-xl font-bold text-gray-900 mb-4">{f.title}</h3>
@@ -203,45 +203,48 @@ function GuestMain({ setRole }) {
         {/* --- Dynamic Preview Section (Toggled by Card Clicks) --- */}
         {showPreview && (
           <section className="mb-32 animate-fade-in-up flex flex-col items-center">
-             <div className="w-full max-w-2xl bg-white rounded-[2.5rem] border-4 border-emerald-50 shadow-[0_20px_50px_rgba(16,185,129,0.1)] overflow-hidden">
-                {selectedFeature === 'stock' && <StockMockup />}
-                {selectedFeature === 'stats' && <StatsMockup />}
-                {selectedFeature === 'alarm' && <AlarmMockup />}
-                {selectedFeature === 'notice' || selectedFeature === 'group' ? (
-                   <div className="p-10 text-center">
-                      <h3 className="font-bold text-gray-800 mb-6 text-left">공고/공구 관리</h3>
-                      <div className="bg-emerald-50 rounded-2xl p-6 text-emerald-700 text-sm font-bold border border-emerald-100">
-                        준비 중인 목업 화면입니다. <br/>실제 서비스에서 만나보실 수 있습니다.
-                      </div>
-                   </div>
-                ) : null}
-                {selectedFeature === 'promo' && <div className="p-20 text-center text-gray-300 font-bold">업체 홍보 페이지 목업 준비 중...</div>}
-             </div>
-             <p className="mt-8 text-emerald-600/40 text-xs font-bold animate-pulse">CLiCK CARD TO CLOSE PREViEW</p>
+            <div className="w-full max-w-2xl bg-white rounded-[2.5rem] border-4 border-emerald-50 shadow-[0_20px_50px_rgba(16,185,129,0.1)] overflow-hidden">
+              {selectedFeature === 'stock' && <StockMockup />}
+              {selectedFeature === 'stats' && <StatsMockup />}
+              {selectedFeature === 'alarm' && <AlarmMockup />}
+              {selectedFeature === 'notice' || selectedFeature === 'group' ? (
+                <div className="p-10 text-center">
+                  <h3 className="font-bold text-gray-800 mb-6 text-left">공고/공구 관리</h3>
+                  <div className="bg-emerald-50 rounded-2xl p-6 text-emerald-700 text-sm font-bold border border-emerald-100">
+                    준비 중인 목업 화면입니다. <br />실제 서비스에서 만나보실 수 있습니다.
+                  </div>
+                </div>
+              ) : null}
+              {selectedFeature === 'promo' && <div className="p-20 text-center text-gray-300 font-bold">업체 홍보 페이지 목업 준비 중...</div>}
+            </div>
+            <p className="mt-8 text-emerald-600/40 text-xs font-bold animate-pulse">CLiCK CARD TO CLOSE PREViEW</p>
           </section>
         )}
 
       </main>
 
       {/* --- Stats Banner (Emerald Soft Background) --- */}
-      <div className="bg-[#F2FBFA] py-24">
+      <div className="bg-[#F2FBFA] py-14">
         <div className="max-w-5xl mx-auto px-6">
           <h2 className="text-3xl font-black text-center text-gray-900 mb-16">스마트재고의 위엄</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-             {[
-               { v: '[3,842명]의', d: '소상공인과 거래처가 함께\n쓰고 있습니다.' },
-               { v: '[22%] 감소', d: '식자재 폐기율 평균\n시뮬레이션 결과' },
-               { v: '18% 절감', d: '공동구매 발주 비용\n평균' }
-             ].map((stat, i) => (
-               <div key={i} className="bg-white p-12 rounded-[3rem] text-center shadow-sm hover:shadow-xl transition-all border border-emerald-50">
-                 <div className="text-4xl lg:text-5xl font-black text-emerald-600 mb-6">{stat.v}</div>
-                 <p className="text-gray-500 text-sm font-bold leading-relaxed whitespace-pre-line">{stat.d}</p>
-               </div>
-             ))}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              { v: '[3,842명]의', d: '소상공인과 거래처가 함께\n쓰고 있습니다.' },
+              { v: '[22%] 감소', d: '식자재 폐기율 평균\n시뮬레이션 결과' },
+              { v: '18% 절감', d: '공동구매 발주 비용\n평균' }
+            ].map((stat, i) => (
+              // 🛠️ 패딩을 좌우만 px-6으로 줄여서 내부 공간 확보
+              <div key={i} className="bg-white py-12 px-6 rounded-[2rem] text-center shadow-sm hover:shadow-xl transition-all border border-emerald-50">
+                {/* 🛠️ text-3xl~4xl 정도로 크기 최적화 및 줄바꿈 방지(whitespace-nowrap) */}
+                <div className="text-3xl xl:text-4xl font-black text-emerald-600 mb-6 whitespace-nowrap">{stat.v}</div>
+                {/* 🛠️ break-keep을 추가해 단어 단위로 예쁘게 떨어지도록 설정 */}
+                <p className="text-gray-500 text-sm font-bold leading-relaxed whitespace-pre-line break-keep">{stat.d}</p>
+              </div>
+            ))}
           </div>
         </div>
       </div>
-      
+
       {/* Footer Area */}
       <footer className="bg-white py-12 border-t border-gray-50">
         <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
