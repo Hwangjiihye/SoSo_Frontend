@@ -51,7 +51,7 @@ const FindPasswordPage = () => {
           <h2 className="mt-4 text-[24px] font-extrabold text-gray-900">
             {isResetStep ? '비밀번호 재설정' : '비밀번호 찾기'}
           </h2>
-          <p className="mt-2 text-[15px] text-gray-500 font-medium text-center">
+          <p className="mt-2 text-[15px] text-gray-500 font-medium text-center whitespace-pre-line">
             {isResetStep 
               ? '새롭게 사용할 비밀번호를 입력해주세요.' 
               : '가입하신 아이디와 이메일을 입력하시면 \n 비밀번호를 재설정할 수 있습니다.'}
@@ -60,7 +60,7 @@ const FindPasswordPage = () => {
 
         {!isResetStep ? (
           /* 1단계 & 2단계: 정보 입력 및 이메일 인증 */
-          <div className="space-y-6 pt-2">
+          <div className="space-y-6 pt-0">
             {/* 아이디 입력 */}
             <div>
               <label htmlFor="userId" className="block text-sm font-bold text-gray-700 mb-2 ml-1">
@@ -121,7 +121,7 @@ const FindPasswordPage = () => {
             <div className="pt-2">
               <button
                 onClick={handleSendCodeClick}
-                className="w-full flex justify-center py-4 px-4 border border-transparent text-lg font-black rounded-2xl text-white shadow-lg transition-all transform active:scale-[0.98]"
+                className="w-full flex justify-center py-2 px-4 border border-transparent text-ml font-black rounded-2xl text-white shadow-lg transition-all transform active:scale-[0.98]"
                 style={{ backgroundColor: '#1D9E75' }}
                 onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#158A64')}
                 onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#1D9E75')}
@@ -182,7 +182,7 @@ const FindPasswordPage = () => {
           </div>
         ) : (
           /* 3단계: 비밀번호 재설정 단계 (비밀번호 찾기2.jpg 참고) */
-          <div className="space-y-6 pt-2 animate-in fade-in slide-in-from-right-4 duration-500">
+          <div className="space-y-6 pt-0 animate-in fade-in slide-in-from-right-4 duration-500">
             {/* 새 비밀번호 입력 */}
             <div>
               <label htmlFor="newPassword" className="block text-sm font-bold text-gray-700 mb-2 ml-1">
@@ -234,10 +234,10 @@ const FindPasswordPage = () => {
             </div>
 
             {/* 비밀번호 저장 버튼 */}
-            <div className="pt-4">
+            <div className="pt-2">
               <button
                 onClick={onResetSubmit}
-                className="w-full flex justify-center py-4 px-4 border border-transparent text-lg font-black rounded-2xl text-white shadow-lg transition-all transform active:scale-[0.98]"
+                className="w-full flex justify-center py-2 px-4 border border-transparent text-ml font-black rounded-2xl text-white shadow-lg transition-all transform active:scale-[0.98]"
                 style={{ backgroundColor: '#1D9E75' }}
                 onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#158A64')}
                 onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#1D9E75')}

@@ -162,11 +162,11 @@ const LoginPage = () => {
           </div>
 
           {/* 로그인 버튼: 크기와 높이를 키워 사용자 액션을 강력하게 유도합니다. */}
-          <div className="pt-1">
+          <div className="pt-0">
             <button
               onClick={handleLoginSubmit}
-              className="w-full flex justify-center py-3.5 px-4 border border-transparent text-lg font-black rounded-2xl text-white shadow-lg transition-all transform active:scale-[0.98]"
-              style={{ backgroundColor: '#1D9E75', padding: '12px' }}
+              className="w-full flex justify-center py-2 px-4 border border-transparent text-ml font-black rounded-2xl text-white shadow-lg transition-all transform active:scale-[0.98]"
+              style={{ backgroundColor: '#1D9E75', padding: '10px' }}
               onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#158A64')}
               onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#1D9E75')}
             >
@@ -180,7 +180,7 @@ const LoginPage = () => {
           <p className="text-[15px] text-gray-500 font-medium">
             아직 SoSo 회원이 아니신가요?{' '}
             <button className="font-extrabold text-[#0D6B50] hover:underline transition-all underline-offset-4 ml-1.5">
-              회원가입 하기
+              회원가입 
             </button>
           </p>
         </div>
