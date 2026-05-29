@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { checkIdApi, checkNicknameApi, checkEmailApi, signUpApi,checkBusinessApi } from '../../../apis/memberApi';
-
+import { useNavigate } from 'react-router-dom';
 
 /**
  * @file useSignUp.js
@@ -52,6 +52,8 @@ export const useSignUp = () => {
     privacy: false,
     marketing: false
   });
+
+  const navi = useNavigate();
 
   /**
    * 필드 유효성 검사
@@ -225,7 +227,7 @@ export const useSignUp = () => {
       const result = await signUpApi(formData, images.exterior, images.interior);
       if (result.status === 'success') {
         alert(result.message);
-        // TODO: 로그인 페이지 이동 등 후속 처리
+        navi("/")
       } else {
         alert(result.message || '회원가입 처리 중 오류가 발생했습니다.');
       }
