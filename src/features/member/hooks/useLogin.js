@@ -93,14 +93,14 @@ export const useLogin = () => {
     console.log(`${loginType === 'business' ? '사업자' : '거래처'} 로그인 시도:`, { ...formData, ...options });
     // 실제 로그인 처리 로직(API 호출 등)이 이곳에 추가될 예정입니다.
     // 🚀 1. 백엔드로 진짜 로그인 데이터를 보냅니다 (POST 방식)
-  axios.post("http://localhost:80/auth/login", {
-    id: formData.user_id, // 백엔드 DTO에 맞춘 key
-    pw: formData.password // 백엔드 DTO에 맞춘 key
-  })
-  .then(resp => {
-    // 백엔드 AuthController가 result.put("token", token)으로 준 데이터를 확인
-    console.log("서버가 돌려준 응답 데이터:", resp.data);
-    
+    axios.post("http://localhost:80/auth/login", {
+      id: formData.user_id, // 백엔드 DTO에 맞춘 key
+      pw: formData.password // 백엔드 DTO에 맞춘 key
+    })
+    .then(resp => {
+      // 백엔드 AuthController가 result.put("token", token)으로 준 데이터를 확인
+      console.log("서버가 돌려준 응답 데이터:", resp.data);
+      
     const token = resp.data.token;
     
     if (token) {
@@ -110,8 +110,19 @@ export const useLogin = () => {
 
       // 3. [핵심] 성공했으니 '이 시점'에서 메인 화면으로 이동시킵니다!
       alert("로그인에 성공했습니다!");
-      navigate("/"); 
-    } else {
+
+      sessionStorage.setItem("user_type", user_type);
+      
+    } if(user_type === business) {
+      navigate("/BusinessMain")
+    } 
+    else if(user_type === parther) {
+      navigate("/PartnerMain")
+    } 
+    else if(user_type === admin) {
+      navigate("/AdminMain")
+    }
+    else {
       alert("로그인은 성공했으나 토큰이 넘어오지 않았습니다.");
     }
   })
