@@ -41,6 +41,20 @@ export const checkEmailApi = async (email) => {
   return response.data;
 };
 
+
+export const checkBusinessApi = async (bNo, startDt, pNm, bNm) => {
+  // 백엔드 컨트롤러가 @RequestParam으로 받으므로 params 객체로 전달
+  const response = await axiosInstance.get('/api/biz/check', {
+    params: {
+      bNo,
+      startDt,
+      pNm,
+      bNm,
+    },
+  });
+  return response.data;
+};
+
 /**
  * 회원가입 (Multipart/form-data)
  * @param {Object} signUpData - 회원 정보 DTO

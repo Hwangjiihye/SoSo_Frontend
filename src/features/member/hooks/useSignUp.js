@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { checkIdApi, checkNicknameApi, checkEmailApi, signUpApi } from '../../../apis/memberApi';
+import { checkIdApi, checkNicknameApi, checkEmailApi, signUpApi,checkBusinessApi } from '../../../apis/memberApi';
+
 
 /**
  * @file useSignUp.js
@@ -136,16 +137,30 @@ export const useSignUp = () => {
   };
 
   /**
-   * 사업자 진위 확인 (Mock)
+   * 사업자 진위 확인 API 호출
    */
   const verifyBusiness = async () => {
-    if (!formData.bizNo || !formData.repName || !formData.openDate || !formData.corpName) {
+    const { bizNo, openDate, repName, corpName } = formData;
+    
+    if (!bizNo || !openDate || !repName || !corpName) {
       alert('사업자 정보를 모두 입력해 주세요.');
       return;
     }
-    await new Promise(r => setTimeout(r, 800));
-    setApiStatus(prev => ({ ...prev, bizVerified: true }));
-    alert('사업자 정보가 확인되었습니다.');
+
+    try {
+      // YYYY-MM-DD -> YYYYMMDD 형식으로 변환 (백엔드 요구사항에 맞춤)
+      const formattedDate = openDate.replace(/-/g, '');
+      
+      const message = await checkBusinessApi(bizNo, formattedDate, repName, corpName);
+      
+      setApiStatus(prev => ({ ...prev, bizVerified: true }));
+      alert(message || '사업자 인증이 완료되었습니다.');
+    } catch (error) {
+      console.error('사업자 인증 오류:', error);
+      setApiStatus(prev => ({ ...prev, bizVerified: false }));
+      const errorMsg = error.response?.data || '사업자 정보가 일치하지 않거나 오류가 발생했습니다.';
+      alert(errorMsg);
+    }
   };
 
   /**
