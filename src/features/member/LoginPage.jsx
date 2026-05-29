@@ -75,25 +75,25 @@ const LoginPage = () => {
           <div className="space-y-5">
             {/* 아이디 입력란 */}
             <div>
-              <label htmlFor="userId" className="block text-sm font-bold text-gray-700 mb-2 ml-1">
+              <label htmlFor="id" className="block text-sm font-bold text-gray-700 mb-2 ml-1">
                 아이디
               </label>
               <input
-                id="userId"
-                name="userId"
+                id="id"
+                name="user_id"
                 type="text"
-                value={formData.userId}
+                value={formData.user_id}
                 onChange={handleInputChange}
                 className={`block w-full px-5 py-3 rounded-2xl border transition-all outline-none bg-gray-50 focus:bg-white ${
-                  errors.userId 
+                  errors.id 
                     ? 'border-red-400 focus:ring-2 focus:ring-red-100 focus:border-red-400' 
                     : 'border-gray-200 focus:ring-2 focus:ring-[#1D9E75] focus:border-transparent'
                 }`}
                 placeholder="아이디를 입력하세요"
               />
-              {errors.userId && (
+              {errors.user_id && (
                 <p className="mt-1.5 ml-1 text-[12px] font-semibold text-red-500 animate-in fade-in slide-in-from-top-1">
-                  {errors.userId}
+                  {errors.user_id}
                 </p>
               )}
             </div>
