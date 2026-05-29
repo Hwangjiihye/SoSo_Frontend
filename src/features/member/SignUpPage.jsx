@@ -211,7 +211,14 @@ const SignUpPage = () => {
           <button
             type="button"
             onClick={handleSubmit}
-            disabled={!terms.service || !terms.privacy || !apiStatus.bizVerified || !apiStatus.idChecked || !apiStatus.emailChecked}
+            disabled={
+              !terms.service || 
+              !terms.privacy || 
+              !apiStatus.bizVerified || 
+              !apiStatus.userIdChecked || 
+              !apiStatus.nicknameChecked || 
+              !apiStatus.emailChecked
+            }
             className="w-full py-4 bg-[#1D9E75] text-white rounded-xl text-lg font-bold hover:opacity-90 transition-all disabled:bg-gray-300 disabled:cursor-not-allowed shadow-lg"
           >
             {formData.userType === 'BUSINESS' ? '사업자 회원가입 요청' : '거래처 회원가입 요청'}

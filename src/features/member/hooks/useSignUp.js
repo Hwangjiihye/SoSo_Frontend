@@ -39,7 +39,7 @@ export const useSignUp = () => {
 
   const [errors, setErrors] = useState({});
   const [apiStatus, setApiStatus] = useState({
-    idChecked: false,
+    userIdChecked: false,
     nicknameChecked: false,
     emailChecked: false,
     bizVerified: false
@@ -209,7 +209,7 @@ export const useSignUp = () => {
     e?.preventDefault();
     
     // 최종 검증
-    if (!apiStatus.idChecked || !apiStatus.nicknameChecked || !apiStatus.emailChecked) {
+    if (!apiStatus.userIdChecked || !apiStatus.nicknameChecked || !apiStatus.emailChecked) {
       return alert('아이디, 닉네임, 이메일 중복 확인을 모두 완료해주세요.');
     }
 
