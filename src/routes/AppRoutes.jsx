@@ -9,7 +9,7 @@ import React from 'react';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import MainPage from '../features/main/MainPage';
 import BusinessMyPage from '../features/member/mypage/BusinessMyPage';
-import LoginPage from '../features/member/mypage/LoginPage';
+import LoginPage from '../features/member/LoginPage';
 
 // 라우터 객체 생성
 // 배열 안의 각 객체는 특정 URL 경로(path)와 해당 경로에서 보여줄 컴포넌트(element)를 매핑합니다.
