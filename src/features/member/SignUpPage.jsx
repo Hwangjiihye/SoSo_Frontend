@@ -22,7 +22,7 @@ const SignUpPage = () => {
           <p className="text-gray-500 mt-2">서비스 이용을 위해 정보를 입력해주세요.</p>
         </header>
 
-        <form className="space-y-6" onSubmit={handleSubmit}>
+        <div className="space-y-6">
           {/* 회원 유형 선택 */}
           <div className="grid grid-cols-2 gap-4">
             <button
@@ -209,13 +209,14 @@ const SignUpPage = () => {
           </section>
 
           <button
-            type="submit"
+            type="button"
+            onClick={handleSubmit}
             disabled={!terms.service || !terms.privacy || !apiStatus.bizVerified || !apiStatus.idChecked || !apiStatus.emailChecked}
             className="w-full py-4 bg-[#1D9E75] text-white rounded-xl text-lg font-bold hover:opacity-90 transition-all disabled:bg-gray-300 disabled:cursor-not-allowed shadow-lg"
           >
             {formData.userType === 'BUSINESS' ? '사업자 회원가입 요청' : '거래처 회원가입 요청'}
           </button>
-        </form>
+        </div>
       </div>
     </div>
   );

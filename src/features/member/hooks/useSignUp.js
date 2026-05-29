@@ -205,7 +205,8 @@ export const useSignUp = () => {
    * 회원가입 제출 핸들러
    */
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    // form 태그 제거로 인해 e가 undefined일 수 있으므로 옵셔널 체이닝 사용
+    e?.preventDefault();
     
     // 최종 검증
     if (!apiStatus.idChecked || !apiStatus.nicknameChecked || !apiStatus.emailChecked) {
