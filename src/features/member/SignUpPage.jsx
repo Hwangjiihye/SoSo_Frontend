@@ -163,7 +163,7 @@ const SignUpPage = () => {
               <input name="detailAddress" value={formData.detailAddress} onChange={handleChange} className={inputStyle} placeholder="상세주소 입력" />
             </div>
 
-            <div className="grid grid-cols-2 gap-4 mt-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
               <div className="space-y-1">
                 <span className="text-xs font-bold text-gray-500">
                   {formData.userType === 'BUSINESS' ? '가게 외부 사진' : '영업소 전경 사진'}

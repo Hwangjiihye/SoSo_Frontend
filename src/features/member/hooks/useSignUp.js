@@ -1,19 +1,23 @@
 import { useState } from 'react';
+import { checkIdApi, checkNicknameApi, checkEmailApi, signUpApi } from '../../../apis/memberApi';
 
-// 정규식 정의
+/**
+ * @file useSignUp.js
+ * @description 회원가입 비즈니스 로직 및 API 통신 제어 커스텀 훅 (Strict Logic Isolation)
+ */
+
 const REGEX = {
   ID: /^[a-zA-Z0-9]{6,20}$/,
   PASSWORD: /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[!@#$%^&*()_+])[A-Za-z\d!@#$%^&*()_+]{8,}$/,
   PHONE: /^010-\d{4}-\d{4}$/,
   SSN_FRONT: /^\d{6}$/,
-  SSN_BACK: /^[1-4]\d{6}$/, // 뒷자리 첫 번쨰는 1~4
+  SSN_BACK: /^[1-4]\d{6}$/,
   EMAIL: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
 };
 
-
 export const useSignUp = () => {
   const [formData, setFormData] = useState({
-    userType: 'BUSINESS', // 기본값 사업자
+    userType: 'BUSINESS',
     userId: '',
     password: '',
     confirmPassword: '',
@@ -36,7 +40,7 @@ export const useSignUp = () => {
   const [apiStatus, setApiStatus] = useState({
     idChecked: false,
     nicknameChecked: false,
-    emailChecked: false, // 이메일 중복확인 추가
+    emailChecked: false,
     bizVerified: false
   });
 
@@ -48,6 +52,9 @@ export const useSignUp = () => {
     marketing: false
   });
 
+  /**
+   * 필드 유효성 검사
+   */
   const validateField = (name, value, currentFormData = formData) => {
     let error = '';
     switch (name) {
@@ -78,10 +85,13 @@ export const useSignUp = () => {
     setErrors(prev => ({ ...prev, [name]: error }));
   };
 
+  /**
+   * 입력값 변경 핸들러
+   */
   const handleChange = (e) => {
     const { name, value } = e.target;
     
-    // 주민번호 숫자만 입력 제한
+    // 숫자 제한 로직 (주민번호)
     if ((name === 'ssnFront' || name === 'ssnBack') && !/^\d*$/.test(value)) return;
     if (name === 'ssnFront' && value.length > 6) return;
     if (name === 'ssnBack' && value.length > 7) return;
@@ -89,26 +99,45 @@ export const useSignUp = () => {
     const nextFormData = { ...formData, [name]: value };
     setFormData(nextFormData);
 
-    // 이메일 제안 로직
-    if (name === 'email') {
-      
-      setApiStatus(prev => ({ ...prev, emailChecked: false })); // 이메일 수정 시 중복확인 초기화
+    // 중복 확인 상태 초기화 (입력값 변경 시 재인증 필요)
+    if (['userId', 'nickname', 'email'].includes(name)) {
+      setApiStatus(prev => ({ ...prev, [`${name}Checked`]: false }));
     }
 
     validateField(name, value, nextFormData);
   };
 
+  /**
+   * 중복 확인 API 호출
+   */
   const checkDuplicate = async (field) => {
     if (errors[field] || !formData[field]) {
       alert('올바른 값을 입력한 후 중복확인을 해주세요.');
       return;
     }
-    console.log(`${field} 중복 확인 요청`);
-    await new Promise(r => setTimeout(r, 500));
-    setApiStatus(prev => ({ ...prev, [`${field}Checked`]: true }));
-    alert(`${field === 'email' ? '이메일' : field} 사용 가능합니다.`);
+
+    try {
+      let response;
+      if (field === 'userId') response = await checkIdApi(formData.userId);
+      else if (field === 'nickname') response = await checkNicknameApi(formData.nickname);
+      else if (field === 'email') response = await checkEmailApi(formData.email);
+
+      if (response && !response.isDuplicated) {
+        setApiStatus(prev => ({ ...prev, [`${field}Checked`]: true }));
+        alert(response.message);
+      } else {
+        setApiStatus(prev => ({ ...prev, [`${field}Checked`]: false }));
+        alert(response?.message || '이미 사용 중입니다.');
+      }
+    } catch (error) {
+      console.error(`${field} 중복 확인 오류:`, error);
+      alert('중복 확인 중 오류가 발생했습니다.');
+    }
   };
 
+  /**
+   * 사업자 진위 확인 (Mock)
+   */
   const verifyBusiness = async () => {
     if (!formData.bizNo || !formData.repName || !formData.openDate || !formData.corpName) {
       alert('사업자 정보를 모두 입력해 주세요.');
@@ -119,6 +148,9 @@ export const useSignUp = () => {
     alert('사업자 정보가 확인되었습니다.');
   };
 
+  /**
+   * 주소 검색 (Daum Postcode)
+   */
   const searchAddress = () => {
     new window.daum.Postcode({
       oncomplete: (data) => {
@@ -127,6 +159,9 @@ export const useSignUp = () => {
     }).open();
   };
 
+  /**
+   * 파일 변경 핸들러
+   */
   const handleFileChange = (e, type) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -135,6 +170,9 @@ export const useSignUp = () => {
     setImages(prev => ({ ...prev, [type]: file }));
   };
 
+  /**
+   * 약관 동의 변경 핸들러
+   */
   const handleTermsChange = (name) => {
     if (name === 'all') {
       const nextVal = !terms.all;
@@ -148,13 +186,39 @@ export const useSignUp = () => {
     }
   };
 
-  const handleSubmit = (e) => {
+  /**
+   * 회원가입 제출 핸들러
+   */
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('회원가입 데이터 전송:', { ...formData, images, terms });
-    alert(`${formData.userType === 'BUSINESS' ? '사업자' : '거래처'} 회원가입 요청이 완료되었습니다.`);
+    
+    // 최종 검증
+    if (!apiStatus.idChecked || !apiStatus.nicknameChecked || !apiStatus.emailChecked) {
+      return alert('아이디, 닉네임, 이메일 중복 확인을 모두 완료해주세요.');
+    }
+
+    if (!apiStatus.bizVerified) {
+      return alert('사업자 인증을 완료해주세요.');
+    }
+
+    if (!terms.service || !terms.privacy) {
+      return alert('필수 약관에 동의해주세요.');
+    }
+
+    try {
+      const result = await signUpApi(formData, images.exterior, images.interior);
+      if (result.status === 'success') {
+        alert(result.message);
+        // TODO: 로그인 페이지 이동 등 후속 처리
+      } else {
+        alert(result.message || '회원가입 처리 중 오류가 발생했습니다.');
+      }
+    } catch (error) {
+      console.error('회원가입 오류:', error);
+      const errorMsg = error.response?.data?.message || '회원가입 요청 중 오류가 발생했습니다.';
+      alert(errorMsg);
+    }
   };
-
-
 
   return {
     formData, errors, apiStatus, images, terms,
