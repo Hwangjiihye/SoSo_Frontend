@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useLogin } from './hooks/useLogin';
 
 /**
@@ -30,15 +30,19 @@ const LoginPage = () => {
         <div className="text-center flex flex-col items-center">
           <div className="flex items-center justify-center gap-0">
             {/* 로고 이미지: 시각적 균형을 위해 수직 위치를 정밀 조정했습니다. */}
+            <Link to="/">
             <img 
               src="/images/logo.png" 
               alt="SoSo Logo" 
               className="w-13 h-13 object-contain transform translate-y-[4px]"
             />
+            </Link>
             {/* 타이틀: 브랜드의 정체성을 나타내는 굵고 선명한 폰트 적용 */}
-            <h1 className="text-[40px] font-black leading-none tracking-tight" style={{ color: '#1D9E75' }}>
-              SoSo
-            </h1>
+            <Link to="/">
+              <h1 className="text-[40px] font-black leading-none tracking-tight" style={{ color: '#1D9E75' }}>
+                SoSo
+              </h1>
+            </Link>
           </div>
           {/* 하단 안내 문구: 넉넉한 상단 여백(mt-5)으로 가독성 확보 */}
           <p className="mt-5 text-[16px] text-gray-500 font-medium">

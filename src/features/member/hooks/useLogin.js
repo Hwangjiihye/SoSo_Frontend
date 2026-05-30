@@ -102,34 +102,37 @@ export const useLogin = () => {
       console.log("서버가 돌려준 응답 데이터:", resp.data);
       
     const token = resp.data.token;
-    
-    if (token) {
-      // 2. 백엔드가 준 진짜 토큰을 세션에 저장합니다.
+    const user_type = resp.data.user_type;
+
+    console.log("token:", token);
+    console.log("user_type:", user_type);
+
+    if(!token)
+      {
+      alert("로그인은 성공했으나 토큰이 넘어오지 않았습니다.");
+      return;
+    }
       sessionStorage.setItem("token", token);
+      sessionStorage.setItem("user_type", user_type);
       console.log("토큰 저장 완료!");
 
       // 3. [핵심] 성공했으니 '이 시점'에서 메인 화면으로 이동시킵니다!
       alert("로그인에 성공했습니다!");
-
-      sessionStorage.setItem("user_type", user_type);
       
-    } if(user_type === business) {
+     if(user_type === "BUSINESS") {
       navigate("/BusinessMain")
     } 
-    else if(user_type === parther) {
+    else if(user_type === "PARTNER") {
       navigate("/PartnerMain")
     } 
-    else if(user_type === admin) {
+    else if(user_type === "ADMIN") {
       navigate("/AdminMain")
     }
     else {
-      alert("로그인은 성공했으나 토큰이 넘어오지 않았습니다.");
-    }
+    console.log("알 수 없는 user_type:", user_type);
+    alert("회원 유형을 확인할 수 없습니다.");
+  }
   })
-  .catch(err => {
-    console.error("로그인 실패 에러 상세:", err.response?.data || err.message);
-    alert("아이디 또는 비밀번호가 일치하지 않습니다.");
-  });
   };
 
   return {
