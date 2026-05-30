@@ -19,6 +19,11 @@ const memberRoutes = [
     path: '/find-password', // 비밀번호 찾기 페이지 경로
     element: <FindPasswordPage />,
   },
+  {
+    path: 'signup',
+    element: <SignUpPage />,
+  }
 ];
 
 export default memberRoutes;
+
