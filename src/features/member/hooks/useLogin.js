@@ -17,7 +17,7 @@ export const useLogin = () => {
   // 입력 필드 데이터 상태
   const [formData, setFormData] = useState({
     user_id: '',
-    password: '',
+    password: ''
   });
 
   // 에러 메시지 상태
@@ -91,11 +91,14 @@ export const useLogin = () => {
     }
 
     console.log(`${loginType === 'business' ? '사업자' : '거래처'} 로그인 시도:`, { ...formData, ...options });
-    // 실제 로그인 처리 로직(API 호출 등)이 이곳에 추가될 예정입니다.
+    
     // 🚀 1. 백엔드로 진짜 로그인 데이터를 보냅니다 (POST 방식)
+    const requestUserType = loginType === 'business' ? 'BUSINESS' : 'PARTNER';
+
     axios.post("http://localhost:80/auth/login", {
       id: formData.user_id, // 백엔드 DTO에 맞춘 key
-      pw: formData.password // 백엔드 DTO에 맞춘 key
+      pw: formData.password, // 백엔드 DTO에 맞춘 key
+      user_type: requestUserType
     })
     .then(resp => {
       // 백엔드 AuthController가 result.put("token", token)으로 준 데이터를 확인
@@ -128,10 +131,15 @@ export const useLogin = () => {
     else if(user_type === "ADMIN") {
       navigate("/AdminMain")
     }
-    else {
-    console.log("알 수 없는 user_type:", user_type);
-    alert("회원 유형을 확인할 수 없습니다.");
-  }
+  })
+  .catch(error => {
+    console.error("로그인 실패:", error);
+
+    if (error.response && error.response.status === 401) {
+      alert("회원 유형과 계정 정보가 일치하지 않습니다.");
+    } else {
+      alert("로그인 중 오류가 발생했습니다.");
+    }
   })
   };
 
