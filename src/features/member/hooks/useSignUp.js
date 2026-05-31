@@ -46,6 +46,7 @@ export const useSignUp = () => {
   });
 
   const [images, setImages] = useState({ exterior: null, interior: null });
+  const [previews, setPreviews] = useState({ exterior: null, interior: null });
   const [terms, setTerms] = useState({
     all: false,
     service: false,
@@ -184,7 +185,15 @@ export const useSignUp = () => {
     if (!file) return;
     if (file.size > 10 * 1024 * 1024) return alert('10MB 이하 파일만 가능합니다.');
     if (!['image/jpeg', 'image/png'].includes(file.type)) return alert('JPG/PNG 파일만 가능합니다.');
+    
+    // 기존 프리뷰 URL 해제 (메모리 누수 방지)
+    if (previews[type]) {
+      URL.revokeObjectURL(previews[type]);
+    }
+
+    const previewUrl = URL.createObjectURL(file);
     setImages(prev => ({ ...prev, [type]: file }));
+    setPreviews(prev => ({ ...prev, [type]: previewUrl }));
   };
 
   /**
@@ -239,7 +248,7 @@ export const useSignUp = () => {
   };
 
   return {
-    formData, errors, apiStatus, images, terms,
+    formData, errors, apiStatus, images, previews, terms,
     handleChange, checkDuplicate, verifyBusiness, searchAddress,
     handleFileChange, handleTermsChange, handleSubmit
   };

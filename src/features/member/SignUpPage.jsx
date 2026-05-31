@@ -6,7 +6,7 @@ import logo from '../../assets/soso로고.png';
 const SignUpPage = () => {
   const navigate = useNavigate();
   const {
-    formData, errors, apiStatus, images, terms,
+    formData, errors, apiStatus, images, previews, terms,
     handleChange, checkDuplicate, verifyBusiness, searchAddress,
     handleFileChange, handleTermsChange, handleSubmit
   } = useSignUp();
@@ -181,18 +181,32 @@ const SignUpPage = () => {
                 <span className="text-xs font-bold text-gray-500">
                   {formData.userType === 'BUSINESS' ? '가게 외부 사진' : '영업소 전경 사진'}
                 </span>
-                <div className="relative border-2 border-dashed border-gray-200 rounded-lg p-4 text-center hover:bg-gray-50 transition-all">
-                  <input type="file" onChange={(e) => handleFileChange(e, 'exterior')} className="absolute inset-0 opacity-0 cursor-pointer" accept="image/jpeg,image/png" />
-                  <span className="text-xs text-[#1D9E75] font-medium">{images.exterior ? images.exterior.name : '파일 선택 (JPG/PNG)'}</span>
+                <div className="relative border-2 border-dashed border-gray-200 rounded-lg h-40 flex items-center justify-center overflow-hidden hover:bg-gray-50 transition-all">
+                  <input type="file" onChange={(e) => handleFileChange(e, 'exterior')} className="absolute inset-0 opacity-0 cursor-pointer z-10" accept="image/jpeg,image/png" />
+                  {previews.exterior ? (
+                    <img src={previews.exterior} alt="Exterior Preview" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="text-center">
+                      <div className="text-2xl mb-1">📸</div>
+                      <span className="text-xs text-[#1D9E75] font-medium">파일 선택 (JPG/PNG)</span>
+                    </div>
+                  )}
                 </div>
               </div>
               <div className="space-y-1">
                 <span className="text-xs font-bold text-gray-500">
                   {formData.userType === 'BUSINESS' ? '가게 내부 사진' : '영업소 내부 사진'}
                 </span>
-                <div className="relative border-2 border-dashed border-gray-200 rounded-lg p-4 text-center hover:bg-gray-50 transition-all">
-                  <input type="file" onChange={(e) => handleFileChange(e, 'interior')} className="absolute inset-0 opacity-0 cursor-pointer" accept="image/jpeg,image/png" />
-                  <span className="text-xs text-[#1D9E75] font-medium">{images.interior ? images.interior.name : '파일 선택 (JPG/PNG)'}</span>
+                <div className="relative border-2 border-dashed border-gray-200 rounded-lg h-40 flex items-center justify-center overflow-hidden hover:bg-gray-50 transition-all">
+                  <input type="file" onChange={(e) => handleFileChange(e, 'interior')} className="absolute inset-0 opacity-0 cursor-pointer z-10" accept="image/jpeg,image/png" />
+                  {previews.interior ? (
+                    <img src={previews.interior} alt="Interior Preview" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="text-center">
+                      <div className="text-2xl mb-1">📸</div>
+                      <span className="text-xs text-[#1D9E75] font-medium">파일 선택 (JPG/PNG)</span>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
