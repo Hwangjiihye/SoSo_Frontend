@@ -61,7 +61,7 @@ const FindPasswordPage = () => {
         {!isResetStep ? (
           /* 1단계 & 2단계: 정보 입력 및 이메일 인증 */
           <div className="space-y-6 pt-0">
-            {/* 아이디 입력 */}
+            {/* 이름 입력 */}
             <div>
               <label htmlFor="userId" className="block text-sm font-bold text-gray-700 mb-2 ml-1">
                 아이디

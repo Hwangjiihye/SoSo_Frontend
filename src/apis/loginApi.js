@@ -30,3 +30,21 @@ export const findIdApi = (findIdData) => {
 export const checkCodeApi = (checkCodeData) => {
   return axiosInstance.post('/find/check-code', checkCodeData);
 };
+
+// 비밀번호 재설정
+export const resetPasswordApi = async (data) => {
+  const response = await axiosInstance.put('/find/password/reset', data);
+  return response.data;
+};
+
+// 비밀번호 찾기 - 아이디 + 이메일 확인 후 인증번호 발송
+export const findPasswordSendCodeApi = async (data) => {
+  const response = await axiosInstance.post('/find/findPw', data);
+  return response.data;
+};
+
+// 비밀번호 찾기 - 인증번호 확인
+export const checkPasswordCodeApi = async (data) => {
+  const response = await axiosInstance.post('/find/password/check-code', data);
+  return response.data;
+};

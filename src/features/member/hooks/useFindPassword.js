@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { findPasswordSendCodeApi, resetPasswordApi, checkPasswordCodeApi } from '../../../apis/loginApi';
 
 /**
  * @hook useFindPassword
@@ -55,7 +56,7 @@ export const useFindPassword = () => {
    * @function handleSendCodeClick
    * @description 인증번호 발송 버튼 클릭 시 유효성 검사를 수행합니다.
    */
-  const handleSendCodeClick = () => {
+  const handleSendCodeClick = async () => {
     let newErrors = { userId: '', email: '', verificationCode: '' };
     let hasError = false;
 
@@ -74,33 +75,54 @@ export const useFindPassword = () => {
       return;
     }
 
-    setIsVerifying(true);
+    try {
+      await findPasswordSendCodeApi({
+        id: formData.userId,
+        email: formData.email,
+    });
+
+  alert('인증번호가 이메일로 전송되었습니다.');
+
+  setIsVerifying(true);
+  } catch (error) {
+    alert(error.response?.data || '일치하는 회원 정보가 없습니다.');
+  }
   };
 
   /**
    * @function handleVerifyConfirm
    * @description 인증번호 확인 버튼 클릭 시 검증을 수행합니다.
    */
-  const handleVerifyConfirm = () => {
+  const handleVerifyConfirm = async () => {
     if (!verificationCode.trim()) {
       setErrors((prev) => ({ ...prev, verificationCode: '인증번호를 입력해주세요.' }));
       return;
     }
 
-    // 임시 인증번호 '123456' 체크
-    if (verificationCode === '123456') {
-      setIsResetStep(true);
-      setIsVerifying(false);
-    } else {
-      setErrors((prev) => ({ ...prev, verificationCode: '인증번호가 일치하지 않습니다.' }));
-    }
+    // 인증코드
+    try {
+      await checkPasswordCodeApi({
+        email: formData.email,
+        code: verificationCode.trim(),
+    });
+
+  setIsResetStep(true);
+
+  setIsVerifying(false);
+
+  } catch (error) {
+    setErrors((prev) => ({
+      ...prev,
+      verificationCode: error.response?.data || '인증번호가 일치하지 않습니다.',
+    }));
+  }
   };
 
   /**
    * @function handleResetPasswordSubmit
    * @description 새 비밀번호 저장 버튼 클릭 시 유효성 검사를 수행합니다.
    */
-  const handleResetPasswordSubmit = () => {
+  const handleResetPasswordSubmit = async () => {
     let newErrors = { newPassword: '', confirmPassword: '' };
     let hasError = false;
 
@@ -126,8 +148,19 @@ export const useFindPassword = () => {
     }
 
     // 실제로는 여기서 비밀번호 변경 API 호출
-    alert('비밀번호가 성공적으로 변경되었습니다. 로그인 페이지로 이동합니다.');
-    return true; // 성공 시 true 반환하여 페이지에서 이동 처리 유도
+    try {
+      await resetPasswordApi({
+      id: formData.userId,
+      email: formData.email,
+      newPassword: formData.newPassword,
+    });
+
+  alert('비밀번호가 성공적으로 변경되었습니다. 로그인 페이지로 이동합니다.');
+  return true;
+  } catch (error) {
+    alert(error.response?.data || '비밀번호 변경에 실패했습니다.');
+    return false;
+  }
   };
 
   return {
