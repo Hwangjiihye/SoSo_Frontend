@@ -1,6 +1,7 @@
 import LoginPage from '../features/member/LoginPage';
 import FindIdPage from '../features/member/FindIdPage';
 import FindPasswordPage from '../features/member/FindPasswordPage';
+import SignUpPage from '../features/member/SignUpPage';
 
 /**
  * @file memberRoutes.jsx
