@@ -1,7 +1,10 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useSignUp } from './hooks/useSignUp';
+import logo from '../../assets/soso로고.png';
 
 const SignUpPage = () => {
+  const navigate = useNavigate();
   const {
     formData, errors, apiStatus, images, terms,
     handleChange, checkDuplicate, verifyBusiness, searchAddress,
@@ -17,10 +20,20 @@ const SignUpPage = () => {
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4">
       <div className="max-w-2xl mx-auto space-y-8">
-        <header className="text-center">
-          <h1 className="text-3xl font-extrabold text-gray-900">회원가입</h1>
-          <p className="text-gray-500 mt-2">서비스 이용을 위해 정보를 입력해주세요.</p>
-        </header>
+        {/* 상단 로고 (클릭 시 메인 이동 - GuestMain 스타일 통일) */}
+        <div 
+          className="flex items-center justify-center gap-1 cursor-pointer group mb-4" 
+          onClick={() => navigate('/')}
+        >
+          <img
+            src={logo}
+            alt="SoSo Logo"
+            className="w-12 h-12 object-contain relative top-[5px] group-hover:scale-105 transition-transform"
+          />
+          <div className="text-[40px] font-black text-[#1d9e75] tracking-tighter leading-none">
+            SoSo
+          </div>
+        </div>
 
         <div className="space-y-6">
           {/* 회원 유형 선택 */}
