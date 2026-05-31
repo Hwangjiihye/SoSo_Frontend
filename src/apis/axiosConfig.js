@@ -1,4 +1,5 @@
 import axios from 'axios';
+import authStore from '../store/authStore';
 
 /**
  * @file axiosConfig.js
@@ -16,6 +17,12 @@ axiosInstance.interceptors.request.use(
   (config) => {
     // 예: const token = localStorage.getItem('token');
     // if (token) config.headers.Authorization = `Bearer ${token}`;
+
+  const token = authStore.getState().token;
+
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
     return config;
   },
   (error) => Promise.reject(error)

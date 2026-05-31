@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import axios from 'axios';
+import { loginApi } from '../../../apis/loginApi';
 import { useNavigate } from 'react-router-dom';
+import authStore from "../../../store/authStore";
 
 /**
  * @hook useLogin
@@ -13,6 +14,9 @@ export const useLogin = () => {
 
   // 로그인 대상 선택 상태
   const [loginType, setLoginType] = useState('business'); 
+
+  // 로그인 성공 시 토큰과 사용자 정보를 전역 상태에 저장하기 위한 함수
+  const login = authStore((state) => state.login);
 
   // 입력 필드 데이터 상태
   const [formData, setFormData] = useState({
@@ -95,32 +99,38 @@ export const useLogin = () => {
     // 🚀 1. 백엔드로 진짜 로그인 데이터를 보냅니다 (POST 방식)
     const requestUserType = loginType === 'business' ? 'BUSINESS' : 'PARTNER';
 
-    axios.post("http://localhost:80/auth/login", {
-      id: formData.user_id, // 백엔드 DTO에 맞춘 key
-      pw: formData.password, // 백엔드 DTO에 맞춘 key
-      user_type: requestUserType
+    loginApi({
+      id: formData.user_id,
+      pw: formData.password,
+      user_type: requestUserType,
     })
     .then(resp => {
-      // 백엔드 AuthController가 result.put("token", token)으로 준 데이터를 확인
-      console.log("서버가 돌려준 응답 데이터:", resp.data);
-      
+
     const token = resp.data.token;
     const user_type = resp.data.user_type;
+    const id = resp.data.id;
 
     console.log("token:", token);
     console.log("user_type:", user_type);
+    console.log("id:", id);
 
-    if(!token)
-      {
+    if(!token){
       alert("로그인은 성공했으나 토큰이 넘어오지 않았습니다.");
       return;
     }
-      sessionStorage.setItem("token", token);
-      sessionStorage.setItem("user_type", user_type);
-      console.log("토큰 저장 완료!");
 
-      // 3. [핵심] 성공했으니 '이 시점'에서 메인 화면으로 이동시킵니다!
-      alert("로그인에 성공했습니다!");
+    console.log("zustand 저장 전 백엔드 응답:", resp.data);
+    // 로그인 성공 시 받은 토큰과 사용자 정보를 전역 상태에 저장
+    login({
+    token: token,
+    id: id,
+    user_type: user_type,
+  });
+    // 백엔드 AuthController가 result.put("token", token)으로 준 데이터를 확인
+    console.log("서버가 돌려준 응답 데이터:", resp.data);
+
+    // 3. [핵심] 성공했으니 '이 시점'에서 메인 화면으로 이동시킵니다!
+    alert("로그인에 성공했습니다!");
       
      if(user_type === "BUSINESS") {
       navigate("/BusinessMain")

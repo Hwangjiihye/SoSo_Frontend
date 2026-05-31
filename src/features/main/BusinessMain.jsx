@@ -7,13 +7,23 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom'; // useNavigate 임포트
 import logo from '../../assets/soso로고.png';
 import MainFooter from '../../components/layout/MainFooter';
+import authStore from '../../store/authStore';
 
 function BusinessMain({ setRole }) {
+
+  const logout = authStore((state) => state.logout);
+
   const navigate = useNavigate(); // useNavigate 훅 사용
 
   const handleProfileClick = () => {
     navigate('/business-mypage'); // 지정된 경로로 이동
   };
+
+  const handleLogOut = () => {
+    logout();
+    alert("로그아웃 되었습니다.");
+    navigate("/");
+  }
 
   const notifications = [
     { id: 1, title: '부족 재고 - 냉동삼겹살 1kg', desc: '현재 재고 3개 · 안전 재고 기준 20개 미달', time: '방금 전', color: 'bg-red-500' },
@@ -48,7 +58,7 @@ function BusinessMain({ setRole }) {
             <div className="w-6 h-6 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-[10px] font-bold">김</div>
             <span className="text-sm font-semibold whitespace-nowrap text-gray-700">김민준 <span className="text-xs text-gray-400 font-normal">강남 본점</span></span>
           </div>
-          <button onClick={() => setRole('guest')} className="text-xs text-gray-400 hover:underline">로그아웃</button>
+          <button onClick={() => setRole('guest')} className="text-xs text-gray-400 hover:underline" onClick={handleLogOut}>로그아웃</button>
         </div>
       </header>
       <main className="max-w-7xl mx-auto px-8 py-8">
