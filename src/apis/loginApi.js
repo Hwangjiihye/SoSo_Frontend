@@ -10,3 +10,23 @@ import axiosInstance from './axiosConfig';
 export const loginApi = (loginData) => {
   return axiosInstance.post('/auth/login', loginData);
 };
+
+/**
+ * 아이디 찾기 - 인증번호 전송 요청 API
+ * @param {Object} findIdData 아이디 찾기 요청 데이터
+ * @param {string} findIdData.name 사용자 이름
+ * @param {string} findIdData.email 사용자 이메일
+ */
+export const findIdApi = (findIdData) => {
+  return axiosInstance.post('/find/findId', findIdData);
+};
+
+/**
+ * 아이디 찾기 - 인증번호 확인 API
+ * @param {Object} checkCodeData 인증번호 확인 데이터
+ * @param {string} checkCodeData.email 사용자 이메일
+ * @param {string} checkCodeData.code 사용자가 입력한 인증번호
+ */
+export const checkCodeApi = (checkCodeData) => {
+  return axiosInstance.post('/find/check-code', checkCodeData);
+};
