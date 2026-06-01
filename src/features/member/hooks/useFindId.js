@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { findIdApi, checkCodeApi } from '../../../apis/loginApi';
 
 /**
  * @hook useFindId
@@ -52,7 +53,7 @@ export const useFindId = () => {
    * @function handleFindIdClick
    * @description 아이디 찾기(인증번호 발송) 버튼 클릭 시 유효성 검사를 수행합니다.
    */
-  const handleFindIdClick = () => {
+  const handleFindIdClick = async ()  => {
     let newErrors = { name: '', email: '', verificationCode: '' };
     let hasError = false;
 
@@ -67,33 +68,84 @@ export const useFindId = () => {
     }
 
     if (hasError) {
-      setErrors(newErrors);
-      return;
-    }
+  setErrors(newErrors);
+  return;
+}
 
-    // 유효성 검사 통과 시 인증 단계로 진입
-    setIsVerifying(true);
+  // 유효성 검사 통과 시 인증 단계로 진입
+  try {
+    const resp = await findIdApi({
+      name: formData.name,
+      email: formData.email
+  });
+
+  alert(resp.data);
+
+  setIsVerifying(true);
+
+} catch (error) {
+    if (error.response) {
+      alert(error.response.data);
+    } else {
+      alert('서버 연결에 실패했습니다.');
+    }
+  }
   };
 
   /**
    * @function handleVerifyConfirm
    * @description 인증번호 확인 버튼 클릭 시 검증을 수행합니다.
    */
-  const handleVerifyConfirm = () => {
-    // 1. 빈값 체크
-    if (!verificationCode.trim()) {
-      setErrors((prev) => ({ ...prev, verificationCode: '인증번호를 입력해주세요.' }));
-      return;
-    }
+  const handleVerifyConfirm = async () => {
 
-    // 2. 인증번호 일치 여부 체크 (임시 번호: 123456)
-    if (verificationCode === '123456') {
-      setFoundId('soso****');
+      console.log('handleVerifyConfirm 실행됨');
+      console.log('현재 이메일:', formData.email);
+      console.log('현재 인증번호:', verificationCode);
+
+  // 1. 빈값 체크
+  if (!verificationCode.trim()) {
+    setErrors((prev) => ({
+      ...prev,
+      verificationCode: '인증번호를 입력해주세요.',
+    }));
+    return;
+  }
+
+  try {
+    console.log('인증하기 버튼 눌림');
+    console.log('email:', formData.email);
+    console.log('code:', verificationCode);
+
+    const resp = await checkCodeApi({
+      email: formData.email,
+      code: verificationCode,
+    });
+
+    console.log('인증번호 확인 응답:', resp.data);
+
+    if (resp.data) {
+      alert('인증되었습니다.');
+      setFoundId(resp.data);
       setIsFound(true);
       setIsVerifying(false);
     } else {
-      setErrors((prev) => ({ ...prev, verificationCode: '인증번호가 일치하지 않습니다.' }));
+      setErrors((prev) => ({
+        ...prev,
+        verificationCode: '인증번호가 일치하지 않습니다.',
+      }));
     }
+  } catch (error) {
+    console.error('인증번호 확인 오류:', error);
+
+    if (error.response) {
+      setErrors((prev) => ({
+        ...prev,
+        verificationCode: error.response.data,
+      }));
+    } else {
+      alert('인증번호 확인 중 오류가 발생했습니다.');
+    }
+  }
   };
 
   return {

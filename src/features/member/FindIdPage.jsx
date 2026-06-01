@@ -111,6 +111,7 @@ const FindIdPage = () => {
             {/* 아이디 찾기 (인증번호 발송) 버튼 */}
             <div className="pt-2">
               <button
+                type="button"
                 onClick={handleFindIdClick}
                 className="w-full flex justify-center py-3 px-4 border border-transparent text-ml font-black rounded-2xl text-white shadow-lg transition-all transform active:scale-[0.98]"
                 style={{ backgroundColor: '#1D9E75' }}
@@ -143,6 +144,7 @@ const FindIdPage = () => {
                       maxLength={6}
                     />
                     <button
+                      type="button"
                       onClick={handleVerifyConfirm}
                       className="px-6 py-3 bg-gray-800 text-white font-bold rounded-2xl hover:bg-black transition-all active:scale-95 whitespace-nowrap"
                     >
@@ -155,7 +157,7 @@ const FindIdPage = () => {
                     </p>
                   ) : (
                     <p className="mt-3 ml-1 text-[12px] text-gray-500 font-medium">
-                      임시 인증번호는 <span className="text-[#1D9E75] font-bold">123456</span> 입니다.
+                      이메일로 전송된 6자리 인증번호를 입력해주세요.
                     </p>
                   )}
                 </div>
@@ -164,6 +166,7 @@ const FindIdPage = () => {
 
             <div className="text-center pt-2">
               <button 
+                type="button"
                 onClick={() => navigate('/login')}
                 className="text-[15px] font-bold text-[#0D6B50] hover:underline underline-offset-4 transition-all"
               >
@@ -185,6 +188,7 @@ const FindIdPage = () => {
 
             <div className="space-y-4">
               <button
+                type="button"
                 onClick={() => navigate('/login')}
                 className="w-full py-2 px-4 border border-transparent text-ml font-black rounded-2xl text-white shadow-lg transition-all transform active:scale-[0.98]"
                 style={{ backgroundColor: '#1D9E75' }}

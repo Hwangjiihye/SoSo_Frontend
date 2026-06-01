@@ -183,9 +183,11 @@ const LoginPage = () => {
         <div className="text-center pt-6 border-t border-gray-400">
           <p className="text-[15px] text-gray-500 font-medium">
             아직 SoSo 회원이 아니신가요?{' '}
-            <button className="font-extrabold text-[#0D6B50] hover:underline transition-all underline-offset-4 ml-1.5">
-              회원가입 
-            </button>
+            <Link to="/signup">
+              <button className="font-extrabold text-[#0D6B50] hover:underline transition-all underline-offset-4 ml-1.5">
+                회원가입 
+              </button>
+            </Link>
           </p>
         </div>
       </div>

@@ -10,15 +10,24 @@ import SignUpPage from '../features/member/SignUpPage';
 const memberRoutes = [
   {
     path: '/login', // 로그인 페이지 명시적 경로 설정
-    element: <LoginPage />,
+    element: 
+    <publicRoute>
+      <LoginPage />
+    </publicRoute>,
   },
   {
     path: '/find-id', // 아이디 찾기 페이지 경로
-    element: <FindIdPage />,
+    element: 
+    <publicRoute>
+      <FindIdPage />
+    </publicRoute>,
   },
   {
     path: '/find-password', // 비밀번호 찾기 페이지 경로
-    element: <FindPasswordPage />,
+    element: 
+    <publicRoute>
+      <FindPasswordPage />
+    </publicRoute>,
   },
   {
     path: 'signup',
