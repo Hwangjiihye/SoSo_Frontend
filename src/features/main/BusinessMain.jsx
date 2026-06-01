@@ -1,7 +1,7 @@
 /**
  * @file BusinessMain.jsx
  * @description '사업자' 대시보드 메인 페이지입니다.
- * 프로필 클릭 시 다중 매장 선택 및 마이페이지 이동이 가능한 드롭다운이 표시됩니다.
+ * authStore에서 실제 회원 정보를 가져와 프로필 영역에 표시하며, 훅 사용을 최적화했습니다.
  */
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -36,8 +36,8 @@ ChartJS.register(
 );
 
 function BusinessMain({ setRole }) {
-  const logout = authStore((state) => state.logout);
-  const user_type = authStore((state) => state.user_type);
+  // authStore 훅을 한 번만 호출하여 필요한 상태를 구조분해 할당으로 가져옵니다.
+  const { logout, user_type, member } = authStore();
   const navigate = useNavigate();
 
   // 프로필 드롭다운 상태
@@ -45,13 +45,9 @@ function BusinessMain({ setRole }) {
 
   // 마이페이지 이동 핸들러
   const handleProfileClick = () => {
-    // 세션 스토리지 또는 스토어에서 유저 타입 확인
-    const type = sessionStorage.getItem("user_type") || user_type;
-    
-    if (type === 'BUSINESS') {
+    if (user_type === 'BUSINESS') {
       navigate('/business-mypage');
     } else {
-      // 파트너 등 타 유형일 경우에 대한 처리 (필요시 추가)
       alert("사업자 전용 마이페이지입니다.");
     }
   };
@@ -62,40 +58,22 @@ function BusinessMain({ setRole }) {
     navigate("/");
   };
 
-  // --- 차트 데이터: 실시간 재고 현황 (Bar) ---
+  // --- 차트 데이터 영역 (기존과 동일) ---
   const stockChartData = {
     labels: ['소고기', '돼지고기', '닭고기', '양파', '마늘', '식용유'],
-    datasets: [
-      {
+    datasets: [{
         label: '현재 재고',
         data: [45, 12, 33, 8, 2, 28],
-        backgroundColor: [
-          'rgba(16, 185, 129, 0.6)', 
-          'rgba(239, 68, 68, 0.6)',  
-          'rgba(16, 185, 129, 0.6)',
-          'rgba(245, 158, 11, 0.6)', 
-          'rgba(239, 68, 68, 0.6)',  
-          'rgba(16, 185, 129, 0.6)',
-        ],
-        borderColor: [
-          'rgb(16, 185, 129)',
-          'rgb(239, 68, 68)',
-          'rgb(16, 185, 129)',
-          'rgb(245, 158, 11)',
-          'rgb(239, 68, 68)',
-          'rgb(16, 185, 129)',
-        ],
+        backgroundColor: ['rgba(16, 185, 129, 0.6)', 'rgba(239, 68, 68, 0.6)', 'rgba(16, 185, 129, 0.6)', 'rgba(245, 158, 11, 0.6)', 'rgba(239, 68, 68, 0.6)', 'rgba(16, 185, 129, 0.6)'],
+        borderColor: ['rgb(16, 185, 129)', 'rgb(239, 68, 68)', 'rgb(16, 185, 129)', 'rgb(245, 158, 11)', 'rgb(239, 68, 68)', 'rgb(16, 185, 129)'],
         borderWidth: 1,
         borderRadius: 8,
-      },
-    ],
+    }]
   };
 
-  // --- 차트 데이터: 월별 매출 현황 (Line) ---
   const salesChartData = {
     labels: ['1월', '2월', '3월', '4월', '5월', '6월'],
-    datasets: [
-      {
+    datasets: [{
         label: '매출액 (만원)',
         data: [1200, 1900, 1500, 2100, 2400, 1800],
         borderColor: 'rgb(16, 185, 129)',
@@ -104,31 +82,14 @@ function BusinessMain({ setRole }) {
         tension: 0.4,
         pointRadius: 4,
         pointBackgroundColor: 'rgb(16, 185, 129)',
-      },
-    ],
+    }]
   };
 
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        display: false,
-      },
-    },
-    scales: {
-      y: {
-        beginAtZero: true,
-        grid: {
-          color: '#f3f4f6',
-        },
-      },
-      x: {
-        grid: {
-          display: false,
-        },
-      },
-    },
+    plugins: { legend: { display: false } },
+    scales: { y: { beginAtZero: true, grid: { color: '#f3f4f6' } }, x: { grid: { display: false } } }
   };
 
   const notifications = [
@@ -150,7 +111,7 @@ function BusinessMain({ setRole }) {
           <div className="text-[40px] font-black text-[#1d9e75] tracking-tighter leading-none">SoSo</div>
         </div>
         <nav className="hidden md:flex justify-center gap-1 border border-gray-100 rounded-lg p-1 bg-gray-50 w-fit mx-auto">
-          <a href="#" className="px-4 py-1.5 text-sm font-semibold bg-white text-gray-900 rounded shadow-sm border border-gray-200 ">홈</a>
+          <a href="#" className="px-4 py-1.5 text-sm font-semibold bg-white text-gray-900 rounded shadow-sm border border-gray-200">홈</a>
           {['발주 관리', '수금 관리', '공동 발주', '업체 홍보', '통계'].map(m => (
             <a key={m} href="#" className="px-4 py-1.5 text-sm font-medium text-gray-500 hover:text-emerald-600 transition-colors whitespace-nowrap">{m}</a>
           ))}
@@ -161,17 +122,22 @@ function BusinessMain({ setRole }) {
             <span className="absolute -top-1 -right-1 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"></span>
           </button>
           
-          {/* 프로필 및 드롭다운 컨테이너 */}
           <div className="relative">
             <div 
-              onClick={() => setIsProfileOpen(!isProfileOpen)} 
+              onClick={() => setIsProfileOpen(!isProfileOpen)}
               className="flex items-center gap-2 border border-gray-200 rounded-full py-1.5 px-3 bg-white hover:bg-emerald-50 cursor-pointer transition-colors"
             >
-              <div className="w-6 h-6 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-[10px] font-bold">김</div>
-              <span className="text-sm font-semibold whitespace-nowrap text-gray-700">김민준 <span className="text-xs text-gray-400 font-normal">강남 본점</span></span>
+              <div className="w-6 h-6 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-[10px] font-bold">
+                {member?.nickname ? member.nickname.substring(0, 1) : 'G'}
+              </div>
+              <span className="text-sm font-semibold whitespace-nowrap text-gray-700">
+                {member?.nickname || '회원님'} 
+                <span className="text-xs text-gray-400 font-normal ml-1">
+                  {member?.company_name || '상호명 미등록'}
+                </span>
+              </span>
             </div>
 
-            {/* 프로필 드롭다운 메뉴 */}
             {isProfileOpen && (
               <div className="absolute right-0 mt-2 w-56 bg-white border border-gray-100 rounded-2xl shadow-2xl p-2 z-[60] animate-fade-in-up">
                 <div className="p-3 border-b border-gray-50">
@@ -179,11 +145,11 @@ function BusinessMain({ setRole }) {
                 </div>
                 <div className="py-2">
                   <button className="w-full text-left px-4 py-3 text-sm font-bold text-emerald-600 bg-emerald-50 rounded-xl mb-1 flex justify-between items-center">
-                    강남 본점
+                    {member?.company_name || '강남 본점'}
                     <span className="text-[10px] bg-emerald-500 text-white px-1.5 py-0.5 rounded uppercase">Main</span>
                   </button>
-                  <button className="w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl transition-colors">
-                    홍대 2호점
+                  <button className="w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-xl transition-colors">
+                    홍대 2호점 (더미)
                   </button>
                 </div>
                 <div className="border-t border-gray-50 pt-2 mt-2">
@@ -203,7 +169,6 @@ function BusinessMain({ setRole }) {
       </header>
 
       <main className="max-w-7xl mx-auto px-8 py-8">
-        {/* Statistics Summary Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           {[
             { t: '총 재고', v: '1,284', u: '개 품목', b: '전주 대비 +3.2%', c: 'border-emerald-100' },
@@ -219,7 +184,6 @@ function BusinessMain({ setRole }) {
           ))}
         </div>
 
-        {/* Charts Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
             <div className="flex justify-between items-center mb-6">
@@ -247,7 +211,6 @@ function BusinessMain({ setRole }) {
           </div>
         </div>
 
-        {/* Alerts and Group Orders */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
             <h3 className="font-bold mb-6 text-gray-700">실시간 알림</h3>

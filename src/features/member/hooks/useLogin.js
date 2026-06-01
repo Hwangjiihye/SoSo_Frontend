@@ -109,10 +109,13 @@ export const useLogin = () => {
     const token = resp.data.token;
     const user_type = resp.data.user_type;
     const id = resp.data.id;
+    // 백엔드에서 맵 형태로 넘겨주는 회원 상세 정보 (닉네임, 매장 정보 등 포함)
+    const memberData = resp.data.member; 
 
     console.log("token:", token);
     console.log("user_type:", user_type);
     console.log("id:", id);
+    console.log("member data:", memberData);
 
     if(!token){
       alert("로그인은 성공했으나 토큰이 넘어오지 않았습니다.");
@@ -120,17 +123,19 @@ export const useLogin = () => {
     }
 
     console.log("zustand 저장 전 백엔드 응답:", resp.data);
-    // 로그인 성공 시 받은 토큰과 사용자 정보를 전역 상태에 저장
+    // 로그인 성공 시 받은 토큰과 사용자 상세 정보를 전역 상태에 저장
     login({
-    token: token,
-    id: id,
-    user_type: user_type,
-  });
-    // 백엔드 AuthController가 result.put("token", token)으로 준 데이터를 확인
+      token: token,
+      id: id,
+      user_type: user_type,
+      member: memberData, // 👈 닉네임, 이메일, 매장 정보 등이 포함된 객체를 통째로 넘김
+    });
+    
     console.log("서버가 돌려준 응답 데이터:", resp.data);
 
     // 3. [핵심] 성공했으니 '이 시점'에서 메인 화면으로 이동시킵니다!
-    alert("로그인에 성공했습니다!");
+    // 백엔드에서 받아온 닉네임을 활용하여 환영 메시지 출력
+    alert(`환영합니다, ${memberData.nickname || memberData.name || id}님!`);
     navigate("/");
   })
   .catch(error => {
