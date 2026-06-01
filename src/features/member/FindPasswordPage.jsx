@@ -201,7 +201,7 @@ const FindPasswordPage = () => {
                     ? 'border-red-400 focus:ring-2 focus:ring-red-100 focus:border-red-400 bg-gray-50'
                     : 'bg-gray-50 border-gray-200 focus:bg-white focus:ring-2 focus:ring-[#1D9E75] focus:border-transparent'
                 }`}
-                placeholder="새 비밀번호 (8자 이상)"
+                placeholder="새 비밀번호 8자 이상, 영문+숫자+특수문자"
               />
               {errors.newPassword && (
                 <p className="mt-1.5 ml-1 text-[12px] font-semibold text-red-500 animate-in fade-in slide-in-from-top-1">
@@ -221,6 +221,7 @@ const FindPasswordPage = () => {
                 type="password"
                 value={formData.confirmPassword}
                 onChange={handleInputChange}
+                // onKeyUp={passwordcheck}
                 className={`block w-full px-5 py-3 rounded-2xl border outline-none transition-all ${
                   errors.confirmPassword
                     ? 'border-red-400 focus:ring-2 focus:ring-red-100 focus:border-red-400 bg-gray-50'
