@@ -83,3 +83,12 @@ export const signUpApi = async (signUpData, exteriorImg, interiorImg) => {
   });
   return response.data;
 };
+
+/**
+ * 거래처 마이페이지(업체 정보) 조회
+ * @returns {Promise<Object>} 회원 및 매장 정보
+ */
+export const getPartnerProfileApi = async () => {
+  const response = await axiosInstance.get('/api/member/partner/profile');
+  return response.data;
+};
