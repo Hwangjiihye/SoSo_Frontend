@@ -18,16 +18,16 @@ const memberRoutes = [
   {
     path: '/find-id', // 아이디 찾기 페이지 경로
     element: 
-    <ProtectedRoute>
+    <publicRoute>
       <FindIdPage />
-    </ProtectedRoute>,
+    </publicRoute>,
   },
   {
     path: '/find-password', // 비밀번호 찾기 페이지 경로
     element: 
-    <ProtectedRoute>
+    <publicRoute>
       <FindPasswordPage />
-    </ProtectedRoute>,
+    </publicRoute>,
   },
   {
     path: 'signup',
