@@ -5,9 +5,21 @@
  */
 import React from 'react';
 import logo from '../../assets/soso로고.png';
+import { useNavigate } from 'react-router-dom';
 import MainFooter from '../../components/layout/MainFooter';
+import authStore from '../../store/authStore';
 
 function PartnerMain({ setRole }) {
+
+  const navigate = useNavigate();
+  const logout = authStore((state) => state.logout);
+
+  const handleLogOut = () => {
+    logout();
+    alert("로그아웃 되었습니다.");
+    navigate("/");
+  }
+
   // 알림 데이터 (거래처 시점)
   const notifications = [
     {
@@ -117,7 +129,7 @@ function PartnerMain({ setRole }) {
             <div className="w-6 h-6 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-[10px] font-bold">백</div>
             <span className="text-sm font-semibold whitespace-nowrap">백서연 <span className="text-xs text-gray-400 font-normal">한빛 식품 유통</span></span>
           </div>
-          <button onClick={() => setRole('guest')} className="text-xs text-gray-400 hover:underline border-l border-gray-200 pl-4 ml-2 whitespace-nowrap">로그아웃</button>
+          <button onClick={() => setRole('guest')} className="text-xs text-gray-400 hover:underline border-l border-gray-200 pl-4 ml-2 whitespace-nowrap" onClick={handleLogOut}>로그아웃</button>
         </div>
       </header>
 
