@@ -1,0 +1,196 @@
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+.page { background: var(--color-background-tertiary); min-height: 1000px; padding-bottom: 48px; font-family: var(--font-sans); }
+.topbar { background: var(--color-background-primary); border-bottom: 0.5px solid var(--color-border-tertiary); padding: 0 24px; display: flex; align-items: center; justify-content: space-between; height: 52px; }
+.logo { color: #3B9E6A; font-size: 17px; font-weight: 500; }
+.logout { font-size: 13px; color: var(--color-text-secondary); display: flex; align-items: center; gap: 4px; cursor: pointer; }
+.nav-tabs { background: var(--color-background-primary); border-bottom: 0.5px solid var(--color-border-tertiary); display: flex; padding: 0 24px; overflow-x: auto; }
+.nav-tab { padding: 14px 18px; font-size: 13px; color: var(--color-text-secondary); cursor: pointer; border-bottom: 2px solid transparent; display: flex; align-items: center; gap: 5px; white-space: nowrap; }
+.nav-tab.active { color: #3B9E6A; border-bottom: 2px solid #3B9E6A; font-weight: 500; }
+.nav-tab:hover:not(.active) { color: var(--color-text-primary); }
+.page-header { max-width: 580px; margin: 28px auto 0; padding: 0 16px 16px; }
+.page-header h2 { font-size: 18px; font-weight: 500; color: var(--color-text-primary); }
+.page-header p { font-size: 13px; color: var(--color-text-secondary); margin-top: 4px; }
+.content { max-width: 580px; margin: 0 auto; padding: 0 16px; display: flex; flex-direction: column; gap: 14px; }
+.card { background: var(--color-background-primary); border-radius: var(--border-radius-lg); border: 0.5px solid var(--color-border-tertiary); padding: 20px 22px; }
+.card-title { font-size: 14px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 14px; display: flex; align-items: center; gap: 7px; }
+.card-title i { color: #3B9E6A; font-size: 17px; }
+.lock-tag { font-size: 11px; color: var(--color-text-tertiary); background: var(--color-background-secondary); border-radius: 20px; padding: 2px 8px; margin-left: 4px; display: inline-flex; align-items: center; gap: 3px; }
+.divider { height: 0.5px; background: var(--color-border-tertiary); margin-bottom: 16px; }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+.field-row.full { grid-template-columns: 1fr; }
+.field { display: flex; flex-direction: column; gap: 5px; }
+.field label { font-size: 12px; color: var(--color-text-secondary); }
+.field input { height: 36px; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); padding: 0 10px; font-size: 13px; color: var(--color-text-primary); background: var(--color-background-primary); outline: none; }
+.field input:disabled { background: var(--color-background-secondary); color: var(--color-text-tertiary); cursor: not-allowed; border-color: var(--color-border-tertiary); }
+.field input:focus { border-color: #3B9E6A; }
+.change-btn { margin-top: 14px; height: 36px; padding: 0 18px; border-radius: var(--border-radius-md); background: var(--color-background-secondary); border: 0.5px solid var(--color-border-secondary); color: var(--color-text-primary); font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+.change-btn:hover { background: var(--color-background-tertiary); }
+.addr-row { display: flex; gap: 8px; margin-bottom: 10px; }
+.addr-row input { flex: 1; height: 36px; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); padding: 0 10px; font-size: 13px; color: var(--color-text-primary); background: var(--color-background-primary); outline: none; max-width: 140px; }
+.addr-search-btn { height: 36px; padding: 0 14px; border-radius: var(--border-radius-md); background: var(--color-background-secondary); border: 0.5px solid var(--color-border-secondary); color: var(--color-text-primary); font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 5px; white-space: nowrap; }
+.addr-search-btn:hover { background: var(--color-background-tertiary); }
+.photos-grid { display: flex; gap: 10px; flex-wrap: wrap; }
+.photo-slot { width: 116px; height: 96px; border-radius: var(--border-radius-md); border: 0.5px solid var(--color-border-secondary); display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; background: var(--color-background-secondary); cursor: pointer; overflow: hidden; }
+.photo-slot.add { border: 1.5px dashed var(--color-border-secondary); background: transparent; }
+.photo-slot.add:hover { border-color: #3B9E6A; }
+.del-btn { position: absolute; top: 5px; right: 5px; width: 20px; height: 20px; border-radius: 50%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+.del-btn i { color: #fff; font-size: 11px; }
+.img-placeholder { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+.img-placeholder i { font-size: 26px; }
+.img-placeholder span { font-size: 11px; color: var(--color-text-tertiary); }
+.add-icon { font-size: 24px; color: var(--color-text-tertiary); }
+.photo-note { font-size: 11px; color: var(--color-text-tertiary); margin-top: 10px; }
+.save-btn { width: 100%; height: 44px; border-radius: var(--border-radius-md); background: #E87D3E; color: #fff; font-size: 14px; font-weight: 500; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px; }
+.save-btn:hover { background: #d06a2c; }
+
+/* Modal */
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 100; align-items: center; justify-content: center; }
+.modal-overlay.show { display: flex; }
+.modal { background: var(--color-background-primary); border-radius: var(--border-radius-lg); border: 0.5px solid var(--color-border-tertiary); padding: 24px; width: 340px; }
+.modal h3 { font-size: 15px; font-weight: 500; margin-bottom: 16px; }
+.modal .field { margin-bottom: 12px; }
+.modal-btns { display: flex; gap: 8px; margin-top: 18px; }
+.modal-btns button { flex: 1; height: 38px; border-radius: var(--border-radius-md); font-size: 13px; cursor: pointer; border: 0.5px solid var(--color-border-secondary); background: var(--color-background-secondary); color: var(--color-text-primary); }
+.modal-btns .btn-confirm { background: #3B9E6A; color: #fff; border-color: #3B9E6A; }
+.modal-btns .btn-confirm:hover { background: #2d8457; }
+.modal-btns button:first-child:hover { background: var(--color-background-tertiary); }
+.modal-close { float: right; background: none; border: none; cursor: pointer; color: var(--color-text-secondary); font-size: 18px; line-height: 1; }
+</style>
+
+<div class="page">
+  <div class="topbar">
+    <span class="logo">SoSo</span>
+    <span class="logout"><i class="ti ti-logout" aria-hidden="true"></i>로그아웃</span>
+  </div>
+  <div class="nav-tabs">
+    <div class="nav-tab"><i class="ti ti-building-store" aria-hidden="true"></i>업체 정보 확인</div>
+    <div class="nav-tab active"><i class="ti ti-edit" aria-hidden="true"></i>업체 정보 수정</div>
+    <div class="nav-tab"><i class="ti ti-user-x" aria-hidden="true"></i>회원 탈퇴</div>
+    <div class="nav-tab"><i class="ti ti-bell" aria-hidden="true"></i>스마트 알람 설정</div>
+  </div>
+
+  <div class="page-header">
+    <h2>업체 정보 수정</h2>
+    <p>수정할 항목을 변경한 후 저장하세요.</p>
+  </div>
+
+  <div class="content">
+
+    <!-- 기존 계정 정보 -->
+    <div class="card">
+      <div class="card-title"><i class="ti ti-user-circle" aria-hidden="true"></i>기존 계정 정보 변경</div>
+      <div class="divider"></div>
+      <div class="field-row">
+        <div class="field">
+          <label>닉네임</label>
+          <input type="text" value="신선유통 팀장님" />
+        </div>
+        <div class="field">
+          <label>휴대전화</label>
+          <input type="text" value="010-1234-5678" />
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>이메일</label>
+          <input type="text" value="dealer1234@naver.com" />
+        </div>
+        <div class="field">
+          <label>비밀번호</label>
+          <input type="password" value="mypassword123" />
+        </div>
+      </div>
+      <button class="change-btn" onclick="document.getElementById('modal').classList.add('show')">
+        <i class="ti ti-pencil" aria-hidden="true"></i>변경하기
+        <i class="ti ti-arrow-right" aria-hidden="true"></i>
+      </button>
+    </div>
+
+    <!-- 업체 정보 -->
+    <div class="card">
+      <div class="card-title">
+        <i class="ti ti-building" aria-hidden="true"></i>업체 정보 수정
+        <span class="lock-tag"><i class="ti ti-lock" style="font-size:11px" aria-hidden="true"></i>인증 데이터 잠금</span>
+      </div>
+      <div class="divider"></div>
+      <div class="field-row">
+        <div class="field">
+          <label>사업자 번호</label>
+          <input type="text" value="000-00-00000" disabled />
+        </div>
+        <div class="field">
+          <label>상호명</label>
+          <input type="text" value="신선유통(주)" disabled />
+        </div>
+      </div>
+      <div class="field" style="margin-bottom:10px;">
+        <label>가게 주소</label>
+        <div class="addr-row">
+          <input type="text" placeholder="우편번호" />
+          <button class="addr-search-btn"><i class="ti ti-map-pin" aria-hidden="true"></i>주소 검색</button>
+        </div>
+        <input type="text" placeholder="도로명 주소 자동 입력" style="width:100%; height:36px; border:0.5px solid var(--color-border-secondary); border-radius:var(--border-radius-md); padding:0 10px; font-size:13px; background:var(--color-background-secondary); color:var(--color-text-tertiary); margin-bottom:8px; outline:none;" readonly />
+        <input type="text" placeholder="상세 주소 직접 입력" style="width:100%; height:36px; border:0.5px solid var(--color-border-secondary); border-radius:var(--border-radius-md); padding:0 10px; font-size:13px; color:var(--color-text-primary); background:var(--color-background-primary); outline:none;" />
+      </div>
+    </div>
+
+    <!-- 가게 사진 -->
+    <div class="card">
+      <div class="card-title"><i class="ti ti-photo" aria-hidden="true"></i>가게 사진 편집
+        <span class="lock-tag" style="background:transparent; color:#3B9E6A; font-size:11px; margin-left:2px;"><i class="ti ti-wifi" style="font-size:11px" aria-hidden="true"></i>GCS 실시간 연동</span>
+      </div>
+      <div class="divider"></div>
+      <div class="photos-grid">
+        <div class="photo-slot">
+          <div class="del-btn"><i class="ti ti-x" aria-hidden="true"></i></div>
+          <div class="img-placeholder">
+            <i class="ti ti-home" style="color:#3B9E6A;" aria-hidden="true"></i>
+            <span>GCS 외관 사진</span>
+          </div>
+        </div>
+        <div class="photo-slot">
+          <div class="del-btn"><i class="ti ti-x" aria-hidden="true"></i></div>
+          <div class="img-placeholder">
+            <i class="ti ti-layout-board" style="color:#3B9E6A;" aria-hidden="true"></i>
+            <span>GCS 내부 사진</span>
+          </div>
+        </div>
+        <div class="photo-slot add">
+          <i class="ti ti-plus add-icon" aria-hidden="true"></i>
+          <span style="font-size:11px; color:var(--color-text-tertiary); margin-top:4px;">사진 추가</span>
+        </div>
+      </div>
+      <p class="photo-note"><i class="ti ti-info-circle" style="font-size:12px; vertical-align:-1px" aria-hidden="true"></i> 최대 3장 / JPG, PNG만 가능</p>
+    </div>
+
+    <button class="save-btn">
+      <i class="ti ti-device-floppy" aria-hidden="true"></i>변경 사항 저장
+    </button>
+  </div>
+</div>
+
+<!-- 변경하기 모달 -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <button class="modal-close" onclick="document.getElementById('modal').classList.remove('show')"><i class="ti ti-x" aria-hidden="true"></i></button>
+    <h3><i class="ti ti-user-edit" style="color:#3B9E6A; margin-right:6px;" aria-hidden="true"></i>계정 정보 변경</h3>
+    <div class="field">
+      <label style="font-size:12px; color:var(--color-text-secondary); display:block; margin-bottom:5px;">변경할 닉네임</label>
+      <input type="text" value="신선유통 팀장님" style="width:100%; height:36px; border:0.5px solid var(--color-border-secondary); border-radius:var(--border-radius-md); padding:0 10px; font-size:13px; outline:none; background:var(--color-background-primary); color:var(--color-text-primary);" />
+    </div>
+    <div class="field">
+      <label style="font-size:12px; color:var(--color-text-secondary); display:block; margin-bottom:5px;">새 비밀번호</label>
+      <input type="password" placeholder="새 비밀번호 입력" style="width:100%; height:36px; border:0.5px solid var(--color-border-secondary); border-radius:var(--border-radius-md); padding:0 10px; font-size:13px; outline:none; background:var(--color-background-primary); color:var(--color-text-primary);" />
+    </div>
+    <div class="field">
+      <label style="font-size:12px; color:var(--color-text-secondary); display:block; margin-bottom:5px;">새 비밀번호 확인</label>
+      <input type="password" placeholder="새 비밀번호 재입력" style="width:100%; height:36px; border:0.5px solid var(--color-border-secondary); border-radius:var(--border-radius-md); padding:0 10px; font-size:13px; outline:none; background:var(--color-background-primary); color:var(--color-text-primary);" />
+    </div>
+    <div class="modal-btns">
+      <button onclick="document.getElementById('modal').classList.remove('show')">취소</button>
+      <button class="btn-confirm"><i class="ti ti-check" aria-hidden="true"></i>확인</button>
+    </div>
+  </div>
+</div>

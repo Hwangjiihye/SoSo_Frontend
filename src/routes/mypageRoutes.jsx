@@ -1,5 +1,6 @@
 import BusinessMyPage from '../features/mypage/BusinessMyPage';
 import PartnerInfoPage from '../features/mypage/PartnerInfoPage';
+import PartnerEditProfilePage from '../features/mypage/PartnerEditProfilePage';
 
 /**
  * @file mypageRoutes.jsx
@@ -13,6 +14,10 @@ const mypageRoutes = [
   {
     path: 'partner-info',
     element: <PartnerInfoPage />,
+  },
+  {
+    path: 'partner-edit',
+    element: <PartnerEditProfilePage />,
   }
 ];
 
