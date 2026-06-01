@@ -25,11 +25,13 @@ const FindPasswordPage = () => {
   } = useFindPassword();
 
   // 비밀번호 변경 성공 시 로그인 페이지로 이동
-  const onResetSubmit = () => {
-    if (handleResetPasswordSubmit()) {
-      navigate('/login');
-    }
-  };
+  const onResetSubmit = async () => {
+  const result = await handleResetPasswordSubmit();
+
+  if (result) {
+    navigate('/login');
+  }
+};
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
@@ -164,7 +166,7 @@ const FindPasswordPage = () => {
                     </p>
                   ) : (
                     <p className="mt-3 ml-1 text-[12px] text-gray-500 font-medium">
-                      임시 인증번호는 <span className="text-[#1D9E75] font-bold">123456</span> 입니다.
+                      이메일로 전송된 6자리 인증번호를 입력해주세요.
                     </p>
                   )}
                 </div>

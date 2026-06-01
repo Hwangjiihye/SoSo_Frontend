@@ -166,6 +166,7 @@ const FindIdPage = () => {
 
             <div className="text-center pt-2">
               <button 
+                type="button"
                 onClick={() => navigate('/login')}
                 className="text-[15px] font-bold text-[#0D6B50] hover:underline underline-offset-4 transition-all"
               >
@@ -187,6 +188,7 @@ const FindIdPage = () => {
 
             <div className="space-y-4">
               <button
+                type="button"
                 onClick={() => navigate('/login')}
                 className="w-full py-2 px-4 border border-transparent text-ml font-black rounded-2xl text-white shadow-lg transition-all transform active:scale-[0.98]"
                 style={{ backgroundColor: '#1D9E75' }}

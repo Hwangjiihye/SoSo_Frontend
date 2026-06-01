@@ -76,8 +76,7 @@ export const useFindId = () => {
   try {
     const resp = await findIdApi({
       name: formData.name,
-      email: formData.email,
-      code: verificationCode
+      email: formData.email
   });
 
   alert(resp.data);
