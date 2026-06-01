@@ -1,9 +1,9 @@
 /**
  * @file BusinessMain.jsx
  * @description '사업자' 대시보드 메인 페이지입니다.
- * 실시간 재고 현황 및 월별 매출 현황 그래프가 추가되었습니다.
+ * 프로필 클릭 시 다중 매장 선택 및 마이페이지 이동이 가능한 드롭다운이 표시됩니다.
  */
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Chart as ChartJS,
@@ -37,10 +37,23 @@ ChartJS.register(
 
 function BusinessMain({ setRole }) {
   const logout = authStore((state) => state.logout);
+  const user_type = authStore((state) => state.user_type);
   const navigate = useNavigate();
 
+  // 프로필 드롭다운 상태
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+
+  // 마이페이지 이동 핸들러
   const handleProfileClick = () => {
-    navigate('/business-mypage');
+    // 세션 스토리지 또는 스토어에서 유저 타입 확인
+    const type = sessionStorage.getItem("user_type") || user_type;
+    
+    if (type === 'BUSINESS') {
+      navigate('/business-mypage');
+    } else {
+      // 파트너 등 타 유형일 경우에 대한 처리 (필요시 추가)
+      alert("사업자 전용 마이페이지입니다.");
+    }
   };
 
   const handleLogOut = () => {
@@ -137,7 +150,7 @@ function BusinessMain({ setRole }) {
           <div className="text-[40px] font-black text-[#1d9e75] tracking-tighter leading-none">SoSo</div>
         </div>
         <nav className="hidden md:flex justify-center gap-1 border border-gray-100 rounded-lg p-1 bg-gray-50 w-fit mx-auto">
-          <a href="#" className="px-4 py-1.5 text-sm font-semibold bg-white text-gray-900 rounded shadow-sm border border-gray-200">홈</a>
+          <a href="#" className="px-4 py-1.5 text-sm font-semibold bg-white text-gray-900 rounded shadow-sm border border-gray-200 ">홈</a>
           {['발주 관리', '수금 관리', '공동 발주', '업체 홍보', '통계'].map(m => (
             <a key={m} href="#" className="px-4 py-1.5 text-sm font-medium text-gray-500 hover:text-emerald-600 transition-colors whitespace-nowrap">{m}</a>
           ))}
@@ -147,10 +160,44 @@ function BusinessMain({ setRole }) {
             <span className="text-xl">🔔</span>
             <span className="absolute -top-1 -right-1 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"></span>
           </button>
-          <div onClick={handleProfileClick} className="flex items-center gap-2 border border-gray-200 rounded-full py-1.5 px-3 bg-white hover:bg-emerald-50 cursor-pointer transition-colors">
-            <div className="w-6 h-6 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-[10px] font-bold">김</div>
-            <span className="text-sm font-semibold whitespace-nowrap text-gray-700">김민준 <span className="text-xs text-gray-400 font-normal">강남 본점</span></span>
+          
+          {/* 프로필 및 드롭다운 컨테이너 */}
+          <div className="relative">
+            <div 
+              onClick={() => setIsProfileOpen(!isProfileOpen)} 
+              className="flex items-center gap-2 border border-gray-200 rounded-full py-1.5 px-3 bg-white hover:bg-emerald-50 cursor-pointer transition-colors"
+            >
+              <div className="w-6 h-6 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-[10px] font-bold">김</div>
+              <span className="text-sm font-semibold whitespace-nowrap text-gray-700">김민준 <span className="text-xs text-gray-400 font-normal">강남 본점</span></span>
+            </div>
+
+            {/* 프로필 드롭다운 메뉴 */}
+            {isProfileOpen && (
+              <div className="absolute right-0 mt-2 w-56 bg-white border border-gray-100 rounded-2xl shadow-2xl p-2 z-[60] animate-fade-in-up">
+                <div className="p-3 border-b border-gray-50">
+                  <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">나의 매장</span>
+                </div>
+                <div className="py-2">
+                  <button className="w-full text-left px-4 py-3 text-sm font-bold text-emerald-600 bg-emerald-50 rounded-xl mb-1 flex justify-between items-center">
+                    강남 본점
+                    <span className="text-[10px] bg-emerald-500 text-white px-1.5 py-0.5 rounded uppercase">Main</span>
+                  </button>
+                  <button className="w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl transition-colors">
+                    홍대 2호점
+                  </button>
+                </div>
+                <div className="border-t border-gray-50 pt-2 mt-2">
+                  <button 
+                    onClick={handleProfileClick}
+                    className="w-full text-center py-3 text-sm font-black text-gray-700 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all"
+                  >
+                    마이페이지
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
+
           <button onClick={handleLogOut} className="text-xs text-gray-400 hover:underline">/로그아웃</button>
         </div>
       </header>

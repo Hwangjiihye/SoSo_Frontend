@@ -131,16 +131,7 @@ export const useLogin = () => {
 
     // 3. [핵심] 성공했으니 '이 시점'에서 메인 화면으로 이동시킵니다!
     alert("로그인에 성공했습니다!");
-      
-     if(user_type === "BUSINESS") {
-      navigate("/BusinessMain")
-    } 
-    else if(user_type === "PARTNER") {
-      navigate("/PartnerMain")
-    } 
-    else if(user_type === "ADMIN") {
-      navigate("/AdminMain")
-    }
+    navigate("/");
   })
   .catch(error => {
     console.error("로그인 실패:", error);

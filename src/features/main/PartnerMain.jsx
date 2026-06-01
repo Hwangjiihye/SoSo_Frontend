@@ -1,9 +1,9 @@
 /**
  * @file PartnerMain.jsx
  * @description '거래처' 대시보드 페이지입니다. 
- * Chart.js를 사용하여 매출, 수금 및 미수금 현황을 시각화합니다.
+ * Chart.js를 사용하여 매출, 수금 및 미수금 현황을 시각화하며, 프로필 드롭다운이 추가되었습니다.
  */
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Chart as ChartJS,
@@ -38,6 +38,10 @@ ChartJS.register(
 function PartnerMain({ setRole }) {
   const navigate = useNavigate();
   const logout = authStore((state) => state.logout);
+  const user_type = authStore((state) => state.user_type);
+
+  // 프로필 드롭다운 상태
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   const handleLogOut = () => {
     logout();
@@ -46,7 +50,16 @@ function PartnerMain({ setRole }) {
   };
 
   const handleProfileClick = () => {
-    navigate('/business-mypage');
+    // 세션 스토리지 또는 스토어에서 유저 타입 확인
+    const type = sessionStorage.getItem("user_type") || user_type;
+    
+    if (type === 'BUSINESS') {
+      navigate('/business-mypage');
+    } else {
+      // 현재는 사업자 마이페이지 경로만 명시되었으므로 알림 처리
+      alert("사업자 전용 마이페이지로 이동합니다. (현재 유저 타입: " + type + ")");
+      // 실제 프로젝트에 파트너 마이페이지가 있다면 navigate('/partner-mypage') 등으로 연결
+    }
   };
 
   // --- 차트 데이터: 월별 매출/수금 추이 (Grouped Bar) ---
@@ -56,13 +69,13 @@ function PartnerMain({ setRole }) {
       {
         label: '매출',
         data: [4000, 6000, 5500, 8000, 4500, 9000, 7000, 8500],
-        backgroundColor: 'rgba(16, 185, 129, 0.6)', // emerald-500
+        backgroundColor: 'rgba(16, 185, 129, 0.6)', 
         borderRadius: 4,
       },
       {
         label: '수금',
         data: [3500, 5000, 4800, 7200, 4000, 8200, 6500, 7800],
-        backgroundColor: 'rgba(59, 130, 246, 0.6)', // blue-500
+        backgroundColor: 'rgba(59, 130, 246, 0.6)', 
         borderRadius: 4,
       },
     ],
@@ -99,7 +112,7 @@ function PartnerMain({ setRole }) {
       {
         label: '누적 미수금',
         data: [500, 1000, 700, 800, 500, 800, 500, 700],
-        borderColor: 'rgb(239, 68, 68)', // red-500
+        borderColor: 'rgb(239, 68, 68)', 
         backgroundColor: 'rgba(239, 68, 68, 0.1)',
         fill: true,
         tension: 0.4,
@@ -147,10 +160,44 @@ function PartnerMain({ setRole }) {
             <span className="text-xl">🔔</span>
             <span className="absolute -top-1 -right-1 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"></span>
           </button>
-          <div onClick={handleProfileClick} className="flex items-center gap-2 border border-gray-200 rounded-full py-1.5 px-3 bg-white hover:bg-emerald-50 cursor-pointer transition-colors">
-            <div className="w-6 h-6 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-[10px] font-bold">김</div>
-            <span className="text-sm font-semibold whitespace-nowrap text-gray-700">김민준 <span className="text-xs text-gray-400 font-normal">강남 본점</span></span>
+          
+          {/* 프로필 및 드롭다운 컨테이너 */}
+          <div className="relative">
+            <div 
+              onClick={() => setIsProfileOpen(!isProfileOpen)} 
+              className="flex items-center gap-2 border border-gray-200 rounded-full py-1.5 px-3 bg-white hover:bg-emerald-50 cursor-pointer transition-colors"
+            >
+              <div className="w-6 h-6 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-[10px] font-bold">김</div>
+              <span className="text-sm font-semibold whitespace-nowrap text-gray-700">김민준 <span className="text-xs text-gray-400 font-normal">거래처 관리자</span></span>
+            </div>
+
+            {/* 프로필 드롭다운 메뉴 */}
+            {isProfileOpen && (
+              <div className="absolute right-0 mt-2 w-56 bg-white border border-gray-100 rounded-2xl shadow-2xl p-2 z-[60] animate-fade-in-up">
+                <div className="p-3 border-b border-gray-50">
+                  <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">관리 업체</span>
+                </div>
+                <div className="py-2">
+                  <button className="w-full text-left px-4 py-3 text-sm font-bold text-emerald-600 bg-emerald-50 rounded-xl mb-1 flex justify-between items-center">
+                    한빛 식품 유통
+                    <span className="text-[10px] bg-emerald-500 text-white px-1.5 py-0.5 rounded uppercase">Main</span>
+                  </button>
+                  <button className="w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl transition-colors">
+                    대성 식자재
+                  </button>
+                </div>
+                <div className="border-t border-gray-50 pt-2 mt-2">
+                  <button 
+                    onClick={handleProfileClick}
+                    className="w-full text-center py-3 text-sm font-black text-gray-700 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all"
+                  >
+                    마이페이지
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
+
           <button onClick={handleLogOut} className="text-xs text-gray-400 hover:underline">/로그아웃</button>
         </div>
       </header>
@@ -184,12 +231,10 @@ function PartnerMain({ setRole }) {
           </div>
           
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-            {/* Main Bar Chart */}
             <div className="lg:col-span-2 h-[350px]">
               <Bar data={trendChartData} options={trendChartOptions} />
             </div>
             
-            {/* Stats Breakdown */}
             <div className="bg-gray-50 rounded-[2rem] p-8 flex flex-col justify-between">
               <div className="space-y-6">
                 <div>
@@ -216,7 +261,6 @@ function PartnerMain({ setRole }) {
               </div>
             </div>
 
-            {/* Receivable Line Chart (Full Width) */}
             <div className="lg:col-span-3 pt-10 border-t border-gray-100">
               <h4 className="text-xl font-bold text-gray-900 mb-8 flex items-center gap-3">
                 <span className="w-3 h-3 bg-red-500 rounded-full"></span>
@@ -237,7 +281,6 @@ function PartnerMain({ setRole }) {
 
         {/* Bottom Grid Section */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-           {/* Business Sales Summary */}
            <div className="bg-white rounded-[2.5rem] border border-gray-200 p-8 shadow-sm">
               <h3 className="text-xl font-black mb-8 flex justify-between items-center text-gray-900">
                 사업자별 매출 요약
@@ -267,7 +310,6 @@ function PartnerMain({ setRole }) {
               </div>
            </div>
 
-           {/* Group Orders */}
            <div className="bg-white rounded-[2.5rem] border border-gray-200 p-8 shadow-sm">
               <h3 className="text-xl font-black mb-8 flex justify-between items-center text-gray-900">
                 공동 발주 현황
@@ -293,7 +335,6 @@ function PartnerMain({ setRole }) {
               </div>
            </div>
 
-           {/* Notifications */}
            <div className="bg-white rounded-[2.5rem] border border-gray-200 p-8 shadow-sm">
               <h3 className="text-xl font-black mb-8 flex justify-between items-center text-gray-900">
                 실시간 알림

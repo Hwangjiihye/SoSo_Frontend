@@ -4,9 +4,9 @@
  * '마이페이지 사업자.png' 디자인을 기반으로, 사이드바와 콘텐츠 영역을 구현합니다.
  */
 import React, { useState } from 'react';
-import MainFooter from '../../../components/layout/MainFooter';
-// 🛠️ 기존 ../../ 에서 ../ 하나 더 추가해서 3칸 올라가기!
-import logo from "../../../assets/soso로고.png";
+import MainFooter from '../../components/layout/MainFooter';
+// 🛠️ 기존 ../.. 에서 ../ 하나 더 추가해서 3칸 올라가기!
+import logo from "../../assets/soso로고.png";
 
 // '개인정보 확인' 탭에 대한 상세 콘텐츠
 const UserProfileTab = () => {
