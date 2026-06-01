@@ -1,35 +1,142 @@
 /**
  * @file BusinessMain.jsx
  * @description '사업자' 대시보드 메인 페이지입니다.
- * useNavigate 훅을 사용하여 프로필 클릭 시 마이페이지로 이동하는 기능을 추가했습니다.
+ * 프로필 클릭 시 다중 매장 선택 및 마이페이지 이동이 가능한 드롭다운이 표시됩니다.
  */
-import React from 'react';
-import { useNavigate } from 'react-router-dom'; // useNavigate 임포트
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  PointElement,
+  LineElement,
+  Filler,
+} from 'chart.js';
+import { Bar, Line } from 'react-chartjs-2';
 import logo from '../../assets/soso로고.png';
 import MainFooter from '../../components/layout/MainFooter';
 import authStore from '../../store/authStore';
 
+// Chart.js 컴포넌트 등록
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler
+);
+
 function BusinessMain({ setRole }) {
-
   const logout = authStore((state) => state.logout);
+  const user_type = authStore((state) => state.user_type);
+  const navigate = useNavigate();
 
-  const navigate = useNavigate(); // useNavigate 훅 사용
+  // 프로필 드롭다운 상태
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
 
+  // 마이페이지 이동 핸들러
   const handleProfileClick = () => {
-    navigate('/business-mypage'); // 지정된 경로로 이동
+    // 세션 스토리지 또는 스토어에서 유저 타입 확인
+    const type = sessionStorage.getItem("user_type") || user_type;
+    
+    if (type === 'BUSINESS') {
+      navigate('/business-mypage');
+    } else {
+      // 파트너 등 타 유형일 경우에 대한 처리 (필요시 추가)
+      alert("사업자 전용 마이페이지입니다.");
+    }
   };
 
   const handleLogOut = () => {
     logout();
     alert("로그아웃 되었습니다.");
     navigate("/");
-  }
+  };
+
+  // --- 차트 데이터: 실시간 재고 현황 (Bar) ---
+  const stockChartData = {
+    labels: ['소고기', '돼지고기', '닭고기', '양파', '마늘', '식용유'],
+    datasets: [
+      {
+        label: '현재 재고',
+        data: [45, 12, 33, 8, 2, 28],
+        backgroundColor: [
+          'rgba(16, 185, 129, 0.6)', 
+          'rgba(239, 68, 68, 0.6)',  
+          'rgba(16, 185, 129, 0.6)',
+          'rgba(245, 158, 11, 0.6)', 
+          'rgba(239, 68, 68, 0.6)',  
+          'rgba(16, 185, 129, 0.6)',
+        ],
+        borderColor: [
+          'rgb(16, 185, 129)',
+          'rgb(239, 68, 68)',
+          'rgb(16, 185, 129)',
+          'rgb(245, 158, 11)',
+          'rgb(239, 68, 68)',
+          'rgb(16, 185, 129)',
+        ],
+        borderWidth: 1,
+        borderRadius: 8,
+      },
+    ],
+  };
+
+  // --- 차트 데이터: 월별 매출 현황 (Line) ---
+  const salesChartData = {
+    labels: ['1월', '2월', '3월', '4월', '5월', '6월'],
+    datasets: [
+      {
+        label: '매출액 (만원)',
+        data: [1200, 1900, 1500, 2100, 2400, 1800],
+        borderColor: 'rgb(16, 185, 129)',
+        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+        fill: true,
+        tension: 0.4,
+        pointRadius: 4,
+        pointBackgroundColor: 'rgb(16, 185, 129)',
+      },
+    ],
+  };
+
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: false,
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        grid: {
+          color: '#f3f4f6',
+        },
+      },
+      x: {
+        grid: {
+          display: false,
+        },
+      },
+    },
+  };
 
   const notifications = [
     { id: 1, title: '부족 재고 - 냉동삼겹살 1kg', desc: '현재 재고 3개 · 안전 재고 기준 20개 미달', time: '방금 전', color: 'bg-red-500' },
     { id: 2, title: '유통기한 임박 - 두부 (면두부)', desc: 'D-3 · 12개 남음 · 즉시 처리 권장', time: '8분 전', color: 'bg-orange-500' },
     { id: 3, title: '발주 도착 예정 - 식용유 18L X 6', desc: '오늘 오후 2시~4시 배송 예정', time: '34분 전', color: 'bg-emerald-500' },
   ];
+
   const groupOrders = [
     { id: 1, title: '참치캔 (동원 150g X 48)', status: '모집 중', progress: 72, color: 'bg-emerald-500', current: 18, min: 25, dDay: 'D-1', btn: '참여하기' },
     { id: 2, title: '냉동만두 (비비고 2kg X 12)', status: '모집 중', progress: 48, color: 'bg-emerald-500', current: 12, min: 25, dDay: 'D-4', btn: '참여하기' },
@@ -38,31 +145,65 @@ function BusinessMain({ setRole }) {
   return (
     <div className="min-h-screen bg-gray-50 text-gray-800 font-sans">
       <header className="grid grid-cols-3 items-center py-5 px-6 md:px-12 border-b border-gray-200 bg-white sticky top-0 z-50">
-        <div className="flex items-center gap-2">
-          <img src={logo} alt="SoSo Logo" className="w-8 h-8 object-contain" />
-          <div className="text-2xl font-black text-emerald-600 tracking-tighter">SoSo</div>
+        <div className="flex items-center gap-1">
+          <img src={logo} alt="SoSo Logo" className="w-12 h-12 object-contain relative top-[5px]" />
+          <div className="text-[40px] font-black text-[#1d9e75] tracking-tighter leading-none">SoSo</div>
         </div>
-        <nav className="hidden md:flex justify-center">
-          {/* ... 네비게이션 메뉴 ... */}
+        <nav className="hidden md:flex justify-center gap-1 border border-gray-100 rounded-lg p-1 bg-gray-50 w-fit mx-auto">
+          <a href="#" className="px-4 py-1.5 text-sm font-semibold bg-white text-gray-900 rounded shadow-sm border border-gray-200 ">홈</a>
+          {['발주 관리', '수금 관리', '공동 발주', '업체 홍보', '통계'].map(m => (
+            <a key={m} href="#" className="px-4 py-1.5 text-sm font-medium text-gray-500 hover:text-emerald-600 transition-colors whitespace-nowrap">{m}</a>
+          ))}
         </nav>
         <div className="flex items-center justify-end gap-4">
           <button className="text-gray-400 hover:text-emerald-600 relative">
             <span className="text-xl">🔔</span>
             <span className="absolute -top-1 -right-1 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"></span>
           </button>
-          {/* 프로필 클릭 시 handleProfileClick 함수 실행 */}
-          <div
-            onClick={handleProfileClick}
-            className="flex items-center gap-2 border border-gray-200 rounded-full py-1.5 px-3 bg-white hover:bg-emerald-50 cursor-pointer transition-colors"
-          >
-            <div className="w-6 h-6 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-[10px] font-bold">김</div>
-            <span className="text-sm font-semibold whitespace-nowrap text-gray-700">김민준 <span className="text-xs text-gray-400 font-normal">강남 본점</span></span>
+          
+          {/* 프로필 및 드롭다운 컨테이너 */}
+          <div className="relative">
+            <div 
+              onClick={() => setIsProfileOpen(!isProfileOpen)} 
+              className="flex items-center gap-2 border border-gray-200 rounded-full py-1.5 px-3 bg-white hover:bg-emerald-50 cursor-pointer transition-colors"
+            >
+              <div className="w-6 h-6 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-[10px] font-bold">김</div>
+              <span className="text-sm font-semibold whitespace-nowrap text-gray-700">김민준 <span className="text-xs text-gray-400 font-normal">강남 본점</span></span>
+            </div>
+
+            {/* 프로필 드롭다운 메뉴 */}
+            {isProfileOpen && (
+              <div className="absolute right-0 mt-2 w-56 bg-white border border-gray-100 rounded-2xl shadow-2xl p-2 z-[60] animate-fade-in-up">
+                <div className="p-3 border-b border-gray-50">
+                  <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">나의 매장</span>
+                </div>
+                <div className="py-2">
+                  <button className="w-full text-left px-4 py-3 text-sm font-bold text-emerald-600 bg-emerald-50 rounded-xl mb-1 flex justify-between items-center">
+                    강남 본점
+                    <span className="text-[10px] bg-emerald-500 text-white px-1.5 py-0.5 rounded uppercase">Main</span>
+                  </button>
+                  <button className="w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl transition-colors">
+                    홍대 2호점
+                  </button>
+                </div>
+                <div className="border-t border-gray-50 pt-2 mt-2">
+                  <button 
+                    onClick={handleProfileClick}
+                    className="w-full text-center py-3 text-sm font-black text-gray-700 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all"
+                  >
+                    마이페이지
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
-          <button onClick={() => setRole('guest')} className="text-xs text-gray-400 hover:underline" onClick={handleLogOut}>로그아웃</button>
+
+          <button onClick={handleLogOut} className="text-xs text-gray-400 hover:underline">/로그아웃</button>
         </div>
       </header>
+
       <main className="max-w-7xl mx-auto px-8 py-8">
-        {/* ... 페이지 나머지 콘텐츠 ... */}
+        {/* Statistics Summary Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           {[
             { t: '총 재고', v: '1,284', u: '개 품목', b: '전주 대비 +3.2%', c: 'border-emerald-100' },
@@ -77,8 +218,38 @@ function BusinessMain({ setRole }) {
             </div>
           ))}
         </div>
+
+        {/* Charts Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="font-bold text-gray-700 flex items-center gap-2">
+                <span className="w-2 h-2 bg-emerald-500 rounded-full"></span>
+                현재 재고 현황
+              </h3>
+              <span className="text-[10px] text-gray-400 font-bold uppercase tracking-tight">기준: 오늘 실시간</span>
+            </div>
+            <div className="h-64">
+              <Bar data={stockChartData} options={chartOptions} />
+            </div>
+          </div>
+          <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="font-bold text-gray-700 flex items-center gap-2">
+                <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+                월별 매출 현황
+              </h3>
+              <span className="text-[10px] text-gray-400 font-bold uppercase tracking-tight">단위: 만원</span>
+            </div>
+            <div className="h-64">
+              <Line data={salesChartData} options={chartOptions} />
+            </div>
+          </div>
+        </div>
+
+        {/* Alerts and Group Orders */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="bg-white rounded-2xl border border-gray-200 p-6">
+          <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
             <h3 className="font-bold mb-6 text-gray-700">실시간 알림</h3>
             <div className="space-y-6">
               {notifications.map(n => (
@@ -92,7 +263,7 @@ function BusinessMain({ setRole }) {
               ))}
             </div>
           </div>
-          <div className="bg-white rounded-2xl border border-gray-200 p-6">
+          <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
             <h3 className="font-bold mb-6 text-gray-700">공동 발주 현황</h3>
             <div className="space-y-4">
               {groupOrders.map(o => (

@@ -1,32 +1,43 @@
 /**
  * @file MainPage.jsx
- * @description 애플리케이션의 메인 껍데기(컨테이너) 역할을 하는 컴포넌트입니다.
- * 현재는 백엔드 로그인 연동 전이므로, 화면 테스트를 위해 자체적으로 role(권한) 상태를 관리하며 
- * 권한에 맞는 하위 메인 페이지(비회원, 사업자, 거래처)를 렌더링합니다.
+ * @description 애플리케이션의 메인 컨테이너 컴포넌트입니다.
+ * authStore의 user_type을 확인하여 권한에 맞는 메인 페이지(Guest, Business, Partner)를 노출합니다.
  */
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import GuestMain from './GuestMain';
 import BusinessMain from './BusinessMain';
 import PartnerMain from './PartnerMain';
+import authStore from '../../store/authStore';
 
 function MainPage() {
-  // 임시 권한 상태 관리 state
-  // 초기값: 'guest' (비회원 랜딩 페이지 노출)
-  // 변경 가능한 값: 'guest', 'business', 'partner'
+  // 스토어에서 유저 타입 가져오기
+  const userTypeFromStore = authStore((state) => state.user_type);
+  
+  // 로컬 role 상태 (체험하기 버튼 등을 위한 임시 상태)
   const [role, setRole] = useState('guest');
 
-  // role 상태가 'business'일 경우 사업자 대시보드 컴포넌트를 렌더링
-  // 하위 컴포넌트에서 권한을 다시 변경할 수 있도록 setRole 함수를 props로 전달
+  // 스토어의 유저 타입이 변경될 때마다 로컬 role 상태 업데이트
+  useEffect(() => {
+    if (userTypeFromStore) {
+      // 스토어에 타입이 있다면 (로그인 상태) 해당 타입으로 설정
+      // 보통 'BUSINESS', 'PARTNER' 등의 대문자로 저장되므로 소문자로 변환하여 매칭
+      setRole(userTypeFromStore.toLowerCase());
+    } else {
+      // 로그인 정보가 없다면 기본값인 'guest'로 설정
+      setRole('guest');
+    }
+  }, [userTypeFromStore]);
+
+  // role 상태에 따른 분기 렌더링
   if (role === 'business') {
     return <BusinessMain setRole={setRole} />;
   }
 
-  // role 상태가 'partner'일 경우 거래처 대시보드 컴포넌트를 렌더링
   if (role === 'partner') {
     return <PartnerMain setRole={setRole} />;
   }
 
-  // 그 외의 경우(기본값 포함) 비회원 서비스 소개 페이지를 렌더링
+  // 기본값: 비회원 랜딩 페이지
   return <GuestMain setRole={setRole} />;
 }
 

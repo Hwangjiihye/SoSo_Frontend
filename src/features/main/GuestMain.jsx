@@ -1,270 +1,318 @@
-/**
- * @file GuestMain.jsx
- * @description 비회원 사용자용 랜딩 페이지입니다.
- * 에메랄드 테마를 적용하였으며, 주요 기능의 버튼을 클릭하면 해당 기능의 실제 화면 목업이 
- * 중앙 영역에 동적으로 나타나거나 사라지는 토글 기능을 포함합니다.
- */
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement,
+  PointElement,
+  LineElement,
+} from 'chart.js';
+import { Bar, Line } from 'react-chartjs-2';
 import logo from '../../assets/soso로고.png';
+import MainFooter from '../../components/layout/MainFooter';
+
+// Chart.js 컴포넌트 등록
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  PointElement,
+  LineElement,
+  ArcElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 function GuestMain({ setRole }) {
-  // 활성화된 탭 상태 ('business' 또는 'partner')
-  const [activeTab, setActiveTab] = useState('business');
-
-  // 현재 어떤 기능의 프리뷰(목업)를 보여줄지 관리하는 상태
+  const navigate = useNavigate();
   const [selectedFeature, setSelectedFeature] = useState(null);
 
-  // 프리뷰 영역 전체 노출 여부
-  const [showPreview, setShowPreview] = useState(false);
-
-  // --- 기능별 데이터 정의 ---
-  const businessFeatures = [
-    { id: 'stock', title: '실시간 재고 현황', desc: '품목별 재고 수량을 실시간으로 확인하고 부족 재고를 즉시 파악', btn: '현황 보기', icon: '📦' },
-    { id: 'stats', title: '입/출고 통계', desc: '일별/기간별 입출고 흐름을 차트로 분석하고 추세 예측', btn: '통계 보기', icon: '📊' },
-    { id: 'alarm', title: '스마트 알림', desc: '재고 임계치 도달, 거래처 요청 등 알림 자동화', btn: '알림 설정', icon: '🔔' },
-    { id: 'notice', title: '공고 관리', desc: '구매 공고, 판매 공고를 등록하고 거래처와 빠르게 연결', btn: '공고 보기', icon: '📢' }
-  ];
-
-  const partnerFeatures = [
-    { id: 'stock', title: '재고 관리', desc: '거래처로 연결된 사업자의 재고를 함께 조회하고 발주 요청', btn: '재고 확인', icon: '🏢' },
-    { id: 'promo', title: '업체 홍보', desc: '업체 프로필 페이지로 취급 품목, 단가, 신상품을 효과적으로 홍보', btn: '홍보 등록', icon: '✨' },
-    { id: 'group', title: '공동 구매', desc: '여러 업체와 묶음 발주로 단가를 낮추고 배송비를 절감', btn: '공구 참여', icon: '🤝' }
-  ];
-
-  const currentFeatures = activeTab === 'business' ? businessFeatures : partnerFeatures;
-
-  // --- 기능 버튼 클릭 핸들러 (토글 로직) ---
-  const handleFeatureClick = (id) => {
-    if (selectedFeature === id && showPreview) {
-      // 이미 열려있는 기능을 다시 누르면 닫음
-      setShowPreview(false);
-      setSelectedFeature(null);
-    } else {
-      // 새로운 기능을 누르거나 닫혀있을 때 누르면 해당 기능으로 교체 후 열음
-      setSelectedFeature(id);
-      setShowPreview(true);
-    }
+  // --- 더미 데이터 영역 ---
+  const stockData = {
+    labels: ['소고기', '돼지고기', '닭고기', '양파', '마늘', '대파'],
+    datasets: [{
+      label: '현재고',
+      data: [45, 12, 33, 8, 2, 15],
+      backgroundColor: [
+        'rgba(16,185,129,0.6)', 'rgba(239,68,68,0.6)',
+        'rgba(16,185,129,0.6)', 'rgba(245,158,11,0.6)',
+        'rgba(239,68,68,0.6)', 'rgba(16,185,129,0.6)'
+      ],
+      borderWidth: 1,
+    }],
   };
 
-  // --- [목업 컴포넌트들] ---
+  const trendData = {
+    labels: ['월', '화', '수', '목', '금', '토', '일'],
+    datasets: [
+      { label: '입고', data: [12, 19, 3, 5, 2, 3, 10], borderColor: 'rgb(16, 185, 129)', tension: 0.3 },
+      { label: '출고', data: [8, 11, 5, 8, 3, 5, 12], borderColor: 'rgb(59, 130, 246)', tension: 0.3 },
+    ],
+  };
 
-  // 1. 실시간 재고 현황 목업
-  const StockMockup = () => (
-    <div className="animate-fade-in">
-      <div className="bg-emerald-600 px-6 py-4 flex justify-between items-center text-white">
-        <h3 className="font-bold">현재 재고 현황</h3>
-        <span className="text-xs opacity-80">기준일 2025-07-21</span>
-      </div>
-      <div className="p-6 grid grid-cols-3 gap-4 border-b border-gray-100 text-center">
-        <div><div className="text-[10px] text-gray-400 mb-1">전체 품목</div><div className="text-xl font-bold">24품</div></div>
-        <div><div className="text-[10px] text-orange-400 mb-1">임박 품목</div><div className="text-xl font-bold text-orange-500">3품</div></div>
-        <div><div className="text-[10px] text-red-400 mb-1">소진 품목</div><div className="text-xl font-bold text-red-500">1품</div></div>
-      </div>
-      <div className="p-6 space-y-4">
-        {['소고기', '냉동 닭', '마늘'].map((name, i) => (
-          <div key={name} className="flex justify-between items-center">
-            <span className="text-sm font-bold w-16">{name}</span>
-            <span className="text-xs text-gray-500">{i === 2 ? 0 : 20 + i * 28}개</span>
-            <div className="flex-grow mx-4 bg-gray-100 h-1.5 rounded-full overflow-hidden">
-              <div className={`h-full ${i === 1 ? 'bg-emerald-500' : 'bg-red-400'}`} style={{ width: i === 2 ? '0%' : (i === 1 ? '100%' : '20%') }}></div>
-            </div>
-            <span className={`text-[10px] font-bold ${i === 1 ? 'text-emerald-500' : 'text-red-500'}`}>{i === 1 ? '정상' : (i === 2 ? '소진' : '경고')}</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-
-  // 2. 입출고 통계 목업
-  const StatsMockup = () => (
-    <div className="animate-fade-in p-8 text-center">
-      <h3 className="font-bold text-gray-800 mb-8 text-left">월별 입/출고 현황</h3>
-      <div className="h-48 flex items-end justify-between gap-2 px-4 border-b border-gray-100 mb-4">
-        {[40, 70, 55, 90, 60, 85].map((h, i) => (
-          <div key={i} className="flex gap-1 items-end h-full w-full max-w-[25px]">
-            <div className="bg-emerald-200 w-1/2 rounded-t-sm" style={{ height: `${h - 15}%` }}></div>
-            <div className="bg-emerald-500 w-1/2 rounded-t-sm" style={{ height: `${h}%` }}></div>
-          </div>
-        ))}
-      </div>
-      <div className="flex justify-between text-[10px] text-gray-400 px-2 uppercase font-bold tracking-tighter">
-        {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'].map(m => <span key={m}>{m}</span>)}
-      </div>
-    </div>
-  );
-
-  // 3. 스마트 알림 목업
-  const AlarmMockup = () => (
-    <div className="animate-fade-in p-8">
-      <h3 className="font-bold text-gray-800 mb-6">실시간 알림</h3>
-      <div className="space-y-5">
-        {[
-          { t: '부족 재고 알림', d: '냉동삼겹살 1kg의 재고가 부족합니다.', c: 'bg-red-500' },
-          { t: '유통기한 경고', d: '두부(면두부)의 유통기한이 3일 남았습니다.', c: 'bg-orange-500' },
-          { t: '발주 접수 알림', d: '강남 본점으로부터 신규 발주가 접수되었습니다.', c: 'bg-emerald-500' }
-        ].map((n, i) => (
-          <div key={i} className="flex gap-4 items-start border-b border-gray-50 pb-4 last:border-0">
-            <div className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${n.c}`}></div>
-            <div>
-              <div className="text-xs font-bold text-gray-900">{n.t}</div>
-              <div className="text-[10px] text-gray-400 mt-0.5">{n.d}</div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
+  const groupPurchases = [
+    { id: 1, title: '양파(국산) 20kg 공동구매하실분!', author: '맛나식당', deadline: 'D-2', progress: 75, price: '18,000원' },
+    { id: 2, title: '냉동 삼겹살 대량 발주 참여자 모집', author: '고기마을', deadline: 'D-1', progress: 40, price: '12,500원/kg' },
+    { id: 3, title: '깐마늘 10kg 박스 단위 묶음 배송', author: '싱싱채소', deadline: 'D-5', progress: 90, price: '45,000원' },
+  ];
 
   return (
-    <div className="min-h-screen bg-white text-gray-800 font-sans overflow-x-hidden">
+    <div className="min-h-screen bg-white text-gray-800 font-sans flex flex-col">
+      {/* grid 대신 flex와 justify-between을 사용해서 양 끝으로 배치 */}
+      <header className="flex justify-between items-center py-5 px-6 md:px-12 border-b border-gray-200 bg-white sticky top-0 z-50">
 
-      {/* --- Header & Hero Section (Emerald Soft Background) --- */}
-      <div className="bg-[#F2FBFA]">
-        <header className="flex justify-between items-center py-5 px-6 md:px-12">
-          <div className="flex items-center gap-1">
-            {/* 🛠️ relative와 top-[1px] 또는 top-[2px]를 주어 눈대중으로 완벽히 맞추기 */}
-            <img
-              src={logo}
-              alt="SoSo Logo"
-              className="w-12 h-12 object-contain relative top-[5px]"
-            />
-            <div className="text-[40px] font-black text-[#1d9e75] tracking-tighter leading-none">
-              SoSo
-            </div>
+        {/* Left: Logo (왼쪽 끝에 고정) */}
+        <div className="flex items-center gap-1">
+          <img
+            src={logo}
+            alt="SoSo Logo"
+            className="w-12 h-12 object-contain relative top-[5px]"
+          />
+          <div className="text-[40px] font-black text-[#1d9e75] tracking-tighter leading-none">
+            SoSo
           </div>
-          <div className="flex gap-4 items-center">
-            <div className="hidden md:flex gap-8 text-sm font-bold text-gray-500 mr-4">
-              <a href="#" className="hover:text-emerald-600 transition-colors">서비스 소개</a>
-              <a href="#" className="hover:text-emerald-600 transition-colors">로그인</a>
-              <a href="#" className="hover:text-emerald-600 transition-colors">회원가입</a>
-            </div>
-            <div className="flex gap-2">
-              <button onClick={() => setRole('business')} className="px-4 py-2 text-xs font-bold text-gray-400 border border-gray-200 bg-white rounded-full hover:bg-emerald-50 hover:text-emerald-600 transition-all shadow-sm">사업자 테스트</button>
-              <button onClick={() => setRole('partner')} className="px-4 py-2 text-xs font-bold text-gray-400 border border-gray-200 bg-white rounded-full hover:bg-emerald-50 hover:text-emerald-600 transition-all shadow-sm">거래처 테스트</button>
-            </div>
-          </div>
-        </header>
+        </div>
 
-        <section className="flex flex-col items-center text-center pt-20 pb-32 px-4">
-          <span className="px-5 py-2 text-xs font-bold text-emerald-700 bg-emerald-100/50 rounded-full mb-10 shadow-sm">✦ AI 기반 스마트 재고 관리 플랫폼</span>
-          <h1 className="text-4xl md:text-6xl font-bold text-gray-900 tracking-tight mb-8 leading-[1.1]">
-            재고 관리,<br />이제 더 <span className="text-emerald-600 relative inline-block underline underline-offset-8 decoration-emerald-100">스마트</span>하게
+        {/* Right: Auth Actions (오른쪽 끝에 고정) */}
+        <div className="flex items-center justify-end gap-3">
+          <button
+            onClick={() => navigate('/login')}
+            className="text-sm font-bold text-gray-500 hover:text-emerald-600 transition-colors cursor-pointer"
+          >
+            로그인
+          </button>
+          <button
+            onClick={() => navigate('/signup')}
+            className="px-6 py-2.5 text-sm font-bold text-white bg-emerald-600 rounded-full hover:bg-emerald-700 transition-all shadow-md active:scale-95 transition-colors cursor-pointer"
+          >
+            회원가입
+          </button>
+        </div>
+
+      </header>
+
+      {/* Hero Section */}
+      <section className="relative pt-20 pb-10 overflow-hidden bg-gradient-to-b from-emerald-50/50 to-white text-center">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="inline-block px-5 py-2 mb-8 text-xs font-black text-emerald-700 bg-emerald-100 rounded-full uppercase tracking-widest">
+            Smart Stock Management Platform
+          </div>
+          <h1 className="text-5xl md:text-7xl font-black text-gray-900 leading-[1.1] mb-10">
+            재고 관리의 정석, <br />
+            <span className="text-emerald-600">SoSo와 함께하세요.</span>
           </h1>
-          <p className="text-base md:text-lg text-gray-500 max-w-2xl mb-12 leading-relaxed">
-            실시간 재고 현황부터 입/출고 통계, 스마트 알림까지<br />사업자와 거래처를 연결하는 올인원 재고 솔루션
+          <p className="text-lg md:text-xl text-gray-500 mb-14 max-w-2xl mx-auto leading-relaxed">
+            복잡한 재고 파악부터 스마트한 공동 발주까지,<br />
+            한 화면에서 모든 관리가 가능해집니다.
           </p>
           <button
             onClick={() => setRole('business')}
-            className="px-10 py-5 bg-white text-emerald-600 text-lg rounded-full font-black shadow-xl shadow-emerald-100 hover:scale-105 transition-transform border border-emerald-50"
+            className="px-12 py-5 bg-emerald-600 text-white rounded-2xl font-black shadow-2xl shadow-emerald-200 hover:-translate-y-1 transition-all text-lg"
           >
-            시작하기 →
+            지금 무료로 시작하기 →
           </button>
-        </section>
-      </div>
-
-      {/* --- Main Contents Area --- */}
-      <main className="max-w-[90rem] mx-auto px-4 pt-14 pb-0">
-
-        {/* Tab Selection */}
-        <div className="flex justify-center gap-10 mb-10">
-          {['business', 'partner'].map(type => (
-            <button
-              key={type}
-              onClick={() => { setActiveTab(type); setShowPreview(false); }}
-              className={`px-10 py-4 rounded-full text-lg font-black transition-all border-2 ${activeTab === type
-                ? 'border-emerald-500 text-emerald-600 bg-emerald-50'
-                : 'border-gray-100 text-gray-300 hover:text-gray-500'
-                }`}
-            >
-              {type === 'business' ? '사업자' : '거래처'}
-            </button>
-          ))}
         </div>
+      </section>
 
-        {/* Feature Cards Grid */}
-        <div className="mb-15">
-          <h2 className="text-xs font-black text-emerald-600 mb-8 uppercase tracking-[0.2em] px-2 text-center">Main Features</h2>
+      {/* Main Features Section */}
+      <section id="features" className="pt-10 pb-2 bg-white">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="text-center mb-16">
+            <h2 className="text-xs font-black text-emerald-600 mb-4 uppercase tracking-[0.3em]">Core Features</h2>
+            <h3 className="text-4xl md:text-5xl font-black text-gray-900 mb-6">핵심 기능 미리보기</h3>
+            <p className="text-base text-gray-400 max-w-xl mx-auto">기능 카드를 클릭하여 SoSo가 제공하는 스마트한 화면을 체험해보세요.</p>
+          </div>
 
-          {/* 🛠️ 모바일에선 1열, 태블릿에선 2열 grid를 쓰다가 lg 화면부턴 flex 중앙정렬로 스위칭! */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:flex-wrap lg:justify-center gap-8 w-full max-w-[1280px] mx-auto">
-            {currentFeatures.map((f) => (
-              <div
+          {/* 주요 기능 카드 그리드 */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+            {[
+              { id: 'stock', title: '실시간 재고 현황', icon: '📊', desc: '품목별 현재 보유량 시각화' },
+              { id: 'stats', title: '입출고 데이터 분석', icon: '📈', desc: '주간/월간 흐름 완벽 분석' },
+              { id: 'alarm', title: '스마트 알림 시스템', icon: '🔔', desc: '부족 및 기한 임박 즉시 알림' },
+              { id: 'group', title: '공동 구매/발주', icon: '🤝', desc: '거래처 연결 및 비용 절감' },
+            ].map((f) => (
+              <button
                 key={f.id}
-                onClick={() => handleFeatureClick(f.id)}
-                // 🛠️ 각 카드가 일정한 크기(예: 280px)를 유지하도록 lg:w-[280px] sm:w-full 설정 추가
-                className={`bg-white border-2 rounded-[2.5rem] p-10 shadow-sm transition-all cursor-pointer flex flex-col items-center text-center group w-full lg:w-[280px] ${selectedFeature === f.id && showPreview
-                  ? 'border-emerald-500 shadow-emerald-100 shadow-2xl'
-                  : 'border-gray-50 hover:border-emerald-100 hover:shadow-lg'
+                onClick={() => setSelectedFeature(selectedFeature === f.id ? null : f.id)}
+                className={`text-left p-10 rounded-[2.5rem] border-4 transition-all ${selectedFeature === f.id
+                  ? 'border-emerald-500 bg-emerald-50/30 shadow-2xl shadow-emerald-100'
+                  : 'border-gray-50 hover:border-emerald-100 hover:bg-gray-50'
                   }`}
               >
-                <div className="text-5xl mb-8 group-hover:scale-110 transition-transform">{f.icon}</div>
-                <h3 className="text-xl font-bold text-gray-900 mb-4">{f.title}</h3>
-                <p className="text-gray-400 text-sm leading-relaxed mb-10 flex-grow">{f.desc}</p>
-                <div className={`text-sm font-black flex items-center gap-2 transition-colors ${selectedFeature === f.id && showPreview ? 'text-emerald-600' : 'text-gray-200'}`}>
-                  {f.btn} {selectedFeature === f.id && showPreview ? '↑' : '→'}
+                <div className="text-5xl mb-6">{f.icon}</div>
+                <h4 className="text-xl font-bold text-gray-900 mb-3">{f.title}</h4>
+                <p className="text-sm text-gray-400 leading-relaxed">{f.desc}</p>
+                <div className={`mt-6 text-xs font-black uppercase tracking-widest ${selectedFeature === f.id ? 'text-emerald-600' : 'text-gray-200'}`}>
+                  {selectedFeature === f.id ? 'Viewing Details' : 'Click to preview'}
                 </div>
-              </div>
+              </button>
             ))}
           </div>
-        </div>
 
-        {/* --- Dynamic Preview Section (Toggled by Card Clicks) --- */}
-        {showPreview && (
-          <section className="mb-32 animate-fade-in-up flex flex-col items-center">
-            <div className="w-full max-w-2xl bg-white rounded-[2.5rem] border-4 border-emerald-50 shadow-[0_20px_50px_rgba(16,185,129,0.1)] overflow-hidden">
-              {selectedFeature === 'stock' && <StockMockup />}
-              {selectedFeature === 'stats' && <StatsMockup />}
-              {selectedFeature === 'alarm' && <AlarmMockup />}
-              {selectedFeature === 'notice' || selectedFeature === 'group' ? (
-                <div className="p-10 text-center">
-                  <h3 className="font-bold text-gray-800 mb-6 text-left">공고/공구 관리</h3>
-                  <div className="bg-emerald-50 rounded-2xl p-6 text-emerald-700 text-sm font-bold border border-emerald-100">
-                    준비 중인 목업 화면입니다. <br />실제 서비스에서 만나보실 수 있습니다.
+          {/* 빨간색 박스: 오늘 등록 재고 / 오늘 알림 / 이번 주 입출고 현황 바 */}
+          <div className="border border-gray-200 rounded-2xl p-6 mb-16 flex flex-col md:flex-row justify-around items-center gap-6 bg-white shadow-sm">
+            <div className="flex items-center gap-4 w-full md:w-auto justify-center md:justify-start">
+              <span className="text-3xl">📦</span>
+              <div>
+                <div className="text-xs font-bold text-gray-400">오늘 등록 재고</div>
+                <div className="text-xl font-black text-gray-900">6종</div>
+                <div className="text-xs text-gray-500">안전 재고 미달 품목</div>
+              </div>
+            </div>
+            <div className="hidden md:block h-10 w-[1px] bg-gray-200"></div>
+            <div className="flex items-center gap-4 w-full md:w-auto justify-center md:justify-start">
+              <span className="text-3xl">🔔</span>
+              <div>
+                <div className="text-xs font-bold text-gray-400">오늘 알림</div>
+                <div className="text-xl font-black text-gray-900">3건</div>
+                <div className="text-xs text-gray-500">알림을 확인하세요</div>
+              </div>
+            </div>
+            <div className="hidden md:block h-10 w-[1px] bg-gray-200"></div>
+            <div className="flex items-center gap-4 w-full md:w-auto justify-center md:justify-start">
+              <span className="text-3xl">🚚</span>
+              <div>
+                <div className="text-xs font-bold text-gray-400">이번 주 입출</div>
+                <div className="text-xl font-black text-gray-900">12건</div>
+                <div className="text-xs text-gray-500">예정된 발주 건수</div>
+              </div>
+            </div>
+          </div>
+
+          {/* 상세 기능 컴포넌트 출력 영역 */}
+          {selectedFeature && (
+            <div className="bg-white rounded-[3rem] border border-gray-100 shadow-2xl p-10 md:p-16 mb-16 animate-fade-in-up">
+              {selectedFeature === 'stock' && (
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-16">
+                  <div className="lg:col-span-2">
+                    <h5 className="text-xl font-bold mb-10 flex items-center gap-3 text-emerald-600">
+                      <span className="w-3 h-3 bg-emerald-500 rounded-full"></span>
+                      현재고 상세 대시보드
+                    </h5>
+                    <div className="h-80"><Bar data={stockData} options={{ responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }} /></div>
+                  </div>
+                  <div className="flex flex-col justify-center bg-gray-50 p-10 rounded-3xl border border-gray-100">
+                    <p className="text-sm text-gray-500 mb-6 font-black uppercase tracking-widest">⚠️ Critical Stock Status</p>
+                    <div className="space-y-6">
+                      {['마늘 (2kg)', '돼지고기 등심 (12kg)', '양파 (국산 8kg)'].map(item => (
+                        <div key={item} className="flex justify-between items-center py-4 border-b border-gray-200 last:border-0">
+                          <span className="text-base font-bold text-gray-700">{item}</span>
+                          <span className="px-3 py-1 bg-red-100 text-red-600 text-xs font-black rounded-full uppercase">Danger</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
-              ) : null}
-              {selectedFeature === 'promo' && <div className="p-20 text-center text-gray-300 font-bold">업체 홍보 페이지 목업 준비 중...</div>}
+              )}
+
+              {selectedFeature === 'stats' && (
+                <div>
+                  <h5 className="text-xl font-bold mb-10 text-emerald-600 flex items-center gap-3">
+                    <span className="w-3 h-3 bg-blue-500 rounded-full"></span>
+                    주간 입/출고 트렌드 분석
+                  </h5>
+                  <div className="h-96">
+                    <Line data={trendData} options={{
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      plugins: { legend: { position: 'top', align: 'end', labels: { font: { weight: 'bold' } } } }
+                    }} />
+                  </div>
+                </div>
+              )}
+
+              {selectedFeature === 'alarm' && (
+                <div className="max-w-2xl mx-auto space-y-6">
+                  <h5 className="text-xl font-bold mb-8 text-emerald-600 text-center">실시간 스마트 알림 로그</h5>
+                  {[
+                    { m: '🚨 부족 재고: 소고기 등심 임계치 도달', t: '방금 전', c: 'border-red-100 bg-red-50 text-red-700' },
+                    { m: '⚠️ 유통기한 임박: 양파(국산) 소진 권장', t: '15분 전', c: 'border-amber-100 bg-amber-50 text-amber-700' },
+                    { m: '📩 신규 파트너 요청이 도착했습니다', t: '1시간 전', c: 'border-blue-100 bg-blue-50 text-blue-700' },
+                  ].map((item, i) => (
+                    <div key={i} className={`p-6 rounded-2xl border-2 font-bold flex justify-between items-center ${item.c}`}>
+                      <span className="text-base">{item.m}</span>
+                      <span className="text-[10px] opacity-60 uppercase tracking-widest">{item.t}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {selectedFeature === 'group' && (
+                <div className="space-y-10">
+                  <div className="flex justify-between items-end">
+                    <h5 className="text-xl font-bold text-emerald-600">실시간 공동구매/발주 현황</h5>
+                    <span className="text-sm font-bold text-gray-400 tracking-wider">Active Boards: 3</span>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    {groupPurchases.map(post => (
+                      <div key={post.id} className="p-8 border-2 border-gray-50 rounded-[2rem] hover:border-emerald-100 hover:shadow-xl transition-all group bg-white">
+                        <div className="flex justify-between items-start mb-6">
+                          <span className="px-3 py-1.5 bg-emerald-100 text-emerald-700 text-xs font-black rounded-lg">{post.deadline}</span>
+                          <span className="text-xs font-bold text-gray-300 group-hover:text-gray-500">{post.author}</span>
+                        </div>
+                        <h6 className="text-lg font-bold text-gray-900 mb-4 leading-snug">{post.title}</h6>
+                        <div className="flex justify-between text-sm mb-3 font-black text-emerald-600">
+                          <span>{post.price}</span>
+                          <span>{post.progress}%</span>
+                        </div>
+                        <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
+                          <div className="bg-emerald-500 h-full transition-all duration-1000" style={{ width: `${post.progress}%` }}></div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
-            <p className="mt-8 text-emerald-600/40 text-xs font-bold animate-pulse">CLiCK CARD TO CLOSE PREViEW</p>
-          </section>
-        )}
+          )}
+        </div>
+      </section>
 
-      </main>
+      {/* Why SoSo? Section (Value Proposition) */}
+      <section className="py-10 bg-emerald-600 text-white overflow-hidden relative">
+        <div className="max-w-6xl mx-auto px-0 relative z-10">
+          <div className="text-center mb-5">
+            <h2 className="text-4xl md:text-5xl font-black mb-6">왜 소소를 써야할까요?</h2>
+            <p className="text-emerald-100 text-lg md:text-xl">소상공인의 성공을 돕는 가장 스마트한 방법</p>
+          </div>
 
-      {/* --- Stats Banner (Emerald Soft Background) --- */}
-      <div className="bg-[#F2FBFA] py-14">
-        <div className="max-w-5xl mx-auto px-6">
-          <h2 className="text-3xl font-black text-center text-gray-900 mb-16">스마트재고의 위엄</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-10 mb-10">
             {[
-              { v: '[3,842명]의', d: '소상공인과 거래처가 함께\n쓰고 있습니다.' },
-              { v: '[22%] 감소', d: '식자재 폐기율 평균\n시뮬레이션 결과' },
-              { v: '18% 절감', d: '공동구매 발주 비용\n평균' }
-            ].map((stat, i) => (
-              // 🛠️ 패딩을 좌우만 px-6으로 줄여서 내부 공간 확보
-              <div key={i} className="bg-white py-12 px-6 rounded-[2rem] text-center shadow-sm hover:shadow-xl transition-all border border-emerald-50">
-                {/* 🛠️ text-3xl~4xl 정도로 크기 최적화 및 줄바꿈 방지(whitespace-nowrap) */}
-                <div className="text-3xl xl:text-4xl font-black text-emerald-600 mb-6 whitespace-nowrap">{stat.v}</div>
-                {/* 🛠️ break-keep을 추가해 단어 단위로 예쁘게 떨어지도록 설정 */}
-                <p className="text-gray-500 text-sm font-bold leading-relaxed whitespace-pre-line break-keep">{stat.d}</p>
+              { t: '획기적인 비용 절감', d: '공동 구매와 효율적인 재고 관리를 통해\n불필요한 지출을 최대 20% 줄입니다.', i: '💰' },
+              { t: '업무 시간 단축', d: 'AI 자동 알림과 간편 기록 시스템으로\n매일 반복되는 업무 시간을 절반으로 단축합니다.', i: '⏱️' },
+              { t: '강력한 협업 시너지', d: '거래처와의 투명한 연결과 데이터 공유로\n더욱 견고한 파트너십을 구축합니다.', i: '🚀' },
+            ].map((item, idx) => (
+              <div key={idx} className="bg-white/10 backdrop-blur-md p-10 rounded-[3rem] border border-white/20 text-center hover:bg-white/20 transition-all">
+                <div className="text-5xl mb-8">{item.i}</div>
+                <h4 className="text-2xl font-bold mb-4">{item.t}</h4>
+                <p className="text-base text-emerald-50 leading-relaxed whitespace-pre-line">{item.d}</p>
               </div>
             ))}
           </div>
-        </div>
-      </div>
 
-      {/* Footer Area */}
-      <footer className="bg-white py-12 border-t border-gray-50">
-        <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
-          <div className="text-lg font-black text-gray-200">SoSo.</div>
-          <div className="flex gap-8 text-xs font-bold text-gray-300">
-            <a href="#" className="hover:text-emerald-500 transition-colors">이용약관</a>
-            <a href="#" className="hover:text-emerald-500 transition-colors">개인정보처리방침</a>
-            <a href="#" className="hover:text-emerald-500 transition-colors">고객지원</a>
+          <div className="text-center">
+            <button
+              onClick={() => setRole('business')}
+              className="px-16 py-6 bg-white text-emerald-600 text-xl rounded-2xl font-black hover:scale-105 transition-transform shadow-2xl"
+            >
+              지금 바로 무료로 시작하기
+            </button>
           </div>
-          <div className="text-[10px] text-gray-200">© 2026 SMART STOCK ALL RiGHTS RESERVED.</div>
         </div>
-      </footer>
+
+        <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
+          <div className="absolute top-10 left-10 w-60 h-60 border-[12px] border-white rounded-full"></div>
+          <div className="absolute bottom-20 right-20 w-80 h-80 border-[12px] border-white rounded-full"></div>
+        </div>
+      </section>
+
+      <MainFooter />
     </div>
   );
 }
