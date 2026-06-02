@@ -241,7 +241,7 @@ const PartnerEditProfilePage = () => {
             </div>
             
             <div className="space-y-4">
-              <EditField label="변경할 닉네임" value={formData.nickname} onChange={handleChange} name="nickname" />
+              <EditField label="현재 비밀번호" type="password" placeholder="현재 비밀번호 입력" />
               <EditField label="새 비밀번호" type="password" placeholder="새 비밀번호 입력" />
               <EditField label="새 비밀번호 확인" type="password" placeholder="새 비밀번호 재입력" />
             </div>
