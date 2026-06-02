@@ -107,7 +107,7 @@ const PartnerEditProfilePage = () => {
             onClick={() => setIsModalOpen(true)}
             className="mt-2 h-10 px-4 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold text-gray-700 flex items-center gap-2 hover:bg-gray-100 transition-colors"
           >
-            <span>✏️</span> 변경하기 <span>→</span>
+            <span>✏️</span> 비밀번호 변경하기 <span>→</span>
           </button>
         </div>
 
@@ -175,42 +175,46 @@ const PartnerEditProfilePage = () => {
           </div>
           <div className="h-px bg-gray-100 mb-6"></div>
 
-          <div className="flex gap-3 flex-wrap">
+          <div className="grid grid-cols-2 gap-4">
             {/* 가게 외관 사진 */}
-            <input 
-              type="file" 
-              className="hidden" 
-              ref={exteriorInputRef}
-              accept="image/*"
-              onChange={(e) => handleFileChange(e, 'exterior')}
-            />
-            {formData.exteriorPreview ? (
-              <PhotoSlot 
-                label="가게 외관" 
-                preview={formData.exteriorPreview} 
-                onRemove={() => handleRemovePhoto('exterior')} 
+            <div className="flex flex-col gap-2">
+              <input 
+                type="file" 
+                className="hidden" 
+                ref={exteriorInputRef}
+                accept="image/*"
+                onChange={(e) => handleFileChange(e, 'exterior')}
               />
-            ) : (
-              <AddPhotoBtn label="가게 외관" onClick={() => exteriorInputRef.current?.click()} />
-            )}
+              {formData.exteriorPreview ? (
+                <PhotoSlot 
+                  label="가게 외관" 
+                  preview={formData.exteriorPreview} 
+                  onRemove={() => handleRemovePhoto('exterior')} 
+                />
+              ) : (
+                <AddPhotoBtn label="가게 외관" onClick={() => exteriorInputRef.current?.click()} />
+              )}
+            </div>
 
             {/* 가게 내부 사진 */}
-            <input 
-              type="file" 
-              className="hidden" 
-              ref={interiorInputRef}
-              accept="image/*"
-              onChange={(e) => handleFileChange(e, 'interior')}
-            />
-            {formData.interiorPreview ? (
-              <PhotoSlot 
-                label="가게 내부" 
-                preview={formData.interiorPreview} 
-                onRemove={() => handleRemovePhoto('interior')} 
+            <div className="flex flex-col gap-2">
+              <input 
+                type="file" 
+                className="hidden" 
+                ref={interiorInputRef}
+                accept="image/*"
+                onChange={(e) => handleFileChange(e, 'interior')}
               />
-            ) : (
-              <AddPhotoBtn label="가게 내부" onClick={() => interiorInputRef.current?.click()} />
-            )}
+              {formData.interiorPreview ? (
+                <PhotoSlot 
+                  label="가게 내부" 
+                  preview={formData.interiorPreview} 
+                  onRemove={() => handleRemovePhoto('interior')} 
+                />
+              ) : (
+                <AddPhotoBtn label="가게 내부" onClick={() => interiorInputRef.current?.click()} />
+              )}
+            </div>
           </div>
           <p className="text-[10px] text-gray-400 mt-4 font-medium italic">ℹ️ JPG, PNG만 가능 (외관/내부 각 1장)</p>
         </div>
@@ -287,16 +291,16 @@ const EditField = ({ label, type = "text", value, onChange, name, disabled, plac
  * 사진 슬롯 컴포넌트
  */
 const PhotoSlot = ({ label, preview, onRemove }) => (
-  <div className="w-[120px] h-[100px] bg-gray-50 border border-gray-100 rounded-xl flex flex-col items-center justify-center relative group overflow-hidden">
+  <div className="w-full aspect-video md:aspect-[4/3] bg-gray-50 border border-gray-100 rounded-2xl flex flex-col items-center justify-center relative group overflow-hidden shadow-inner">
     <img src={preview} alt={label} className="w-full h-full object-cover" />
     <button 
       onClick={onRemove}
-      className="absolute top-1 right-1 w-6 h-6 bg-black/50 rounded-full flex items-center justify-center text-white text-xs hover:bg-black/70 transition-colors"
+      className="absolute top-2 right-2 w-7 h-7 bg-black/50 rounded-full flex items-center justify-center text-white text-lg hover:bg-black/70 transition-colors z-10"
     >
       ×
     </button>
-    <div className="absolute bottom-0 left-0 right-0 bg-black/40 py-1">
-      <p className="text-[10px] text-white font-bold text-center">{label}</p>
+    <div className="absolute bottom-0 left-0 right-0 bg-black/40 py-2 backdrop-blur-[2px]">
+      <p className="text-[11px] text-white font-bold text-center tracking-tight">{label}</p>
     </div>
   </div>
 );
@@ -307,10 +311,10 @@ const PhotoSlot = ({ label, preview, onRemove }) => (
 const AddPhotoBtn = ({ label, onClick }) => (
   <div 
     onClick={onClick}
-    className="w-[120px] h-[100px] border-2 border-dashed border-gray-200 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-emerald-500 hover:bg-emerald-50/30 transition-all group"
+    className="w-full aspect-video md:aspect-[4/3] border-2 border-dashed border-gray-200 rounded-2xl flex flex-col items-center justify-center cursor-pointer hover:border-emerald-500 hover:bg-emerald-50/30 transition-all group"
   >
-    <span className="text-2xl text-gray-300 group-hover:text-emerald-500 transition-colors">+</span>
-    <span className="text-[10px] text-gray-400 font-bold mt-1 group-hover:text-emerald-600 transition-colors">{label} 추가</span>
+    <span className="text-3xl text-gray-300 group-hover:text-emerald-500 transition-transform group-hover:scale-110 duration-200">+</span>
+    <span className="text-[11px] text-gray-400 font-bold mt-2 group-hover:text-emerald-600 transition-colors">{label} 추가</span>
   </div>
 );
 
