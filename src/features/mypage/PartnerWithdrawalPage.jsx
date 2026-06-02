@@ -48,7 +48,7 @@ const PartnerWithdrawalPage = () => {
           { name: '업체 정보 확인', icon: '🏢', path: '/partner-info' },
           { name: '업체 정보 수정', icon: '📝', path: '/partner-edit' },
           { name: '회원 탈퇴', icon: '👤', path: '/partner-withdrawal' },
-          { name: '스마트 알림 설정', icon: '🔔', path: '#' }
+          { name: '스마트 알림 설정', icon: '🔔', path: '/partner-notification' }
         ].map(tab => (
           <div
             key={tab.name}

@@ -2,6 +2,7 @@ import BusinessMyPage from '../features/mypage/BusinessMyPage';
 import PartnerInfoPage from '../features/mypage/PartnerInfoPage';
 import PartnerEditProfilePage from '../features/mypage/PartnerEditProfilePage';
 import PartnerWithdrawalPage from '../features/mypage/PartnerWithdrawalPage';
+import PartnerSmartNotificationPage from '../features/mypage/PartnerSmartNotificationPage';
 
 /**
  * @file mypageRoutes.jsx
@@ -23,6 +24,10 @@ const mypageRoutes = [
   {
     path: 'partner-withdrawal',
     element: <PartnerWithdrawalPage />,
+  },
+  {
+    path: 'partner-notification',
+    element: <PartnerSmartNotificationPage />,
   }
 ];
 
