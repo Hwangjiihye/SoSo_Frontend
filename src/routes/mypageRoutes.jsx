@@ -1,6 +1,7 @@
 import BusinessMyPage from '../features/mypage/BusinessMyPage';
 import PartnerInfoPage from '../features/mypage/PartnerInfoPage';
 import PartnerEditProfilePage from '../features/mypage/PartnerEditProfilePage';
+import PartnerWithdrawalPage from '../features/mypage/PartnerWithdrawalPage';
 
 /**
  * @file mypageRoutes.jsx
@@ -18,6 +19,10 @@ const mypageRoutes = [
   {
     path: 'partner-edit',
     element: <PartnerEditProfilePage />,
+  },
+  {
+    path: 'partner-withdrawal',
+    element: <PartnerWithdrawalPage />,
   }
 ];
 
