@@ -127,6 +127,8 @@ const PartnerEditProfilePage = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <EditField label="사업자 번호" value={formData.bizNumber} disabled />
             <EditField label="상호명" value={formData.companyName} disabled />
+            <EditField label="대표자명" value={formData.representativeName} disabled />
+            <EditField label="개업일자" value={formData.openingDate} disabled />
           </div>
 
           <div className="space-y-3">
