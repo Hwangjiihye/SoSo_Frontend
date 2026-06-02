@@ -14,41 +14,9 @@ export const usePartnerInfo = () => {
     const fetchPartnerInfo = async () => {
       try {
         setIsLoading(true);
-        
-        // [참고] 백엔드 인터셉터가 세션 유저 식별자를 검증하므로 파라미터 없이 호출
-        // 현재는 UI 확인을 위해 Mock 데이터를 사용하며, 백엔드 준비 시 아래 주석을 해제합니다.
-        /*
         const result = await getPartnerProfileApi();
         setData(result);
-        */
-
-        const mockData = {
-          user: {
-            user_id: 'partner_01',
-            nickname: '신선유통 팀장님',
-            name: '김철수',
-            phone: '010-1234-5678',
-            email: 'dealer1234@naver.com',
-            created_at: '2026-05-15T09:00:00Z',
-          },
-          store: {
-            company_name: '신선유통(주)',
-            biz_number: '000-00-00000',
-            representative_name: '홍길동',
-            opening_date: '2020-01-01',
-            address1: '서울특별시 강남구 테헤란로 123',
-            address2: '4층 402호',
-            exterior_img: 'https://via.placeholder.com/600x400?text=Exterior',
-            interior_img: 'https://via.placeholder.com/600x400?text=Interior'
-          }
-        };
-
-        // 개발 중 UI 확인을 위한 딜레이
-        setTimeout(() => {
-          setData(mockData);
-          setIsLoading(false);
-        }, 300);
-
+        setIsLoading(false);
       } catch (err) {
         console.error('업체 정보 조회 실패:', err);
         setError(err);
@@ -59,14 +27,19 @@ export const usePartnerInfo = () => {
     fetchPartnerInfo();
   }, []);
 
-  // 가입 일자 포맷팅
-  const formattedDate = data?.user?.created_at 
-    ? new Date(data.user.created_at).toLocaleDateString('ko-KR') 
+  // 가입 일자 포맷팅 (DTO의 created_at은 String)
+  const formattedDate = data?.created_at 
+    ? new Date(data.created_at).toLocaleDateString('ko-KR') 
+    : '-';
+
+  // 개업 일자 포맷팅 (DTO의 openingDate는 Date 객체 또는 ISO String으로 올 수 있음)
+  const formattedOpeningDate = data?.openingDate
+    ? new Date(data.openingDate).toLocaleDateString('ko-KR')
     : '-';
 
   // 한 줄 주소 가공
-  const fullAddress = data?.store 
-    ? `${data.store.address1 || ''} ${data.store.address2 || ''}`.trim()
+  const fullAddress = data 
+    ? `(${data.zonecode || ''}) ${data.address1 || ''} ${data.address2 || ''}`.trim()
     : '-';
 
   return {
@@ -74,6 +47,7 @@ export const usePartnerInfo = () => {
     isLoading,
     error,
     formattedDate,
+    formattedOpeningDate,
     fullAddress,
   };
 };

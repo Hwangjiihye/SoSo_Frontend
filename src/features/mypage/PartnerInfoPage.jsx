@@ -12,7 +12,7 @@ import authStore from '../../store/authStore';
 const PartnerInfoPage = () => {
   const navigate = useNavigate();
   const logout = authStore((state) => state.logout);
-  const { profile, isLoading, error, formattedDate, fullAddress } = usePartnerInfo();
+  const { profile, isLoading, error, formattedDate, formattedOpeningDate, fullAddress } = usePartnerInfo();
 
   const handleLogout = () => {
     logout();
@@ -44,8 +44,6 @@ const PartnerInfoPage = () => {
       </div>
     );
   }
-
-  const { user, store } = profile || {};
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col font-sans pb-12">
@@ -96,14 +94,14 @@ const PartnerInfoPage = () => {
         <section className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-6">
           <SectionTitle title="기본 계정 정보" colorClass="border-blue-500" />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <InfoItem label="아이디" value={user?.user_id} />
-            <InfoItem label="닉네임" value={user?.nickname} />
-            <InfoItem label="이름" value={user?.name} />
+            <InfoItem label="아이디" value={profile?.userId} />
+            <InfoItem label="닉네임" value={profile?.nickname} />
+            <InfoItem label="이름" value={profile?.name} />
             <InfoItem label="가입 일자" value={formattedDate} />
             <div className="md:col-span-2">
-              <InfoItem label="이메일" value={user?.email} />
+              <InfoItem label="이메일" value={profile?.email} />
             </div>
-            <InfoItem label="휴대전화" value={user?.phone} />
+            <InfoItem label="휴대전화" value={profile?.phone} />
           </div>
         </section>
 
@@ -111,10 +109,10 @@ const PartnerInfoPage = () => {
         <section className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-6">
           <SectionTitle title="사업자 정보" colorClass="border-emerald-500" />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <InfoItem label="사업자 번호" value={store?.biz_number} />
-            <InfoItem label="상호명" value={store?.company_name} />
-            <InfoItem label="대표자명" value={store?.representative_name} />
-            <InfoItem label="개업일자" value={store?.opening_date} />
+            <InfoItem label="사업자 번호" value={profile?.bizNumber} />
+            <InfoItem label="상호명" value={profile?.companyName} />
+            <InfoItem label="대표자명" value={profile?.repName} />
+            <InfoItem label="개업일자" value={formattedOpeningDate} />
             <div className="md:col-span-2">
               <InfoItem label="가게 주소" value={fullAddress} />
             </div>
@@ -124,7 +122,7 @@ const PartnerInfoPage = () => {
         {/* 가게 사진 섹션 */}
         <section className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-6">
           <SectionTitle title="가게 사진" colorClass="border-amber-500" />
-          <StoreImage exteriorImg={store?.exterior_img} interiorImg={store?.interior_img} />
+          <StoreImage exteriorImg={profile?.exteriorImg} interiorImg={profile?.interiorImg} />
         </section>
 
         {/* 수정 페이지 이동 버튼 */}
