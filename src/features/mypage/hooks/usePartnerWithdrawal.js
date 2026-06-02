@@ -27,7 +27,7 @@ export const usePartnerWithdrawal = () => {
     }
 
     if (!reason) {
-      alert('탈퇴 사유를 선택해 주세요.');
+      alert('탈퇴 사유를 선택해 주세요!');
       return;
     }
 
