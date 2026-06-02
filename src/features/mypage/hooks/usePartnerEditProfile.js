@@ -10,7 +10,6 @@ export const usePartnerEditProfile = () => {
     nickname: '',
     phone: '',
     email: '',
-    password: '',
     bizNumber: '',
     companyName: '',
     representativeName: '',

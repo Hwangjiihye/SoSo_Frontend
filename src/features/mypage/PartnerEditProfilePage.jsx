@@ -100,7 +100,6 @@ const PartnerEditProfilePage = () => {
             <EditField label="닉네임" name="nickname" value={formData.nickname} onChange={handleChange} />
             <EditField label="휴대전화" name="phone" value={formData.phone} onChange={handleChange} />
             <EditField label="이메일" name="email" value={formData.email} onChange={handleChange} />
-            <EditField label="비밀번호" name="password" type="password" value="********" disabled />
           </div>
 
           <button 
