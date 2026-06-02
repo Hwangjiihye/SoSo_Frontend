@@ -25,18 +25,21 @@ export const usePartnerInfo = () => {
         const mockData = {
           user: {
             user_id: 'partner_01',
-            nickname: '싱싱파트너',
+            nickname: '신선유통 팀장님',
             name: '김철수',
-            phone: '010-9876-5432',
-            email: 'chulsoo@soso.com',
+            phone: '010-1234-5678',
+            email: 'dealer1234@naver.com',
             created_at: '2026-05-15T09:00:00Z',
           },
           store: {
-            company_name: '(주)소소식자재유통',
-            biz_number: '220-81-12345',
-            address1: '서울특별시 송파구 가락동 123-4',
-            address2: '농수산물도매시장 A동 201호',
-            exterior_img: null // 예: 'store_exterior.jpg'
+            company_name: '신선유통(주)',
+            biz_number: '000-00-00000',
+            representative_name: '홍길동',
+            opening_date: '2020-01-01',
+            address1: '서울특별시 강남구 테헤란로 123',
+            address2: '4층 402호',
+            exterior_img: 'https://via.placeholder.com/600x400?text=Exterior',
+            interior_img: 'https://via.placeholder.com/600x400?text=Interior'
           }
         };
 
