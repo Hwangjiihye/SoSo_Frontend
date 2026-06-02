@@ -16,8 +16,10 @@ export const usePartnerEditProfile = () => {
     zonecode: '',
     address1: '',
     address2: '',
-    exteriorImg: null,
-    interiorImg: null,
+    exteriorImg: null, // File object or URL
+    interiorImg: null, // File object or URL
+    exteriorPreview: null,
+    interiorPreview: null,
   });
   
   const [isLoading, setIsLoading] = useState(true);
@@ -42,6 +44,8 @@ export const usePartnerEditProfile = () => {
             zonecode: '12345',
             address1: '서울특별시 강남구 테헤란로 123',
             address2: '4층 402호',
+            exterior_img: 'https://via.placeholder.com/120x100?text=Exterior',
+            interior_img: 'https://via.placeholder.com/120x100?text=Interior',
           }
         };
 
@@ -55,6 +59,8 @@ export const usePartnerEditProfile = () => {
           zonecode: mockData.store.zonecode,
           address1: mockData.store.address1,
           address2: mockData.store.address2,
+          exteriorPreview: mockData.store.exterior_img,
+          interiorPreview: mockData.store.interior_img,
         }));
       } catch (err) {
         console.error('초기 데이터 로드 실패:', err);
@@ -69,6 +75,29 @@ export const usePartnerEditProfile = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleFileChange = (e, type) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData(prev => ({
+          ...prev,
+          [`${type}Img`]: file,
+          [`${type}Preview`]: reader.result
+        }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemovePhoto = (type) => {
+    setFormData(prev => ({
+      ...prev,
+      [`${type}Img`]: null,
+      [`${type}Preview`]: null
+    }));
   };
 
   const handleAddressSearch = () => {
@@ -92,8 +121,15 @@ export const usePartnerEditProfile = () => {
     if (e) e.preventDefault();
     setIsSubmitting(true);
     try {
-      // API 호출 로직 (생략)
-      console.log('수정 데이터 전송:', formData);
+      // API 호출 시 FormData 객체 생성하여 파일 전송 가능
+      const uploadData = new FormData();
+      Object.keys(formData).forEach(key => {
+        if (formData[key] !== null) {
+          uploadData.append(key, formData[key]);
+        }
+      });
+      
+      console.log('수정 데이터 전송 (FormData 가상 확인):', formData);
       alert('변경 사항이 저장되었습니다.');
     } catch (err) {
       alert('저장 중 오류가 발생했습니다.');
@@ -107,6 +143,8 @@ export const usePartnerEditProfile = () => {
     isLoading,
     isSubmitting,
     handleChange,
+    handleFileChange,
+    handleRemovePhoto,
     handleAddressSearch,
     handleSubmit,
     setFormData

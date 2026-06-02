@@ -16,6 +16,8 @@ const PartnerEditProfilePage = () => {
     isLoading, 
     isSubmitting, 
     handleChange, 
+    handleFileChange,
+    handleRemovePhoto,
     handleAddressSearch, 
     handleSubmit,
     setFormData 
@@ -23,6 +25,9 @@ const PartnerEditProfilePage = () => {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('업체 정보 수정');
+
+  const exteriorInputRef = React.useRef(null);
+  const interiorInputRef = React.useRef(null);
 
   const handleLogout = () => {
     logout();
@@ -171,14 +176,43 @@ const PartnerEditProfilePage = () => {
           <div className="h-px bg-gray-100 mb-6"></div>
 
           <div className="flex gap-3 flex-wrap">
-            <PhotoSlot label="GCS 외관 사진" icon="🏠" />
-            <PhotoSlot label="GCS 내부 사진" icon="🖼️" />
-            <div className="w-[120px] h-[100px] border-2 border-dashed border-gray-200 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-emerald-500 transition-colors">
-              <span className="text-2xl text-gray-300">+</span>
-              <span className="text-[10px] text-gray-400 font-bold mt-1">사진 추가</span>
-            </div>
+            {/* 가게 외관 사진 */}
+            <input 
+              type="file" 
+              className="hidden" 
+              ref={exteriorInputRef}
+              accept="image/*"
+              onChange={(e) => handleFileChange(e, 'exterior')}
+            />
+            {formData.exteriorPreview ? (
+              <PhotoSlot 
+                label="가게 외관" 
+                preview={formData.exteriorPreview} 
+                onRemove={() => handleRemovePhoto('exterior')} 
+              />
+            ) : (
+              <AddPhotoBtn label="가게 외관" onClick={() => exteriorInputRef.current?.click()} />
+            )}
+
+            {/* 가게 내부 사진 */}
+            <input 
+              type="file" 
+              className="hidden" 
+              ref={interiorInputRef}
+              accept="image/*"
+              onChange={(e) => handleFileChange(e, 'interior')}
+            />
+            {formData.interiorPreview ? (
+              <PhotoSlot 
+                label="가게 내부" 
+                preview={formData.interiorPreview} 
+                onRemove={() => handleRemovePhoto('interior')} 
+              />
+            ) : (
+              <AddPhotoBtn label="가게 내부" onClick={() => interiorInputRef.current?.click()} />
+            )}
           </div>
-          <p className="text-[10px] text-gray-400 mt-4 font-medium italic">ℹ️ 최대 3장 / JPG, PNG만 가능</p>
+          <p className="text-[10px] text-gray-400 mt-4 font-medium italic">ℹ️ JPG, PNG만 가능 (외관/내부 각 1장)</p>
         </div>
 
         {/* 저장 버튼 */}
@@ -252,11 +286,31 @@ const EditField = ({ label, type = "text", value, onChange, name, disabled, plac
 /**
  * 사진 슬롯 컴포넌트
  */
-const PhotoSlot = ({ label, icon }) => (
-  <div className="w-[120px] h-[100px] bg-gray-50 border border-gray-100 rounded-xl flex flex-col items-center justify-center relative group cursor-pointer">
-    <button className="absolute top-2 right-2 w-5 h-5 bg-black/30 rounded-full flex items-center justify-center text-white text-[10px] hover:bg-black/50 transition-colors">×</button>
-    <span className="text-2xl mb-1">{icon}</span>
-    <span className="text-[10px] text-gray-400 font-bold">{label}</span>
+const PhotoSlot = ({ label, preview, onRemove }) => (
+  <div className="w-[120px] h-[100px] bg-gray-50 border border-gray-100 rounded-xl flex flex-col items-center justify-center relative group overflow-hidden">
+    <img src={preview} alt={label} className="w-full h-full object-cover" />
+    <button 
+      onClick={onRemove}
+      className="absolute top-1 right-1 w-6 h-6 bg-black/50 rounded-full flex items-center justify-center text-white text-xs hover:bg-black/70 transition-colors"
+    >
+      ×
+    </button>
+    <div className="absolute bottom-0 left-0 right-0 bg-black/40 py-1">
+      <p className="text-[10px] text-white font-bold text-center">{label}</p>
+    </div>
+  </div>
+);
+
+/**
+ * 사진 추가 버튼 컴포넌트
+ */
+const AddPhotoBtn = ({ label, onClick }) => (
+  <div 
+    onClick={onClick}
+    className="w-[120px] h-[100px] border-2 border-dashed border-gray-200 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-emerald-500 hover:bg-emerald-50/30 transition-all group"
+  >
+    <span className="text-2xl text-gray-300 group-hover:text-emerald-500 transition-colors">+</span>
+    <span className="text-[10px] text-gray-400 font-bold mt-1 group-hover:text-emerald-600 transition-colors">{label} 추가</span>
   </div>
 );
 
