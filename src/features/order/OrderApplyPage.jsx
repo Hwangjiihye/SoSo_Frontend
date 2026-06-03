@@ -4,6 +4,7 @@ import logo from '../../assets/soso로고.png';
 import MainFooter from '../../components/layout/MainFooter';
 import authStore from '../../store/authStore';
 import { useOrderApply } from './hooks/useOrderApply';
+import {check} from '../../apis/orderApi';
 
 /**
  * @file OrderApplyPage.jsx
@@ -15,6 +16,10 @@ function OrderApplyPage() {
   const logout = authStore((state) => state.logout);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isOrderDropdownOpen, setIsOrderDropdownOpen] = useState(false);
+
+  const [recommendedStocks, setRecommendedStocks] = useState([]);
+  const [recommendList, setRecommendList] = useState([]);
+  const [selectedSupplierItem, setSelectedSupplierItem] = useState(null);
 
   const {
     orderInfo,
@@ -34,6 +39,41 @@ function OrderApplyPage() {
     alert("로그아웃 되었습니다.");
     navigate("/");
   };
+
+  // 재고랑 발주랑 맞는지 확인 후 선택
+  const handleSelectSupplierItem = async (item) => {
+//
+  console.log('선택한 품목:', item);
+
+  try {
+    const result = await check(item.name);
+
+    console.log('재고 추천 응답:', result);
+
+    // 예: 추천 결과 state에 저장
+    setRecommendedStocks(result);
+  } catch (error) {
+    console.error('재고 추천 조회 실패:', error);
+    alert('재고 추천 조회에 실패했습니다.');
+  }
+//
+  // 기존 발주 품목 목록에 추가
+  addSelectedItem(item);
+
+  // 어떤 거래처 품목을 눌렀는지 저장
+  setSelectedSupplierItem(item);
+
+  try {
+    // 거래처 품목명으로 내 재고 목록과 대조
+    const data = await check(item.name);
+
+    // 추천 재고 목록 저장
+    setRecommendList(data);
+  } catch (error) {
+    console.error(error);
+    alert('재고 추천 조회에 실패했습니다.');
+  }
+};
 
   return (
     <div className="min-h-screen bg-[#F8F9FA] text-gray-800 font-sans">
@@ -197,7 +237,7 @@ function OrderApplyPage() {
                             <span className="text-[11px] font-bold text-gray-500 bg-gray-50 px-2.5 py-1 rounded-md">{item.type}</span>
                           </td>
                           <td className="px-3 py-4 text-center align-middle">
-                            <button onClick={() => addSelectedItem(item)} className="px-3 py-2 bg-emerald-50 text-emerald-600 text-[11px] font-black rounded-lg hover:bg-emerald-600 hover:text-white transition-all active:scale-95 border border-emerald-100/50 whitespace-nowrap">선택</button>
+                            <button onClick={() => handleSelectSupplierItem(item)} className="px-3 py-2 bg-emerald-50 text-emerald-600 text-[11px] font-black rounded-lg hover:bg-emerald-600 hover:text-white transition-all active:scale-95 border border-emerald-100/50 whitespace-nowrap">선택</button>
                           </td>
                         </tr>
                       ))}
@@ -306,6 +346,57 @@ function OrderApplyPage() {
               )}
             </section>
           </div>
+          
+          {/* 발주 추천 ui */}
+          {selectedSupplierItem && (
+  <section className="bg-white rounded-[32px] border border-gray-100 p-8 shadow-sm">
+    <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+      <span className="w-1.5 h-6 bg-emerald-500 rounded-full"></span>
+      내 재고 추천
+    </h3>
+
+    <p className="text-sm text-gray-500 font-semibold mb-5">
+      선택한 거래처 품목: 
+      <span className="text-emerald-600 font-black ml-2">
+        {selectedSupplierItem.name}
+      </span>
+    </p>
+
+    {recommendList.length === 0 ? (
+      <div className="bg-gray-50 rounded-2xl p-5 text-sm font-bold text-gray-400">
+        내 재고 목록에서 비슷한 품목을 찾지 못했습니다.
+      </div>
+    ) : (
+      <div className="space-y-3">
+        {recommendList.map((stock) => (
+          <div
+            key={stock.stock_seq}
+            className="border border-emerald-100 bg-emerald-50/40 rounded-2xl p-5 flex justify-between items-center"
+          >
+            <div>
+              <p className="text-base font-black text-gray-800">
+                {stock.stock}
+              </p>
+              <p className="text-xs font-bold text-gray-500 mt-1">
+                현재 수량: {stock.quantity} / 안전재고: {stock.safety_stock}
+              </p>
+            </div>
+
+            <button className="px-4 py-2 bg-emerald-600 text-white text-xs font-black rounded-xl hover:bg-emerald-700 transition-all">
+              이 재고로 연결
+            </button>
+          </div>
+        ))}
+      </div>
+    )}
+  </section>
+)}
+
+
+
+
+
+
 
           {/* Right Column: 결제 및 배송 조건 */}
           <div className="space-y-8">
