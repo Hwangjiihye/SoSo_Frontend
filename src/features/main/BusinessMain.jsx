@@ -4,7 +4,7 @@
  * 프로필 클릭 시 다중 매장 선택 및 마이페이지 이동이 가능한 드롭다운이 표시됩니다.
  */
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -151,8 +151,11 @@ function BusinessMain({ setRole }) {
         </div>
         <nav className="hidden md:flex justify-center gap-1 border border-gray-100 rounded-lg p-1 bg-gray-50 w-fit mx-auto">
           <a href="#" className="px-4 py-1.5 text-sm font-semibold bg-white text-gray-900 rounded shadow-sm border border-gray-200 ">홈</a>
-          {['발주 관리', '수금 관리', '공동 발주', '업체 홍보', '통계'].map(m => (
-            <a key={m} href="#" className="px-4 py-1.5 text-sm font-medium text-gray-500 hover:text-emerald-600 transition-colors whitespace-nowrap">{m}</a>
+          {[{name: '재고 관리', path: '#'}, {name: '발주 관리', path: '/orders'}, {name: '발주 신청', path: '/orders/new'}, {name: '공동 구매', path: '#'}, {name: '매출/정산', path: '#'}, {name: '조회/기록', path: '#'}].map(m => (
+            <Link
+              key={m.name} to={m.path} className="px-4 py-1.5 text-sm font-medium text-gray-500 hover:text-emerald-600 transition-colors whitespace-nowrap">
+            {m.name}
+            </Link>
           ))}
         </nav>
         <div className="flex items-center justify-end gap-4">
