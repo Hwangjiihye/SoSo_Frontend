@@ -73,7 +73,7 @@ function OrderPage() {
           </div>
 
           {['발주 신청'].map(m => (
-            <span key={m} className="px-5 py-2 text-sm font-medium text-gray-500 hover:text-emerald-600 transition-colors whitespace-nowrap cursor-pointer">{m}</span>
+            <Link to="/orders/new" key={m} className="px-5 py-2 text-sm font-medium text-gray-500 hover:text-emerald-600 transition-colors whitespace-nowrap cursor-pointer">{m}</Link>
           ))}
         </nav>
         <div className="flex items-center justify-end gap-5">

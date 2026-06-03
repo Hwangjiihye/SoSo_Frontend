@@ -11,7 +11,7 @@ export const useOrderApply = () => {
     supplier: '',
     manager: '김민준', // 기본값
     deliveryDate: '',
-    paymentMethod: '카드결제',
+    paymentMethod: '',
     deliveryNotes: '',
     deliveryAddress: '서울시 강남구 테헤란로 123 (Soso 식당)',
   });
@@ -105,9 +105,7 @@ export const useOrderApply = () => {
 
   // 품목 삭제
   const removeItem = (id) => {
-    if (items.length > 1) {
-      setItems(items.filter(item => item.id !== id));
-    }
+    setItems(items.filter(item => item.id !== id));
   };
 
   // 기본 정보 변경 핸들러
@@ -128,8 +126,12 @@ export const useOrderApply = () => {
       alert('공급업체를 선택해주세요.');
       return;
     }
-    if (items.some(item => !item.name || item.quantity <= 0)) {
-      alert('품목명과 수량을 정확히 입력해주세요.');
+    if (items.length === 0 || items.some(item => !item.name || item.quantity <= 0)) {
+      alert('발주할 품목을 선택하고 수량을 정확히 입력해주세요.');
+      return;
+    }
+    if (orderInfo.paymentMethod !== '계좌이체') {
+      alert('결제 방식을 선택해주세요.');
       return;
     }
     
