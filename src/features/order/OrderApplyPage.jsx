@@ -20,6 +20,7 @@ function OrderApplyPage() {
   const [recommendedStocks, setRecommendedStocks] = useState([]);
   const [recommendList, setRecommendList] = useState([]);
   const [selectedSupplierItem, setSelectedSupplierItem] = useState(null);
+  const [openModal, setOpenModal] = useState(false);
 
   const {
     orderInfo,
@@ -42,6 +43,10 @@ function OrderApplyPage() {
 
   // 재고랑 발주랑 맞는지 확인 후 선택
   const handleSelectSupplierItem = async (item) => {
+
+  // 모달 Open
+  setOpenModal(true);
+
 //
   console.log('선택한 품목:', item);
 
@@ -74,6 +79,11 @@ function OrderApplyPage() {
     alert('재고 추천 조회에 실패했습니다.');
   }
 };
+
+// 모달 Close
+const handleCloseModal = () => {
+  setOpenModal(false);
+}
 
   return (
     <div className="min-h-screen bg-[#F8F9FA] text-gray-800 font-sans">
@@ -348,41 +358,56 @@ function OrderApplyPage() {
           </div>
           
           {/* 발주 추천 ui */}
-          {selectedSupplierItem && (
-  <section className="bg-white rounded-[32px] border border-gray-100 p-8 shadow-sm">
-    <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-      <span className="w-1.5 h-6 bg-emerald-500 rounded-full"></span>
-      내 재고 추천
-    </h3>
+          {openModal && selectedSupplierItem && (
+            <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[9999]">
+            <section className="bg-white rounded-[32px] border border-gray-100 p-8 shadow-sm w-[500px] max-w-[90vw] max-h-[80vh] overflow-y-auto">
+              <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <span className="w-1.5 h-6 bg-emerald-500 rounded-full"></span>
+                내 재고 추천
+              </h3>
 
-    <p className="text-sm text-gray-500 font-semibold mb-5">
-      선택한 거래처 품목: 
-      <span className="text-emerald-600 font-black ml-2">
-        {selectedSupplierItem.name}
-      </span>
-    </p>
-
-    {recommendList.length === 0 ? (
-      <div className="bg-gray-50 rounded-2xl p-5 text-sm font-bold text-gray-400">
-        내 재고 목록에서 비슷한 품목을 찾지 못했습니다.
-      </div>
-    ) : (
-      <div className="space-y-3">
-        {recommendList.map((stock) => (
-          <div
-            key={stock.stock_seq}
-            className="border border-emerald-100 bg-emerald-50/40 rounded-2xl p-5 flex justify-between items-center"
-          >
-            <div>
-              <p className="text-base font-black text-gray-800">
-                {stock.stock}
+              <p className="text-base text-gray-500 font-semibold mb-5">
+                선택한 거래처 품목: 
+                <span className="text-emerald-600 font-black ml-2">
+                  {selectedSupplierItem.name}
+                </span>
               </p>
-              <p className="text-xs font-bold text-gray-500 mt-1">
-                현재 수량: {stock.quantity} / 안전재고: {stock.safety_stock}
-              </p>
-            </div>
 
-            <button className="px-4 py-2 bg-emerald-600 text-white text-xs font-black rounded-xl hover:bg-emerald-700 transition-all">
+              
+
+              {recommendList.length === 0 ? (
+                <>
+                <div className="bg-gray-50 rounded-2xl p-6 flex flex-col items-center justify-center">
+                  <p className="text-[15px] font-bold text-gray-600 mb-4">
+                    내 재고 목록에서 비슷한 품목을 찾지 못했습니다.
+                  </p>
+                </div>
+                <div className="flex justify-center mt-5">
+                <button
+                    onClick={handleCloseModal}
+                    className="px-6 py-2.5 bg-gray-200 text-gray-600 text-xs font-black rounded-xl hover:bg-gray-300 transition-all active:scale-95"
+                  >
+                    닫기
+                  </button>
+                </div>
+                </>
+              ) : (
+                <div className="space-y-3">
+                  {recommendList.map((stock) => (
+                    <div
+                      key={stock.stockSeq}
+                      className="border border-emerald-100 bg-emerald-50/40 rounded-2xl p-5 flex justify-between items-center"
+                    >
+                      <div>
+                        <p className="text-base font-black text-gray-800">
+                          {stock.stock}
+                        </p>
+                        <p className="text-xs font-bold text-gray-500 mt-1">
+                          현재 수량: {stock.quantity} / 안전재고: {stock.safety_stock}
+                        </p>
+                      </div>
+
+            <button className="px-4 py-2 bg-emerald-600 text-white text-xs font-black rounded-xl hover:bg-emerald-700 transition-all" onClick={handleCloseModal}>
               이 재고로 연결
             </button>
           </div>
@@ -390,6 +415,7 @@ function OrderApplyPage() {
       </div>
     )}
   </section>
+  </div>
 )}
 
 
