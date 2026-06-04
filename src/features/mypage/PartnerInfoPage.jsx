@@ -12,7 +12,7 @@ import authStore from '../../store/authStore';
 const PartnerInfoPage = () => {
   const navigate = useNavigate();
   const logout = authStore((state) => state.logout);
-  const { profile, isLoading, error, formattedDate, formattedOpeningDate, fullAddress } = usePartnerInfo();
+  const { profile, isLoading, error, formattedDate, formattedOpeningDate, fullAddress,storeImg1,storeImg2} = usePartnerInfo();
 
   const handleLogout = () => {
     logout();
@@ -122,7 +122,7 @@ const PartnerInfoPage = () => {
         {/* 가게 사진 섹션 */}
         <section className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-6">
           <SectionTitle title="가게 사진" colorClass="border-amber-500" />
-          <StoreImage exteriorImg={profile?.exteriorImg} interiorImg={profile?.interiorImg} />
+          <StoreImage exteriorImg={storeImg1} interiorImg={storeImg2} />
         </section>
 
         {/* 수정 페이지 이동 버튼 */}

@@ -41,6 +41,18 @@ export const usePartnerInfo = () => {
   const fullAddress = data 
     ? `(${data.zonecode || ''}) ${data.address1 || ''} ${data.address2 || ''}`.trim()
     : '-';
+    
+  const sysNamesArray = data?.storeSysNames ? data.storeSysNames.split(',') : [];
+
+  // ⭕ 1번 사진 주소 조립 (없으면 디폴트)
+  const storeImg1 = sysNamesArray[0]
+    ? `https://storage.googleapis.com/study_jcr/${sysNamesArray[0]}`
+    : '/images/default-store.png';
+
+  // ⭕ 2번 사진 주소 조립 (없으면 디폴트)
+  const storeImg2 = sysNamesArray[1]
+    ? `https://storage.googleapis.com/study_jcr/${sysNamesArray[1]}`
+    : '/images/default-store.png';
 
   return {
     profile: data,
@@ -49,5 +61,7 @@ export const usePartnerInfo = () => {
     formattedDate,
     formattedOpeningDate,
     fullAddress,
+    storeImg1, 
+    storeImg2,
   };
 };
