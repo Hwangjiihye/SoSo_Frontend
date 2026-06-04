@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
-import { getPartnerProfileApi } from '../../../apis/memberApi';
+import { useNavigate } from 'react-router-dom';
+import { getPartnerProfileApi, updatePartnerProfileApi } from '../../../apis/memberApi';
 
 /**
  * @file usePartnerEditProfile.js
  * @description 거래처 업체 정보 수정을 위한 커스텀 훅
  */
 export const usePartnerEditProfile = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     nickname: '',
     phone: '',
@@ -31,14 +33,15 @@ export const usePartnerEditProfile = () => {
       try {
         setIsLoading(true);
         const result = await getPartnerProfileApi();
-        console.log(result)
-      const sysNamesArray = result?.storeSysNames ? result.storeSysNames.split(',') : [];
-         const storeImg1 = sysNamesArray[0]
-    ? `https://storage.googleapis.com/study_jcr/${sysNamesArray[0]}`
-    : '/images/default-store.png';
-    const storeImg2 = sysNamesArray[1]
-    ? `https://storage.googleapis.com/study_jcr/${sysNamesArray[1]}`
-    : '/images/default-store.png';
+        
+        const sysNamesArray = result?.storeSysNames ? result.storeSysNames.split(',') : [];
+        const storeImg1 = sysNamesArray[0]
+          ? `https://storage.googleapis.com/study_jcr/${sysNamesArray[0]}`
+          : null;
+        const storeImg2 = sysNamesArray[1]
+          ? `https://storage.googleapis.com/study_jcr/${sysNamesArray[1]}`
+          : null;
+
         setFormData(prev => ({
           ...prev,
           nickname: result.nickname,
@@ -111,20 +114,41 @@ export const usePartnerEditProfile = () => {
 
   const handleSubmit = async (e) => {
     if (e) e.preventDefault();
+    
+    // 유효성 검사 (필요 시 추가)
+    if (!formData.nickname || !formData.phone || !formData.email) {
+      alert('필수 정보를 모두 입력해주세요.');
+      return;
+    }
+
     setIsSubmitting(true);
     try {
-      // API 호출 시 FormData 객체 생성하여 파일 전송 가능
-      const uploadData = new FormData();
-      Object.keys(formData).forEach(key => {
-        if (formData[key] !== null) {
-          uploadData.append(key, formData[key]);
-        }
-      });
+      // 1. 서버로 보낼 순수 데이터 DTO 추출 (이미지 제외)
+      const updateData = {
+        nickname: formData.nickname,
+        phone: formData.phone,
+        email: formData.email,
+        zonecode: formData.zonecode,
+        address1: formData.address1,
+        address2: formData.address2,
+        // 필요에 따라 추가 필드 포함
+      };
+
+      // 2. API 호출
+      const result = await updatePartnerProfileApi(
+        updateData, 
+        formData.exteriorImg, 
+        formData.interiorImg
+      );
       
-      console.log('수정 데이터 전송 (FormData 가상 확인):', formData);
-      alert('변경 사항이 저장되었습니다.');
+      if (result.status === 'success' || result) {
+        alert('업체 정보가 성공적으로 수정되었습니다.');
+        // 3. 업체 정보 확인 페이지로 이동
+        navigate('/partner-info');
+      }
     } catch (err) {
-      alert('저장 중 오류가 발생했습니다.');
+      console.error('저장 중 오류 발생:', err);
+      alert('저장 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
     } finally {
       setIsSubmitting(false);
     }

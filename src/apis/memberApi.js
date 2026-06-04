@@ -92,3 +92,32 @@ export const getPartnerProfileApi = async () => {
   const response = await axiosInstance.get('/api/member/partner/profile');
   return response.data;
 };
+
+/**
+ * 거래처 업체 정보 수정 (Multipart/form-data)
+ * @param {Object} updateData - 수정할 회원 정보 DTO
+ * @param {File|null} exteriorImg - 가게 외부 사진
+ * @param {File|null} interiorImg - 가게 내부 사진
+ * @returns {Promise<{status: string, message: string}>}
+ */
+export const updatePartnerProfileApi = async (updateData, exteriorImg, interiorImg) => {
+  const formData = new FormData();
+  
+  // 백엔드 요구사항에 맞춰 JSON 데이터를 'updateData' 파트로 추가
+  formData.append('updateData', JSON.stringify(updateData));
+  
+  if (exteriorImg instanceof File) {
+    formData.append('exteriorImg', exteriorImg);
+  }
+  
+  if (interiorImg instanceof File) {
+    formData.append('interiorImg', interiorImg);
+  }
+
+  const response = await axiosInstance.put('/api/member/partner/update', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+  return response.data;
+};
