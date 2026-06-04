@@ -28,8 +28,8 @@ export const usePartnerInfo = () => {
   }, []);
 
   // 가입 일자 포맷팅 (DTO의 created_at은 String)
-  const formattedDate = data?.created_at 
-    ? new Date(data.created_at).toLocaleDateString('ko-KR') 
+  const formattedDate = data?.createdAt 
+    ? new Date(data.createdAt).toLocaleDateString('ko-KR') 
     : '-';
 
   // 개업 일자 포맷팅 (DTO의 openingDate는 Date 객체 또는 ISO String으로 올 수 있음)
