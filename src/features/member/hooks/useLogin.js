@@ -130,12 +130,9 @@ export const useLogin = () => {
       user_type: user_type,
       member: memberData, // 👈 닉네임, 이메일, 매장 정보 등이 포함된 객체를 통째로 넘김
     });
-    
-    console.log("서버가 돌려준 응답 데이터:", resp.data);
 
     // 3. [핵심] 성공했으니 '이 시점'에서 메인 화면으로 이동시킵니다!
     // 백엔드에서 받아온 닉네임을 활용하여 환영 메시지 출력
-    alert(`환영합니다, ${memberData.nickname || memberData.name || id}님!`);
     navigate("/");
   })
   .catch(error => {
