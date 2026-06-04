@@ -141,10 +141,14 @@ export const usePartnerEditProfile = () => {
         formData.interiorImg
       );
       
-      if (result.status === 'success' || result) {
+      if (result && result.status === 'success') {
         alert('업체 정보가 성공적으로 수정되었습니다.');
         // 3. 업체 정보 확인 페이지로 이동
         navigate('/partner-info');
+      }else if(result && (result.status === 'duplNickname' || result.status === 'duplEmail')){
+        alert(result.message)
+      }else {
+        alert(result?.message || '알 수 없는 응답이 반환되었습니다.');
       }
     } catch (err) {
       console.error('저장 중 오류 발생:', err);
