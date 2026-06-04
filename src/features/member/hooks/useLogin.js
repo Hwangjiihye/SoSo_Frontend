@@ -108,11 +108,11 @@ export const useLogin = () => {
 
     const token = resp.data.token;
     const user_type = resp.data.user_type;
-    const id = resp.data.id;
+    const user_seq = resp.data.user_seq;
 
     console.log("token:", token);
     console.log("user_type:", user_type);
-    console.log("id:", id);
+    console.log("user_seq:", user_seq);
 
     if(!token){
       alert("로그인은 성공했으나 토큰이 넘어오지 않았습니다.");
@@ -123,7 +123,7 @@ export const useLogin = () => {
     // 로그인 성공 시 받은 토큰과 사용자 정보를 전역 상태에 저장
     login({
     token: token,
-    id: id,
+    user_seq: user_seq,
     user_type: user_type,
   });
     // 백엔드 AuthController가 result.put("token", token)으로 준 데이터를 확인
