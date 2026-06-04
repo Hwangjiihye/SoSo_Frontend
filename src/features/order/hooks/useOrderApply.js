@@ -32,7 +32,11 @@ export const useOrderApply = () => {
   const supplierItemsCheck = async () => {
     try {
       const data = await getSupplierItems();
-      console.log('거래처 품목 목록:', data);
+
+       console.log('거래처 품목 목록:', data);
+       console.log('배열이야?', Array.isArray(data));
+       console.log('첫 번째 데이터:', data[0]);
+
       setSupplierItems(data);
     } catch (error) {
       console.error('거래처 품목 목록 조회 실패:', error);
@@ -40,8 +44,14 @@ export const useOrderApply = () => {
   }
 };
 
-// 중복제거 : 품목이 5개여도 공급업체가 같으면 option하나만 나오게함
-const supplierNames = [...new Set(supplierItems.map((item) => item.partnerName))];
+  // 중복제거 : 품목이 5개여도 공급업체가 같으면 option하나만 나오게함
+  const supplierNames = [...new Set(supplierItems.map((item) => item.partnerName))];
+
+  // 공급업체 선택값 기준으로 필터링
+  const filteredSupplierItems = orderInfo.supplier
+    ? supplierItems.filter((item) => item.partnerName === orderInfo.supplier)
+    : supplierItems;
+
 
   // 물품 선택 시 발주 목록에 추가
   const addSelectedItem = (selectedItem) => {
@@ -145,6 +155,7 @@ const supplierNames = [...new Set(supplierItems.map((item) => item.partnerName))
     totalSummary,
     supplierItems,
     supplierNames,
+    filteredSupplierItems,
     supplierItems: supplierItems[orderInfo.supplier] || [],
     handleInfoChange,
     handleItemChange,

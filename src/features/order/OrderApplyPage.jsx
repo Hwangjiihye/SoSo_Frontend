@@ -28,6 +28,7 @@ function OrderApplyPage() {
     totalSummary,
     supplierItems,
     supplierNames,
+    filteredSupplierItems,
     handleInfoChange,
     handleItemChange,
     addItem,
@@ -47,8 +48,7 @@ function OrderApplyPage() {
 
   // 모달 Open
   setOpenModal(true);
-
-  //
+//
   console.log('선택한 품목:', item);
 
   try {
@@ -233,7 +233,13 @@ const handleCloseModal = () => {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-50 bg-white">
-                      {supplierItems.map((item) => (
+                       {filteredSupplierItems.length === 0 ? (
+                        <tr>
+                          <td colSpan="8" className="px-3 py-10 text-center text-sm font-bold text-gray-400">
+                            표시할 거래처 품목이 없습니다.
+                          </td>
+                        </tr>
+                      ) : (filteredSupplierItems.map((item) => (
                         <tr key={item.itemSeq} className="group hover:bg-emerald-50/40 transition-all cursor-default">
                           <td className="px-3 py-4 text-center align-middle">
                             이미지{/* <img src={item.image} alt={item.name} className="w-14 h-14 rounded-lg object-cover mx-auto border border-gray-100 bg-white shadow-sm group-hover:border-emerald-200 transition-all" /> */}
@@ -252,7 +258,8 @@ const handleCloseModal = () => {
                             <button onClick={() => handleSelectSupplierItem(item)} className="px-3 py-2 bg-emerald-50 text-emerald-600 text-[11px] font-black rounded-lg hover:bg-emerald-600 hover:text-white transition-all active:scale-95 border border-emerald-100/50 whitespace-nowrap">선택</button>
                           </td>
                         </tr>
-                      ))}
+                      ))
+                    )}
                     </tbody>
                   </table>
                 </div>
