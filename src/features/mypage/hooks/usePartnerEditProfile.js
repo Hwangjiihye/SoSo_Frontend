@@ -30,42 +30,29 @@ export const usePartnerEditProfile = () => {
     const fetchInitialData = async () => {
       try {
         setIsLoading(true);
-        // 실제 연동 시: const result = await getPartnerProfileApi();
-        
-        // Mock 데이터 (HTML 구조에 맞춤)
-        const mockData = {
-          user: {
-            nickname: '신선유통 팀장님',
-            phone: '010-1234-5678',
-            email: 'dealer1234@naver.com',
-          },
-          store: {
-            biz_number: '000-00-00000',
-            company_name: '신선유통(주)',
-            representative_name: '홍길동',
-            opening_date: '2020-01-01',
-            zonecode: '12345',
-            address1: '서울특별시 강남구 테헤란로 123',
-            address2: '4층 402호',
-            exterior_img: 'https://via.placeholder.com/120x100?text=Exterior',
-            interior_img: 'https://via.placeholder.com/120x100?text=Interior',
-          }
-        };
-
+        const result = await getPartnerProfileApi();
+        console.log(result)
+      const sysNamesArray = result?.storeSysNames ? result.storeSysNames.split(',') : [];
+         const storeImg1 = sysNamesArray[0]
+    ? `https://storage.googleapis.com/study_jcr/${sysNamesArray[0]}`
+    : '/images/default-store.png';
+    const storeImg2 = sysNamesArray[1]
+    ? `https://storage.googleapis.com/study_jcr/${sysNamesArray[1]}`
+    : '/images/default-store.png';
         setFormData(prev => ({
           ...prev,
-          nickname: mockData.user.nickname,
-          phone: mockData.user.phone,
-          email: mockData.user.email,
-          bizNumber: mockData.store.biz_number,
-          companyName: mockData.store.company_name,
-          representativeName: mockData.store.representative_name,
-          openingDate: mockData.store.opening_date,
-          zonecode: mockData.store.zonecode,
-          address1: mockData.store.address1,
-          address2: mockData.store.address2,
-          exteriorPreview: mockData.store.exterior_img,
-          interiorPreview: mockData.store.interior_img,
+          nickname: result.nickname,
+          phone: result.phone,
+          email: result.email,
+          bizNumber: result.bizNumber,
+          companyName: result.companyName,
+          representativeName: result.repName,
+          openingDate: result.openingDate,
+          zonecode: result.zonecode,
+          address1: result.address1,
+          address2: result.address2,
+          exteriorPreview: storeImg1,
+          interiorPreview: storeImg2
         }));
       } catch (err) {
         console.error('초기 데이터 로드 실패:', err);
