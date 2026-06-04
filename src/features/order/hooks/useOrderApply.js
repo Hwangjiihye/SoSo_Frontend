@@ -1,10 +1,15 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
+import { check, items as getSupplierItems } from '../../../apis/orderApi';
 
 /**
  * @file useOrderApply.js
  * @description 발주 신청 페이지의 비즈니스 로직을 담당하는 커스텀 훅입니다.
  */
 export const useOrderApply = () => {
+  useEffect(() => {
+    supplierItemsCheck();
+  }, []);
+
   // 기본 정보 상태
   const [orderInfo, setOrderInfo] = useState({
     orderDate: new Date().toISOString().split('T')[0],
@@ -21,27 +26,22 @@ export const useOrderApply = () => {
     { id: 1, name: '', category: '', unit: '', quantity: 0, price: 0, supplyValue: 0, tax: 0, total: 0 }
   ]);
 
-  // 공급업체별 등록 물품 데이터 (Mock)
-  const supplierItems = {
-    '한우 농장': [
-      { code: 'MEAT-001', name: '한우 등심', group: '육류', spec: '1kg / 냉장', unit: 'kg', price: 45000, type: '일반', image: 'https://placehold.co/56x56?text=Beef' },
-      { code: 'MEAT-002', name: '한우 안심', group: '육류', spec: '1kg / 냉장', unit: 'kg', price: 52000, type: '일반', image: 'https://placehold.co/56x56?text=Fillet' },
-      { code: 'MEAT-003', name: '냉동 삼겹살', group: '육류', spec: '500g * 10팩', unit: '박스', price: 85000, type: '묶음', image: 'https://placehold.co/56x56?text=Pork' },
-    ],
-    '청과 도매': [
-      { code: 'FRUIT-001', name: '세척 당근', group: '채소류', spec: '1kg * 10봉', unit: '박스', price: 22000, type: '묶음', image: 'https://placehold.co/56x56?text=Carrot' },
-      { code: 'FRUIT-002', name: '양파(대)', group: '채소류', spec: '15kg / 망', unit: '개', price: 18000, type: '일반', image: 'https://placehold.co/56x56?text=Onion' },
-    ],
-    '식자재 마트': [
-      { code: 'OIL-001', name: '해표 식용유', group: '오일류', spec: '1.8L * 6병', unit: '박스', price: 42000, type: '묶음', image: 'https://placehold.co/56x56?text=Oil' },
-      { code: 'OIL-002', name: '카놀라유', group: '오일류', spec: '500ml / 병', unit: '개', price: 4500, type: '일반', image: 'https://placehold.co/56x56?text=Oil' },
-      { code: 'GROC-001', name: '참치캔', group: '가공식품', spec: '150g * 48캔', unit: '박스', price: 98000, type: '묶음', image: 'https://placehold.co/56x56?text=Tuna' },
-    ],
-    '대성 유통': [
-      { code: 'ETC-001', name: '냅킨 1000매', group: '소모품', spec: '1000매 * 10팩', unit: '박스', price: 15000, type: '묶음', image: 'https://placehold.co/56x56?text=Napkin' },
-      { code: 'ETC-002', name: '종이컵', group: '소모품', spec: '6.5oz / 1000개', unit: '박스', price: 25000, type: '일반', image: 'https://placehold.co/56x56?text=Cup' },
-    ],
-  };
+  // 공급업체별 물품 목록
+  const [supplierItems, setSupplierItems] = useState([]);
+
+  const supplierItemsCheck = async () => {
+    try {
+      const data = await getSupplierItems();
+      console.log('거래처 품목 목록:', data);
+      setSupplierItems(data);
+    } catch (error) {
+      console.error('거래처 품목 목록 조회 실패:', error);
+      alert('거래처 품목 목록 조회에 실패했습니다.');
+  }
+};
+
+// 중복제거 : 품목이 5개여도 공급업체가 같으면 option하나만 나오게함
+const supplierNames = [...new Set(supplierItems.map((item) => item.partnerName))];
 
   // 물품 선택 시 발주 목록에 추가
   const addSelectedItem = (selectedItem) => {
@@ -143,6 +143,8 @@ export const useOrderApply = () => {
     orderInfo,
     items,
     totalSummary,
+    supplierItems,
+    supplierNames,
     supplierItems: supplierItems[orderInfo.supplier] || [],
     handleInfoChange,
     handleItemChange,

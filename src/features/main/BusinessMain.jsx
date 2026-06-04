@@ -149,11 +149,34 @@ function BusinessMain({ setRole }) {
           <img src={logo} alt="SoSo Logo" className="w-12 h-12 object-contain relative top-[5px]" />
           <div className="text-[40px] font-black text-[#1d9e75] tracking-tighter leading-none">SoSo</div>
         </div>
-        <nav className="hidden md:flex justify-center gap-1 border border-gray-100 rounded-lg p-1 bg-gray-50 w-fit mx-auto">
-          <a href="#" className="px-4 py-1.5 text-sm font-semibold bg-white text-gray-900 rounded shadow-sm border border-gray-200 ">홈</a>
-          {[{name: '재고 관리', path: '#'}, {name: '발주 관리', path: '/orders'}, {name: '발주 신청', path: '/orders/new'}, {name: '공동 구매', path: '#'}, {name: '매출/정산', path: '#'}, {name: '조회/기록', path: '#'}].map(m => (
+        <nav className="hidden md:flex justify-center gap-1 border border-gray-100 rounded-xl p-1 bg-gray-50 w-fit mx-auto relative">
+          <Link to="/" className="px-5 py-2 text-sm font-bold text-gray-900 bg-white rounded-lg shadow-sm border border-gray-200 transition-colors whitespace-nowrap">홈</Link>
+          
+          <div 
+            className="relative group"
+          >
+            <div className="px-5 py-2 text-sm font-medium text-gray-500 hover:text-emerald-600 rounded-lg cursor-pointer transition-all whitespace-nowrap group-hover:bg-white group-hover:text-emerald-600 group-hover:border-gray-100">
+              발주 관리
+            </div>
+            
+            <div className="absolute top-full left-0 w-48 pt-2 z-[60] transition-all duration-200 opacity-0 invisible -translate-y-2 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0">
+              <div className="bg-white border border-gray-100 rounded-2xl shadow-xl p-2">
+                <Link to="/orders" className="block w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl transition-colors">
+                  일반 발주 현황
+                </Link>
+                <Link to="/group-orders" className="block w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl transition-colors">
+                  공동 발주 현황
+                </Link>
+                <Link to="/orders/new" className="block w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl transition-colors">
+                  발주 신청
+                </Link>
+              </div>
+            </div>
+          </div>
+
+          {[{name: '재고 관리', path: '#'}, {name: '공동 구매', path: '#'}, {name: '매출/정산', path: '#'}, {name: '조회/기록', path: '#'}].map(m => (
             <Link
-              key={m.name} to={m.path} className="px-4 py-1.5 text-sm font-medium text-gray-500 hover:text-emerald-600 transition-colors whitespace-nowrap">
+              key={m.name} to={m.path} className="px-5 py-2 text-sm font-medium text-gray-500 hover:text-emerald-600 transition-colors whitespace-nowrap">
             {m.name}
             </Link>
           ))}

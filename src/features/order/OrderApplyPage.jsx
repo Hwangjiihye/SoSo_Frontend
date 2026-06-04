@@ -27,6 +27,7 @@ function OrderApplyPage() {
     items,
     totalSummary,
     supplierItems,
+    supplierNames,
     handleInfoChange,
     handleItemChange,
     addItem,
@@ -47,7 +48,7 @@ function OrderApplyPage() {
   // 모달 Open
   setOpenModal(true);
 
-//
+  //
   console.log('선택한 품목:', item);
 
   try {
@@ -188,10 +189,11 @@ const handleCloseModal = () => {
                     className="w-full bg-gray-50 border-none rounded-2xl py-4 px-4 text-sm font-bold focus:ring-2 focus:ring-emerald-500/20 outline-none"
                   >
                     <option value="">공급업체 선택</option>
-                    <option value="한우 농장">한우 농장</option>
-                    <option value="청과 도매">청과 도매</option>
-                    <option value="식자재 마트">식자재 마트</option>
-                    <option value="대성 유통">대성 유통</option>
+                      {supplierNames.map((name) => (
+                        <option key={name} value={name}>
+                          {name}
+                        </option>
+                      ))}
                   </select>
                 </div>
                 <div>
@@ -231,18 +233,18 @@ const handleCloseModal = () => {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-50 bg-white">
-                      {supplierItems.map((item, index) => (
-                        <tr key={index} className="group hover:bg-emerald-50/40 transition-all cursor-default">
+                      {supplierItems.map((item) => (
+                        <tr key={item.itemSeq} className="group hover:bg-emerald-50/40 transition-all cursor-default">
                           <td className="px-3 py-4 text-center align-middle">
-                            <img src={item.image} alt={item.name} className="w-14 h-14 rounded-lg object-cover mx-auto border border-gray-100 bg-white shadow-sm group-hover:border-emerald-200 transition-all" />
+                            이미지{/* <img src={item.image} alt={item.name} className="w-14 h-14 rounded-lg object-cover mx-auto border border-gray-100 bg-white shadow-sm group-hover:border-emerald-200 transition-all" /> */}
                           </td>
-                          <td className="px-3 py-4 text-center align-middle text-xs font-bold text-gray-500 font-mono truncate whitespace-nowrap">{item.code}</td>
-                          <td className="px-3 py-4 text-center align-middle text-sm font-black text-gray-800 truncate whitespace-nowrap">{item.name}</td>
+                          <td className="px-3 py-4 text-center align-middle text-xs font-bold text-gray-500 font-mono truncate whitespace-nowrap">{item.itemCode}</td>
+                          <td className="px-3 py-4 text-center align-middle text-sm font-black text-gray-800 truncate whitespace-nowrap">{item.itemName}</td>
                           <td className="px-3 py-4 text-center align-middle whitespace-nowrap">
-                            <span className="inline-block px-2.5 py-1 bg-gray-100 text-gray-600 text-[10px] font-black rounded-md uppercase">{item.group}</span>
+                            <span className="inline-block px-2.5 py-1 bg-gray-100 text-gray-600 text-[10px] font-black rounded-md uppercase">{item.categorySeq}</span>
                           </td>
                           <td className="w-[120px] px-2 py-4 text-center align-middle text-xs font-bold text-gray-400 whitespace-nowrap">{item.spec}</td>
-                          <td className="w-[100px] px-2 py-4 text-center align-middle text-sm font-black text-emerald-600 whitespace-nowrap">₩{item.price.toLocaleString()}</td>
+                          <td className="w-[100px] px-2 py-4 text-center align-middle text-sm font-black text-emerald-600 whitespace-nowrap">₩{(item.unitPrice ?? 0).toLocaleString()}</td>
                           <td className="px-3 py-4 text-center align-middle whitespace-nowrap">
                             <span className="text-[11px] font-bold text-gray-500 bg-gray-50 px-2.5 py-1 rounded-md">{item.type}</span>
                           </td>

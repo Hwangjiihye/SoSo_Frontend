@@ -55,11 +55,14 @@ function GroupOrderList() {
             {/* 드롭다운 컨테이너 (투명 브릿지 포함) */}
             <div className={`absolute top-full left-0 w-48 pt-2 z-[60] transition-all duration-200 ${isOrderDropdownOpen ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-2'}`}>
               <div className="bg-white border border-gray-100 rounded-2xl shadow-xl p-2">
-                <Link to="/orders" className="block w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl mb-1">
+                <Link to="/orders" className="block w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl transition-colors">
                   일반 발주 현황
                 </Link>
                 <Link to="/group-orders" className="block w-full text-left px-4 py-3 text-sm font-bold text-emerald-600 bg-emerald-50 rounded-xl transition-colors">
                   공동 발주 현황
+                </Link>
+                <Link to="/orders/new" className="block w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl transition-colors">
+                  발주 신청
                 </Link>
               </div>
             </div>

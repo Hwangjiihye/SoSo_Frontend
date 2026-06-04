@@ -6,3 +6,10 @@ export const check = async (itemName) => {
         params: {itemName}});
     return resp.data;
 }
+
+// 발주 신청시, 거래처 품목 리스트 확인
+export const items = async (itemName) => {
+    const resp = await maxios.get('/order/items', {
+        params: {itemName}});
+    return resp.data;
+}

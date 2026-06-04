@@ -68,13 +68,12 @@ function OrderPage() {
                 <Link to="/group-orders" className="block w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl transition-colors">
                   공동 발주 현황
                 </Link>
+                <Link to="/orders/new" className="block w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl transition-colors">
+                  발주 신청
+                </Link>
               </div>
             </div>
           </div>
-
-          {['발주 신청'].map(m => (
-            <Link to="/orders/new" key={m} className="px-5 py-2 text-sm font-medium text-gray-500 hover:text-emerald-600 transition-colors whitespace-nowrap cursor-pointer">{m}</Link>
-          ))}
         </nav>
         <div className="flex items-center justify-end gap-5">
           <div className="flex items-center gap-3">
@@ -110,14 +109,6 @@ function OrderPage() {
               <span className="px-3 py-1 bg-emerald-100 text-emerald-700 rounded-lg text-xs font-black uppercase tracking-wider">Business Mode</span>
               <p className="text-gray-500 font-semibold text-sm">매장의 발주 상태를 실시간으로 모니터링하세요.</p>
             </div>
-          </div>
-          <div className="flex gap-3">
-            <button 
-              onClick={() => navigate('/orders/new')}
-              className="bg-emerald-600 text-white px-5 py-1 rounded-2xl font-black hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-100 flex items-center gap-2 scale-105"
-            >
-              <span className="text-xl">+</span> 신규 발주
-            </button>
           </div>
         </div>
 
