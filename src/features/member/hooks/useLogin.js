@@ -13,7 +13,7 @@ export const useLogin = () => {
   const navigate = useNavigate();
 
   // 로그인 대상 선택 상태
-  const [loginType, setLoginType] = useState('business'); 
+  const [loginType, setLoginType] = useState('business');
 
   // 로그인 성공 시 토큰과 사용자 정보를 전역 상태에 저장하기 위한 함수
   const login = authStore((state) => state.login);
@@ -45,7 +45,7 @@ export const useLogin = () => {
       ...prev,
       [name]: value,
     }));
-    
+
     // 입력이 시작되면 해당 필드의 에러 메시지 초기화
     if (errors[name]) {
       setErrors((prev) => ({
@@ -95,7 +95,7 @@ export const useLogin = () => {
     }
 
     console.log(`${loginType === 'business' ? '사업자' : '거래처'} 로그인 시도:`, { ...formData, ...options });
-    
+
     // 🚀 1. 백엔드로 진짜 로그인 데이터를 보냅니다 (POST 방식)
     const requestUserType = loginType === 'business' ? 'BUSINESS' : 'PARTNER';
 
@@ -104,11 +104,17 @@ export const useLogin = () => {
       pw: formData.password,
       user_type: requestUserType,
     })
-    .then(resp => {
-
-    const token = resp.data.token;
-    const user_type = resp.data.user_type;
-    const id = resp.data.id;
+      .then(resp => {
+        // 🚀 [추가] 탈퇴 회원 응답 처리
+        // 백엔드 컨트롤러가 status가 'isWithDraw'인 경우 그대로 member 객체를 반환함
+        if (resp.data.status === 'isWithDraw') {
+          alert("탈퇴한 회원입니다. 고객센터에 문의해주세요.");
+          setFormData({
+            user_id: '',
+            password: ''
+          })
+          return;
+        }
     // 백엔드에서 맵 형태로 넘겨주는 회원 상세 정보 (닉네임, 매장 정보 등 포함)
     const memberData = resp.data.member; 
 
@@ -116,11 +122,18 @@ export const useLogin = () => {
     console.log("user_type:", user_type);
     console.log("id:", id);
     console.log("member data:", memberData);
+        const token = resp.data.token;
+        const user_type = resp.data.user_type;
+        const user_seq = resp.data.user_seq;
 
-    if(!token){
-      alert("로그인은 성공했으나 토큰이 넘어오지 않았습니다.");
-      return;
-    }
+        console.log("token:", token);
+        console.log("user_type:", user_type);
+        console.log("user_seq:", user_seq);
+
+        if (!token) {
+          alert("로그인 정보가 올바르지 않거나 권한이 없습니다.");
+          return;
+        }
 
     console.log("zustand 저장 전 백엔드 응답:", resp.data);
     // 로그인 성공 시 받은 토큰과 사용자 상세 정보를 전역 상태에 저장
@@ -137,13 +150,27 @@ export const useLogin = () => {
   })
   .catch(error => {
     console.error("로그인 실패:", error);
+        console.log("zustand 저장 전 백엔드 응답:", resp.data);
+        // 로그인 성공 시 받은 토큰과 사용자 정보를 전역 상태에 저장
+        login({
+          token: token,
+          user_seq: user_seq,
+          user_type: user_type,
+        });
 
-    if (error.response && error.response.status === 401) {
-      alert("회원 유형과 계정 정보가 일치하지 않습니다.");
-    } else {
-      alert("로그인 중 오류가 발생했습니다.");
-    }
-  })
+        // 3. 성공했으니 메인 화면으로 이동
+        alert("로그인에 성공했습니다!");
+        navigate("/");
+      })
+      .catch(error => {
+        console.error("로그인 실패:", error);
+
+        if (error.response && error.response.status === 401) {
+          alert("회원 유형과 계정 정보가 일치하지 않습니다.");
+        } else {
+          alert("로그인 중 오류가 발생했습니다.");
+        }
+      })
   };
 
   return {

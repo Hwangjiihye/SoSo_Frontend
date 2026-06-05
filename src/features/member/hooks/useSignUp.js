@@ -238,6 +238,10 @@ export const useSignUp = () => {
       return alert('필수 약관에 동의해주세요.');
     }
 
+    if (!images.exterior || !images.interior) {
+      return alert('매장 내부 및 외부 사진을 모두 첨부해주세요.');
+    }
+
     try {
       const result = await signUpApi(formData, images.exterior, images.interior);
       if (result.status === 'success') {
