@@ -14,13 +14,17 @@ const PartnerEditProfilePage = () => {
   const logout = authStore((state) => state.logout);
   const { 
     formData, 
+    passwordForm,
     isLoading, 
     isSubmitting, 
+    isPasswordSubmitting,
     handleChange, 
+    handlePasswordChange,
     handleFileChange,
     handleRemovePhoto,
     handleAddressSearch, 
     handleSubmit,
+    handlePasswordSubmit,
     setFormData 
   } = usePartnerEditProfile();
 
@@ -34,6 +38,13 @@ const PartnerEditProfilePage = () => {
     logout();
     alert("로그아웃 되었습니다.");
     navigate("/");
+  };
+
+  const onPasswordSubmit = async () => {
+    const success = await handlePasswordSubmit();
+    if (success) {
+      setIsModalOpen(false);
+    }
   };
 
   if (isLoading) {
@@ -231,19 +242,40 @@ const PartnerEditProfilePage = () => {
         </button>
       </div>
 
-      {/* 5. 계정 정보 변경 모달 */}
+      {/* 5. 비밀번호 변경 모달 */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4">
           <div className="bg-white w-full max-w-[360px] rounded-3xl p-6 animate-fade-in-up">
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-lg font-bold text-gray-900">계정 정보 변경</h3>
+              <h3 className="text-lg font-bold text-gray-900">비밀번호 변경</h3>
               <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600 text-xl">×</button>
             </div>
             
             <div className="space-y-4">
-              <EditField label="현재 비밀번호" type="password" placeholder="현재 비밀번호 입력" />
-              <EditField label="새 비밀번호" type="password" placeholder="새 비밀번호 입력" />
-              <EditField label="새 비밀번호 확인" type="password" placeholder="새 비밀번호 재입력" />
+              <EditField 
+                label="현재 비밀번호" 
+                type="password" 
+                name="currentPassword"
+                value={passwordForm.currentPassword}
+                onChange={handlePasswordChange}
+                placeholder="현재 비밀번호 입력" 
+              />
+              <EditField 
+                label="새 비밀번호" 
+                type="password" 
+                name="newPassword"
+                value={passwordForm.newPassword}
+                onChange={handlePasswordChange}
+                placeholder="새 비밀번호 입력" 
+              />
+              <EditField 
+                label="새 비밀번호 확인" 
+                type="password" 
+                name="confirmPassword"
+                value={passwordForm.confirmPassword}
+                onChange={handlePasswordChange}
+                placeholder="새 비밀번호 재입력" 
+              />
             </div>
 
             <div className="flex gap-3 mt-8">
@@ -254,10 +286,11 @@ const PartnerEditProfilePage = () => {
                 취소
               </button>
               <button 
-                onClick={() => setIsModalOpen(false)}
-                className="flex-1 h-11 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl transition-colors"
+                onClick={onPasswordSubmit}
+                disabled={isPasswordSubmitting}
+                className="flex-1 h-11 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl transition-colors disabled:bg-gray-300"
               >
-                확인
+                {isPasswordSubmitting ? '변경 중...' : '확인'}
               </button>
             </div>
           </div>

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getPartnerProfileApi, updatePartnerProfileApi } from '../../../apis/memberApi';
+import { getPartnerProfileApi, updatePartnerProfileApi, changePasswordApi } from '../../../apis/memberApi';
 
 /**
  * @file usePartnerEditProfile.js
@@ -8,6 +8,8 @@ import { getPartnerProfileApi, updatePartnerProfileApi } from '../../../apis/mem
  */
 export const usePartnerEditProfile = () => {
   const navigate = useNavigate();
+  
+  // 업체 정보 폼 상태
   const [formData, setFormData] = useState({
     nickname: '',
     phone: '',
@@ -19,14 +21,22 @@ export const usePartnerEditProfile = () => {
     zonecode: '',
     address1: '',
     address2: '',
-    exteriorImg: null, // File object or URL
-    interiorImg: null, // File object or URL
+    exteriorImg: null, 
+    interiorImg: null, 
     exteriorPreview: null,
     interiorPreview: null,
+  });
+
+  // 비밀번호 변경 폼 상태
+  const [passwordForm, setPasswordForm] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
   });
   
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isPasswordSubmitting, setIsPasswordSubmitting] = useState(false);
 
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -67,9 +77,16 @@ export const usePartnerEditProfile = () => {
     fetchInitialData();
   }, []);
 
+  // 업체 정보 변경 핸들러
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  // 비밀번호 입력 핸들러
+  const handlePasswordChange = (e) => {
+    const { name, value } = e.target;
+    setPasswordForm(prev => ({ ...prev, [name]: value }));
   };
 
   const handleFileChange = (e, type) => {
@@ -112,10 +129,10 @@ export const usePartnerEditProfile = () => {
     }).open();
   };
 
+  // 업체 정보 저장
   const handleSubmit = async (e) => {
     if (e) e.preventDefault();
     
-    // 유효성 검사 (필요 시 추가)
     if (!formData.nickname || !formData.phone || !formData.email) {
       alert('필수 정보를 모두 입력해주세요.');
       return;
@@ -123,7 +140,6 @@ export const usePartnerEditProfile = () => {
 
     setIsSubmitting(true);
     try {
-      // 1. 서버로 보낼 순수 데이터 DTO 추출 (이미지 제외)
       const updateData = {
         nickname: formData.nickname,
         phone: formData.phone,
@@ -131,10 +147,8 @@ export const usePartnerEditProfile = () => {
         zonecode: formData.zonecode,
         address1: formData.address1,
         address2: formData.address2,
-        // 필요에 따라 추가 필드 포함
       };
 
-      // 2. API 호출
       const result = await updatePartnerProfileApi(
         updateData, 
         formData.exteriorImg, 
@@ -143,11 +157,10 @@ export const usePartnerEditProfile = () => {
       
       if (result && result.status === 'success') {
         alert('업체 정보가 성공적으로 수정되었습니다.');
-        // 3. 업체 정보 확인 페이지로 이동
         navigate('/partner-info');
-      }else if(result && (result.status === 'duplNickname' || result.status === 'duplEmail')){
-        alert(result.message)
-      }else {
+      } else if (result && (result.status === 'duplNickname' || result.status === 'duplEmail')) {
+        alert(result.message);
+      } else {
         alert(result?.message || '알 수 없는 응답이 반환되었습니다.');
       }
     } catch (err) {
@@ -158,15 +171,56 @@ export const usePartnerEditProfile = () => {
     }
   };
 
+  // 비밀번호 변경 저장
+  const handlePasswordSubmit = async () => {
+    const { currentPassword, newPassword, confirmPassword } = passwordForm;
+
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      alert('비밀번호 정보를 모두 입력해주세요.');
+      return false;
+    }
+
+    if (newPassword !== confirmPassword) {
+      alert('새 비밀번호가 일치하지 않습니다.');
+      return false;
+    }
+
+    setIsPasswordSubmitting(true);
+    try {
+      const result = await changePasswordApi({ currentPassword, newPassword });
+      if (result && result.status === 'success') {
+        alert(result.message);        
+        return true; // 모달 닫기용
+      }else if(result && (result.status === 'isNotPw' || result.status === 'difPw' || result.status === 'fail' )){
+        alert(result.message);
+         setPasswordForm({
+          currentPassword: '',
+          newPassword: '',
+          confirmPassword: ''
+        });
+      }
+    } catch (err) {
+      console.error('비밀번호 변경 실패:', err);
+      alert(err.response?.data?.message || '비밀번호 변경 중 오류가 발생했습니다.');
+      return false;
+    } finally {
+      setIsPasswordSubmitting(false);
+    }
+  };
+
   return {
     formData,
+    passwordForm,
     isLoading,
     isSubmitting,
+    isPasswordSubmitting,
     handleChange,
+    handlePasswordChange,
     handleFileChange,
     handleRemovePhoto,
     handleAddressSearch,
     handleSubmit,
+    handlePasswordSubmit,
     setFormData
   };
 };

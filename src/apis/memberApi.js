@@ -121,3 +121,13 @@ export const updatePartnerProfileApi = async (updateData, exteriorImg, interiorI
   });
   return response.data;
 };
+
+/**
+ * 비밀번호 변경
+ * @param {Object} passwordData - { currentPassword, newPassword }
+ * @returns {Promise<{status: string, message: string}>}
+ */
+export const changePasswordApi = async (passwordData) => {
+  const response = await axiosInstance.post('/api/member/change-password', passwordData);
+  return response.data;
+};
