@@ -94,6 +94,34 @@ export const getBusinessProfileApi = async () => {
 };
 
 /**
+ * 사업자 정보 수정 (Multipart/form-data)
+ * @param {Object} updateData - 수정할 회원 정보 DTO
+ * @param {File|null} exteriorImg - 가게 외부 사진
+ * @param {File|null} interiorImg - 가게 내부 사진
+ * @returns {Promise<{status: string, message: string}>}
+ */
+export const updateBusinessProfileApi = async (updateData, exteriorImg, interiorImg) => {
+  const formData = new FormData();
+  
+  formData.append('updateData', JSON.stringify(updateData));
+  
+  if (exteriorImg instanceof File) {
+    formData.append('exteriorImg', exteriorImg);
+  }
+  
+  if (interiorImg instanceof File) {
+    formData.append('interiorImg', interiorImg);
+  }
+
+  const response = await axiosInstance.put('/api/member/business/update', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+  return response.data;
+};
+
+/**
  * 거래처 마이페이지(업체 정보) 조회
  * @returns {Promise<Object>} 회원 및 매장 정보
  */

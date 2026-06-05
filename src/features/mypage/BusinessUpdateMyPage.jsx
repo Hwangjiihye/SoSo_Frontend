@@ -1,40 +1,23 @@
 /**
  * @file BusinessUpdateMyPage.jsx
  * @description 사업자 정보 수정 페이지 컴포넌트입니다.
- * BusinessMyPage와 동일한 레이아웃을 유지하며, 정보를 수정할 수 있는 폼을 제공합니다.
+ * useBusinessUpdate 훅을 사용하여 데이터 처리 및 서버 통신을 수행합니다.
  */
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MainFooter from '../../components/layout/MainFooter';
 import logo from "../../assets/soso로고.png";
 import authStore from "../../store/authStore";
-import { useBusinessInfo } from './hooks/useBusinessInfo';
+import { useBusinessUpdate } from './hooks/useBusinessUpdate';
 
 // 비밀번호 변경 팝업 컴포넌트
-const PasswordChangeModal = ({ isOpen, onClose }) => {
-  const [pwData, setPwData] = useState({
-    currentPassword: '',
-    newPassword: '',
-    confirmNewPassword: ''
-  });
-
+const PasswordChangeModal = ({ isOpen, onClose, form, errors, onChange, onSubmit, isSubmitting }) => {
   if (!isOpen) return null;
 
-  const handlePwChange = (e) => {
-    const { name, value } = e.target;
-    setPwData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handlePwSubmit = (e) => {
+  const handleFinalSubmit = async (e) => {
     e.preventDefault();
-    // TODO: 현재 비밀번호 검증 및 비밀번호 변경 API 연동
-    if (pwData.newPassword !== pwData.confirmNewPassword) {
-      alert("새 비밀번호가 일치하지 않습니다.");
-      return;
-    }
-    console.log("비밀번호 변경 데이터:", pwData);
-    alert("비밀번호가 성공적으로 변경되었습니다. (API 연동 필요)");
-    onClose();
+    const success = await onSubmit();
+    if (success) onClose();
   };
 
   return (
@@ -44,15 +27,15 @@ const PasswordChangeModal = ({ isOpen, onClose }) => {
           <h3 className="text-lg font-bold text-emerald-800">비밀번호 변경</h3>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
         </div>
-        <form onSubmit={handlePwSubmit} className="p-6 flex flex-col gap-5">
+        <form onSubmit={handleFinalSubmit} className="p-6 flex flex-col gap-5">
           <div>
             <label className="block text-xs font-bold text-gray-500 mb-2">현재 비밀번호</label>
             <input 
               type="password" 
               name="currentPassword"
               placeholder="현재 비밀번호를 입력하세요"
-              value={pwData.currentPassword}
-              onChange={handlePwChange}
+              value={form.currentPassword}
+              onChange={onChange}
               className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl focus:bg-white focus:border-emerald-500 outline-none transition-all text-sm"
               required
             />
@@ -63,37 +46,41 @@ const PasswordChangeModal = ({ isOpen, onClose }) => {
               type="password" 
               name="newPassword"
               placeholder="새 비밀번호를 입력하세요"
-              value={pwData.newPassword}
-              onChange={handlePwChange}
-              className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl focus:bg-white focus:border-emerald-500 outline-none transition-all text-sm"
+              value={form.newPassword}
+              onChange={onChange}
+              className={`w-full p-3 bg-gray-50 border ${errors.newPassword ? 'border-red-300' : 'border-gray-100'} rounded-xl focus:bg-white focus:border-emerald-500 outline-none transition-all text-sm`}
               required
             />
+            {errors.newPassword && <p className="text-[10px] text-red-500 mt-1 ml-1">{errors.newPassword}</p>}
           </div>
           <div>
             <label className="block text-xs font-bold text-gray-500 mb-2">새 비밀번호 확인</label>
             <input 
               type="password" 
-              name="confirmNewPassword"
+              name="confirmPassword"
               placeholder="새 비밀번호를 다시 입력하세요"
-              value={pwData.confirmNewPassword}
-              onChange={handlePwChange}
-              className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl focus:bg-white focus:border-emerald-500 outline-none transition-all text-sm"
+              value={form.confirmPassword}
+              onChange={onChange}
+              className={`w-full p-3 bg-gray-50 border ${errors.confirmPassword ? 'border-red-300' : 'border-gray-100'} rounded-xl focus:bg-white focus:border-emerald-500 outline-none transition-all text-sm`}
               required
             />
+            {errors.confirmPassword && <p className="text-[10px] text-red-500 mt-1 ml-1">{errors.confirmPassword}</p>}
           </div>
           <div className="mt-4 flex gap-2">
             <button 
               type="button" 
               onClick={onClose}
               className="flex-1 py-3 border border-gray-200 rounded-xl text-sm font-bold text-gray-500 hover:bg-gray-50 transition-colors"
+              disabled={isSubmitting}
             >
               취소
             </button>
             <button 
               type="submit"
               className="flex-1 py-3 bg-emerald-500 text-white rounded-xl text-sm font-bold hover:bg-emerald-600 transition-colors shadow-lg shadow-emerald-100"
+              disabled={isSubmitting}
             >
-              변경 완료
+              {isSubmitting ? '변경 중...' : '변경 완료'}
             </button>
           </div>
         </form>
@@ -103,74 +90,26 @@ const PasswordChangeModal = ({ isOpen, onClose }) => {
 };
 
 const UserUpdateTab = () => {
-  const { profile, isLoading, storeImg1, storeImg2 } = useBusinessInfo();
   const navigate = useNavigate();
   const [isPwModalOpen, setIsPwModalOpen] = useState(false);
-
-  // 폼 데이터 상태 관리
-  const [formData, setFormData] = useState({
-    nickname: '',
-    phone: '',
-    email: '',
-    bizNumber: '',
-    bizname: '',
-    address: '',
-    detailAddress: '',
-    openDate: ''
-  });
-
-  // 사진 상태 관리 (파일 객체 및 미리보기 URL)
-  const [images, setImages] = useState({ exterior: null, interior: null });
-  const [previews, setPreviews] = useState({ exterior: '', interior: '' });
-
-  // 데이터 로드 완료 시 폼 초기값 설정
-  useEffect(() => {
-    if (profile) {
-      setFormData({
-        nickname: profile.user_nickname || '',
-        phone: profile.phone || '',
-        email: profile.email || '',
-        bizNumber: profile.bizNumber || '',
-        bizname: profile.bizname || '',
-        address: profile.address1 || '',
-        detailAddress: profile.address2 || '',
-        openDate: profile.openingDate?.split('T')[0] || ''
-      });
-      setPreviews({
-        exterior: storeImg1 || '',
-        interior: storeImg2 || ''
-      });
-    }
-  }, [profile, storeImg1, storeImg2]);
+  
+  const {
+    formData,
+    passwordForm,
+    errors,
+    passwordErrors,
+    isLoading,
+    isSubmitting,
+    isPasswordSubmitting,
+    handleChange,
+    handlePasswordChange,
+    handleFileChange,
+    handleAddressSearch,
+    handleSubmit,
+    handlePasswordSubmit,
+  } = useBusinessUpdate();
 
   if (isLoading) return <div className="p-8 text-center text-gray-500">정보를 불러오는 중입니다...</div>;
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleFileChange = (e, type) => {
-    const file = e.target.files[0];
-    if (file) {
-      setImages(prev => ({ ...prev, [type]: file }));
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreviews(prev => ({ ...prev, [type]: reader.result }));
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // TODO: 회원정보 및 사진 수정 API 연동 (FormData 사용)
-    console.log("수정된 텍스트 데이터:", formData);
-    console.log("수정된 이미지 데이터:", images);
-    
-    alert("정보 및 사진이 성공적으로 수정되었습니다. (API 연동 필요)");
-    navigate("/business-mypage");
-  };
 
   return (
     <>
@@ -195,7 +134,7 @@ const UserUpdateTab = () => {
           <div className="grid grid-cols-2 gap-x-6 gap-y-6 text-sm">
             <div>
               <label className="block text-xs font-semibold text-gray-500 mb-1">아이디 (변경 불가)</label>
-              <div className="p-2 border-b bg-gray-50 text-gray-400">{profile?.userId}</div>
+              <div className="p-2 border-b bg-gray-50 text-gray-400">{formData.userId}</div>
             </div>
             <div>
               <label className="block text-xs font-semibold text-gray-500 mb-1">닉네임</label>
@@ -205,6 +144,7 @@ const UserUpdateTab = () => {
                 value={formData.nickname}
                 onChange={handleChange}
                 className="w-full p-2 border-b border-gray-200 focus:border-emerald-500 outline-none transition-colors"
+                required
               />
             </div>
             <div>
@@ -214,8 +154,11 @@ const UserUpdateTab = () => {
                 name="phone"
                 value={formData.phone}
                 onChange={handleChange}
-                className="w-full p-2 border-b border-gray-200 focus:border-emerald-500 outline-none transition-colors"
+                placeholder="010-XXXX-XXXX"
+                className={`w-full p-2 border-b ${errors.phone ? 'border-red-300' : 'border-gray-200'} focus:border-emerald-500 outline-none transition-colors`}
+                required
               />
+              {errors.phone && <p className="text-[10px] text-red-500 mt-1">{errors.phone}</p>}
             </div>
             <div>
               <label className="block text-xs font-semibold text-gray-500 mb-1">이메일</label>
@@ -224,8 +167,10 @@ const UserUpdateTab = () => {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                className="w-full p-2 border-b border-gray-200 focus:border-emerald-500 outline-none transition-colors"
+                className={`w-full p-2 border-b ${errors.email ? 'border-red-300' : 'border-gray-200'} focus:border-emerald-500 outline-none transition-colors`}
+                required
               />
+              {errors.email && <p className="text-[10px] text-red-500 mt-1">{errors.email}</p>}
             </div>
           </div>
         </div>
@@ -244,6 +189,7 @@ const UserUpdateTab = () => {
                 value={formData.bizname}
                 onChange={handleChange}
                 className="w-full p-2 border-b border-gray-200 focus:border-emerald-500 outline-none transition-colors"
+                required
               />
             </div>
             <div>
@@ -261,18 +207,24 @@ const UserUpdateTab = () => {
               <div className="flex gap-2 mb-2">
                 <input 
                   type="text" 
-                  name="address"
-                  value={formData.address}
+                  name="address1"
+                  value={formData.address1}
                   readOnly
                   className="flex-grow p-2 border-b border-gray-200 bg-gray-50 outline-none"
                 />
-                <button type="button" className="px-3 py-1 bg-gray-100 text-xs font-bold rounded-lg hover:bg-gray-200 transition-colors">주소 검색</button>
+                <button 
+                  type="button" 
+                  onClick={handleAddressSearch}
+                  className="px-3 py-1 bg-gray-100 text-xs font-bold rounded-lg hover:bg-gray-200 transition-colors"
+                >
+                  주소 검색
+                </button>
               </div>
               <input 
                 type="text" 
-                name="detailAddress"
+                name="address2"
                 placeholder="상세 주소를 입력하세요"
-                value={formData.detailAddress}
+                value={formData.address2}
                 onChange={handleChange}
                 className="w-full p-2 border-b border-gray-200 focus:border-emerald-500 outline-none transition-colors"
               />
@@ -281,8 +233,8 @@ const UserUpdateTab = () => {
               <label className="block text-xs font-semibold text-gray-500 mb-1">오픈일자</label>
               <input 
                 type="date" 
-                name="openDate"
-                value={formData.openDate}
+                name="openingDate"
+                value={formData.openingDate}
                 onChange={handleChange}
                 className="w-full p-2 border-b border-gray-200 focus:border-emerald-500 outline-none transition-colors"
               />
@@ -301,8 +253,8 @@ const UserUpdateTab = () => {
               <label className="block text-xs font-semibold text-gray-500 mb-3">가게 외관</label>
               <div className="relative group">
                 <div className="w-full aspect-video rounded-2xl overflow-hidden border-2 border-dashed border-emerald-100 bg-gray-50 flex items-center justify-center">
-                  {previews.exterior ? (
-                    <img src={previews.exterior} alt="Exterior Preview" className="w-full h-full object-cover" />
+                  {formData.exteriorPreview ? (
+                    <img src={formData.exteriorPreview} alt="Exterior Preview" className="w-full h-full object-cover" />
                   ) : (
                     <span className="text-gray-400 text-xs">사진을 선택해 주세요</span>
                   )}
@@ -318,8 +270,8 @@ const UserUpdateTab = () => {
               <label className="block text-xs font-semibold text-gray-500 mb-3">가게 내관</label>
               <div className="relative group">
                 <div className="w-full aspect-video rounded-2xl overflow-hidden border-2 border-dashed border-emerald-100 bg-gray-50 flex items-center justify-center">
-                  {previews.interior ? (
-                    <img src={previews.interior} alt="Interior Preview" className="w-full h-full object-cover" />
+                  {formData.interiorPreview ? (
+                    <img src={formData.interiorPreview} alt="Interior Preview" className="w-full h-full object-cover" />
                   ) : (
                     <span className="text-gray-400 text-xs">사진을 선택해 주세요</span>
                   )}
@@ -344,14 +296,21 @@ const UserUpdateTab = () => {
           <button 
             type="submit"
             className="px-6 py-2 bg-emerald-500 text-white rounded-xl text-sm font-bold hover:bg-emerald-600 transition-colors shadow-lg shadow-emerald-100"
+            disabled={isSubmitting}
           >
-            저장하기
+            {isSubmitting ? '저장 중...' : '저장하기'}
           </button>
         </div>
       </form>
+
       <PasswordChangeModal 
         isOpen={isPwModalOpen} 
-        onClose={() => setIsPwModalOpen(false)} 
+        onClose={() => setIsPwModalOpen(false)}
+        form={passwordForm}
+        errors={passwordErrors}
+        onChange={handlePasswordChange}
+        onSubmit={handlePasswordSubmit}
+        isSubmitting={isPasswordSubmitting}
       />
     </>
   );
