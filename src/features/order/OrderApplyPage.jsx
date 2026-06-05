@@ -145,7 +145,7 @@ const handleCloseModal = () => {
             </button>
             <button 
               onClick={handleSubmit}
-              className="px-8 py-3 bg-emerald-600 text-white rounded-2xl font-black hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-100"
+              className="px-6 py-3 bg-emerald-600 text-white rounded-2xl font-black hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-100"
             >
               발주 신청하기
             </button>
@@ -162,7 +162,7 @@ const handleCloseModal = () => {
               </h3>
               <div className="grid grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-black text-gray-600 mb-2 uppercase tracking-tighter">발주 날짜</label>
+                  <label className="block text-[14px] font-black text-gray-600 mb-2 uppercase tracking-tighter">발주 날짜</label>
                   <input 
                     type="date" 
                     value={orderInfo.orderDate}
@@ -171,7 +171,7 @@ const handleCloseModal = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-black text-gray-600 mb-2 uppercase tracking-tighter">공급업체</label>
+                  <label className="block text-[14px] font-black text-gray-600 mb-2 uppercase tracking-tighter">공급업체</label>
                   <select 
                     value={orderInfo.supplier}
                     onChange={(e) => handleInfoChange('supplier', e.target.value)}
@@ -186,7 +186,7 @@ const handleCloseModal = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-black text-gray-600 mb-2 uppercase tracking-tighter">발주 담당자</label>
+                  <label className="block text-[14px] font-black text-gray-600 mb-2 uppercase tracking-tighter">발주 담당자</label>
                   <input 
                     type="text" 
                     value={orderInfo.manager}
@@ -204,20 +204,20 @@ const handleCloseModal = () => {
                   <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
                     <span className="w-1.5 h-6 bg-emerald-500 rounded-full"></span>
                     {orderInfo.supplier} 등록 물품
-                    <span className="text-sm font-medium text-gray-400 ml-2">업체에서 공급하는 품목 리스트입니다.</span>
+                    <span className="text-[14px] font-medium text-gray-500 ml-2">업체에서 공급하는 품목 리스트입니다.</span>
                   </h3>
                 </div>
                 <div className="max-h-[500px] overflow-x-auto custom-scrollbar">
                   <table className="w-auto min-w-[780px] text-left border-collapse">
                     <thead className="bg-gray-100/100 sticky top-0 z-10">
                       <tr>
-                        <th className="px-4 py-4 text-[12px] font-black text-gray-600 uppercase tracking-wide text-center align-middle border-b border-gray-50">이미지</th>
-                        <th className="px-3 py-4 text-[12px] font-black text-gray-600 uppercase tracking-wide text-center align-middle whitespace-nowrap border-b border-gray-50">품목코드</th>
-                        <th className="px-6 py-4 text-[12px] font-black text-gray-600 uppercase tracking-wide text-center align-middle whitespace-nowrap border-b border-gray-50">품목명</th>
-                        <th className="px-3 py-4 text-[12px] font-black text-gray-600 uppercase tracking-wide text-center align-middle whitespace-nowrap border-b border-gray-50">품목그룹</th>
-                        <th className="w-[120px] px-2 py-4 text-[12px] font-black text-gray-600 uppercase tracking-wide text-center align-middle whitespace-nowrap border-b border-gray-50">규격</th>
-                        <th className="w-[100px] px-2 py-4 text-[12px] font-black text-gray-600 uppercase tracking-wide text-center align-middle whitespace-nowrap border-b border-gray-50">판매단가</th>
-                        <th className="px-4 py-4 text-[12px] font-black text-gray-600 uppercase tracking-wide text-center align-middle border-b border-gray-50"></th>
+                        <th className="px-4 py-4 text-[14px] font-black text-gray-600 uppercase tracking-wide text-center align-middle border-b border-gray-50">이미지</th>
+                        <th className="px-3 py-4 text-[14px] font-black text-gray-600 uppercase tracking-wide text-center align-middle whitespace-nowrap border-b border-gray-50">품목코드</th>
+                        <th className="px-6 py-4 text-[14px] font-black text-gray-600 uppercase tracking-wide text-center align-middle whitespace-nowrap border-b border-gray-50">품목명</th>
+                        <th className="px-3 py-4 text-[14px] font-black text-gray-600 uppercase tracking-wide text-center align-middle whitespace-nowrap border-b border-gray-50">카테고리</th>
+                        <th className="w-[120px] px-2 py-4 text-[14px] font-black text-gray-600 uppercase tracking-wide text-center align-middle whitespace-nowrap border-b border-gray-50">규격</th>
+                        <th className="w-[100px] px-2 py-4 text-[14px] font-black text-gray-600 uppercase tracking-wide text-center align-middle whitespace-nowrap border-b border-gray-50">판매단가</th>
+                        <th className="px-4 py-4 text-[14px] font-black text-gray-600 uppercase tracking-wide text-center align-middle border-b border-gray-50"></th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-50 bg-white">
@@ -232,15 +232,15 @@ const handleCloseModal = () => {
                           <td className="px-3 py-4 text-center align-middle">
                             이미지{/* <img src={item.image} alt={item.name} className="w-14 h-14 rounded-lg object-cover mx-auto border border-gray-100 bg-white shadow-sm group-hover:border-emerald-200 transition-all" /> */}
                           </td>
-                          <td className="px-3 py-4 text-center align-middle text-xs font-bold text-gray-500 font-mono truncate whitespace-nowrap">{item.itemCode}</td>
+                          <td className="px-3 py-4 text-center align-middle text-sm font-bold text-gray-500 font-mono truncate whitespace-nowrap">{item.itemCode}</td>
                           <td className="px-3 py-4 text-center align-middle text-sm font-black text-gray-800 truncate whitespace-nowrap">{item.itemName}</td>
                           <td className="px-3 py-4 text-center align-middle whitespace-nowrap">
-                            <span className="inline-block px-2.5 py-1 bg-gray-100 text-gray-600 text-[10px] font-black rounded-md uppercase">{item.categoryName}</span>
+                            <span className="inline-block px-2.5 py-1 bg-gray-100 text-gray-600 text-[12px] font-black rounded-md uppercase">{item.categoryName}</span>
                           </td>
-                          <td className="w-[120px] px-2 py-4 text-center align-middle text-xs font-bold text-gray-400 whitespace-nowrap">{item.spec}</td>
+                          <td className="w-[120px] px-2 py-4 text-center align-middle text-sm font-bold text-gray-400 whitespace-nowrap">{item.spec}</td>
                           <td className="w-[100px] px-2 py-4 text-center align-middle text-sm font-black text-emerald-600 whitespace-nowrap">₩{(item.unitPrice ?? 0).toLocaleString()}</td>
                           <td className="px-3 py-4 text-center align-middle">
-                            <button onClick={() => handleSelectSupplierItem(item)} className="px-3 py-2 bg-emerald-50 text-emerald-600 text-[11px] font-black rounded-lg hover:bg-emerald-600 hover:text-white transition-all active:scale-95 border border-emerald-100/50 whitespace-nowrap">선택</button>
+                            <button onClick={() => handleSelectSupplierItem(item)} className="px-3 py-2 bg-emerald-50 text-emerald-600 text-[12px] font-black rounded-lg hover:bg-emerald-600 hover:text-white transition-all active:scale-95 border border-emerald-100/50 whitespace-nowrap">선택</button>
                           </td>
                         </tr>
                       ))
@@ -276,11 +276,11 @@ const handleCloseModal = () => {
                     <table className="w-full table-fixed text-left border-collapse">
                       <thead className="bg-gray-50/50">
                         <tr>
-                          <th className="align-middle px-4 py-4 text-[12px] font-black text-gray-600 uppercase tracking-widest w-[7%] text-center">No.</th>
+                          <th className="align-middle px-7 py-4 text-[12px] font-black text-gray-600 uppercase tracking-widest w-[7%] text-center">No.</th>
                           <th className="align-middle px-14 py-4 text-[12px] font-black text-gray-600 uppercase tracking-widest w-[21%] text-center">품목명</th>
-                          <th className="align-middle px-9 py-4 text-[12px] font-black text-gray-600 uppercase tracking-widest w-[17%] text-center">카테고리</th>
+                          <th className="align-middle px-7 py-4 text-[12px] font-black text-gray-600 uppercase tracking-widest w-[17%] text-center">카테고리</th>
                           <th className="align-middle px-4 py-4 text-[12px] font-black text-gray-600 uppercase tracking-widest w-[10%] text-center">수량</th>
-                          <th className="align-middle px-6 py-4 text-[12px] font-black text-gray-600 uppercase tracking-widest w-[10%] text-center">단위</th>
+                          <th className="align-middle px-6 py-4 text-[12px] font-black text-gray-600 uppercase tracking-widest w-[10%] text-center">규격</th>
                           <th className="align-middle px-4 py-4 text-[12px] font-black text-gray-600 uppercase tracking-widest w-[15%] text-center">단가(원)</th>
                           <th className="align-middle px-4 py-4 text-[12px] font-black text-gray-600 uppercase tracking-widest w-[15%] text-center">합계</th>
                           <th className="align-middle px-1 py-4 text-[12px] font-black text-gray-600 uppercase tracking-widest w-[5%] text-center"></th>
@@ -289,33 +289,25 @@ const handleCloseModal = () => {
                       <tbody className="divide-y divide-gray-50">
                         {items.map((item, index) => (
                           <tr key={item.id} className="hover:bg-gray-50/50 transition-colors">
-                            <td className="align-middle px-6 py-4 text-center font-bold text-gray-400 text-sm">{index + 1}</td>
+                            <td className="align-middle px-9 py-4 text-center font-bold text-gray-400 text-sm">{index + 1}</td>
                             <td className="align-middle px-6 py-4">
                               <input type="text" placeholder="품목명" value={item.name} readOnly className="w-[120px] bg-gray-50 border border-gray-100 rounded-lg py-2 px-3 text-sm font-bold text-gray-500 cursor-not-allowed outline-none transition-all text-center" />
                             </td>
-                            <td className="align-middle px-4 py-4">
-                              <select value={item.category} disabled className="w-[110px] bg-gray-50 border border-gray-100 rounded-lg py-2 px-3 text-sm font-bold text-gray-500 cursor-not-allowed appearance-none text-center">
-                                <option value="">선택</option>
-                                <option value="육류">육류</option>
-                                <option value="채소류">채소류</option>
-                                <option value="수산물">수산물</option>
-                                <option value="가공식품">가공식품</option>
-                                <option value="오일류">오일류</option>
-                                <option value="기타">기타</option>
+                            <td className="align-middle px-2 py-4">
+                              <select value={item.categoryName || ''} disabled className="w-[115px] bg-gray-50 border border-gray-100 rounded-lg py-2 px-3 text-sm font-bold text-gray-500 cursor-not-allowed appearance-none text-center">
+                                   <option value={item.categoryName || ''}>
+                                      {item.categoryName || '미분류'}
+                                   </option>
                               </select>
                             </td>
                             <td className="align-middle px-4 py-4 text-center">
                               <input type="number" value={item.quantity === 0 ? '' : item.quantity} readOnly className="w-full max-w-[60px] bg-gray-50 border border-gray-100 rounded-lg py-2 px-2 text-sm font-bold text-gray-500 text-center cursor-not-allowed outline-none transition-all mx-auto" />
                             </td>
-                            <td className="align-middle px-4 py-4 text-center">
-                              <select value={item.unit} disabled className="w-[70px] bg-gray-50 border border-gray-100 rounded-lg py-2 px-3 text-sm font-bold text-gray-500 cursor-not-allowed appearance-none text-left">
-                                <option value="">선택</option>
-                                <option value="kg">kg</option>
-                                <option value="g">g</option>
-                                <option value="박스">박스</option>
-                                <option value="봉">봉</option>
-                                <option value="개">개</option>
-                                <option value="L">L</option>
+                            <td className="align-middle px-2 py-4 text-center">
+                              <select value={item.spec} disabled className="w-[70px] bg-gray-50 border border-gray-100 rounded-lg py-2 px-3 text-sm font-bold text-gray-500 cursor-not-allowed appearance-none text-center">
+                                <option value={item.spec || ''}>
+                                      {item.spec || '미분류'}
+                                   </option>
                               </select>
                             </td>
                             <td className="align-middle px-4 py-4 text-center">
@@ -334,15 +326,15 @@ const handleCloseModal = () => {
                   </div>
                   <div className="p-8 bg-gray-50/30 flex justify-end gap-10 border-t border-gray-50">
                     <div className="text-right">
-                      <div className="text-[10px] font-black text-gray-400 uppercase mb-1">총 공급가액</div>
+                      <div className="text-[14px] font-black text-gray-500 uppercase mb-1">총 공급가액</div>
                       <div className="text-lg font-bold text-gray-700">₩{totalSummary.supplyValue.toLocaleString()}</div>
                     </div>
                     <div className="text-right">
-                      <div className="text-[10px] font-black text-gray-400 uppercase mb-1">총 부가세</div>
+                      <div className="text-[14px] font-black text-gray-500 uppercase mb-1">총 부가세</div>
                       <div className="text-lg font-bold text-gray-700">₩{totalSummary.tax.toLocaleString()}</div>
                     </div>
                     <div className="text-right">
-                      <div className="text-[10px] font-black text-emerald-500 uppercase mb-1 tracking-widest">최종 합계 금액</div>
+                      <div className="text-[14px] font-black text-emerald-500 uppercase mb-1 tracking-widest">최종 합계 금액</div>
                       <div className="text-3xl font-black text-emerald-600">₩{totalSummary.total.toLocaleString()}</div>
                     </div>
                   </div>

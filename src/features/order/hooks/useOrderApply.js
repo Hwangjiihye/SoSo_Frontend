@@ -66,8 +66,9 @@ export const useOrderApply = () => {
     const newItem = {
       id: newId,
       name: selectedItem.itemName,
-      category: selectedItem.group, // 품목그룹을 카테고리에 매핑
-      unit: selectedItem.spec,
+      categorySeq: selectedItem.categorySeq, 
+      categoryName: selectedItem.categoryName,
+      spec: selectedItem.spec,
       quantity: 1,
       price: selectedItem.unitPrice,
       supplyValue: selectedItem.unitPrice,
