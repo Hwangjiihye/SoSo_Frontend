@@ -1,12 +1,16 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { withdrawMemberApi } from '../../../apis/memberApi';
+import authStore from '../../../store/authStore';
 
 /**
  * @file usePartnerWithdrawal.js
- * @description 회원 탈퇴 로직 처리를 위한 커스텀 훅
+ * @description 회원 탈퇴 로직 처리를 위한 커스텀 훅 (Soft Delete 구현)
  */
 export const usePartnerWithdrawal = () => {
   const navigate = useNavigate();
+  const logout = authStore((state) => state.logout);
+  
   const [reason, setReason] = useState('');
   const [customReason, setCustomReason] = useState('');
   const [isChecked, setIsChecked] = useState(false);
@@ -31,21 +35,31 @@ export const usePartnerWithdrawal = () => {
       return;
     }
 
-    const confirmResult = window.confirm('정말로 탈퇴하시겠습니까? 탈퇴 시 모든 정보가 삭제되며 복구할 수 없습니다.');
+    if (reason === '기타 (직접 입력)' && !customReason.trim()) {
+      alert('탈퇴 사유를 직접 입력해 주세요.');
+      return;
+    }
+
+    const confirmResult = window.confirm('정말로 탈퇴하시겠습니까? 탈퇴 시 SoSo의 모든 서비스 이용이 중단됩니다.');
     
     if (confirmResult) {
       setIsSubmitting(true);
       try {
-        // 실제 연동 시 API 호출
-        console.log('탈퇴 사유:', reason === '기타 (직접 입력)' ? customReason : reason);
+        const withdrawReason = reason === '기타 (직접 입력)' ? customReason : reason;
         
-        // 가상의 딜레이
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        // RESTful DELETE 요청 (실제 데이터 삭제가 아닌 status='WITHDRAWN' 및 사유 저장을 서버에서 처리)
+        const result = await withdrawMemberApi({ withdrawReason });
         
-        alert('그동안 SoSo를 이용해 주셔서 감사합니다. 회원 탈퇴가 완료되었습니다.');
-        navigate('/');
+        if (result.status === 'success' || result) {
+          alert('그동안 SoSo를 이용해 주셔서 감사합니다. 회원 탈퇴가 완료되었습니다.');
+          
+          // 전역 상태 로그아웃 및 메인으로 이동
+          logout();
+          navigate('/');
+        }
       } catch (err) {
-        alert('탈퇴 처리 중 오류가 발생했습니다. 다시 시도해 주세요.');
+        console.error('탈퇴 처리 오류:', err);
+        alert(err.response?.data?.message || '탈퇴 처리 중 오류가 발생했습니다. 다시 시도해 주세요.');
       } finally {
         setIsSubmitting(false);
       }

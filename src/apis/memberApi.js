@@ -131,3 +131,14 @@ export const changePasswordApi = async (passwordData) => {
   const response = await axiosInstance.post('/api/member/change-password', passwordData);
   return response.data;
 };
+
+/**
+ * 회원 탈퇴 (RESTful DELETE - Soft Delete 방식)
+ * @param {Object} withdrawalData - { withdrawReason }
+ * @returns {Promise<{status: string, message: string}>}
+ */
+export const withdrawMemberApi = async (withdrawalData) => {
+  // ⭕ '수정'의 의미를 살려 PATCH를 사용하고, 바디 데이터를 안전하게 전송하세!
+  const response = await axiosInstance.patch('/api/member/partner/withdraw', withdrawalData);
+  return response.data;
+};
