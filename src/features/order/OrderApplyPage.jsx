@@ -45,38 +45,27 @@ function OrderApplyPage() {
 
   // 재고랑 발주랑 맞는지 확인 후 선택
   const handleSelectSupplierItem = async (item) => {
-
-  // 모달 Open
-  setOpenModal(true);
-//
   console.log('선택한 품목:', item);
-
+  
   try {
-    const result = await check(item.name);
+    const result = await check(item.itemName);
 
     console.log('재고 추천 응답:', result);
 
     // 예: 추천 결과 state에 저장
     setRecommendedStocks(result);
+
+    // 기존 발주 품목 목록에 추가
+    addSelectedItem(item);
+
+    // 어떤 거래처 품목을 눌렀는지 저장
+    setSelectedSupplierItem(item);
+
+    // 모달 Open은 데이터 저장 후에
+    setOpenModal(true);
+
   } catch (error) {
     console.error('재고 추천 조회 실패:', error);
-    alert('재고 추천 조회에 실패했습니다.');
-  }
-//
-  // 기존 발주 품목 목록에 추가
-  addSelectedItem(item);
-
-  // 어떤 거래처 품목을 눌렀는지 저장
-  setSelectedSupplierItem(item);
-
-  try {
-    // 거래처 품목명으로 내 재고 목록과 대조
-    const data = await check(item.name);
-
-    // 추천 재고 목록 저장
-    setRecommendList(data);
-  } catch (error) {
-    console.error(error);
     alert('재고 추천 조회에 실패했습니다.');
   }
 };
@@ -220,7 +209,7 @@ const handleCloseModal = () => {
                 </div>
                 <div className="max-h-[500px] overflow-x-auto custom-scrollbar">
                   <table className="w-auto min-w-[780px] text-left border-collapse">
-                    <thead className="bg-gray-50/50 sticky top-0 z-10">
+                    <thead className="bg-gray-100/100 sticky top-0 z-10">
                       <tr>
                         <th className="px-4 py-4 text-[12px] font-black text-gray-600 uppercase tracking-wide text-center align-middle border-b border-gray-50">이미지</th>
                         <th className="px-3 py-4 text-[12px] font-black text-gray-600 uppercase tracking-wide text-center align-middle whitespace-nowrap border-b border-gray-50">품목코드</th>
@@ -228,7 +217,6 @@ const handleCloseModal = () => {
                         <th className="px-3 py-4 text-[12px] font-black text-gray-600 uppercase tracking-wide text-center align-middle whitespace-nowrap border-b border-gray-50">품목그룹</th>
                         <th className="w-[120px] px-2 py-4 text-[12px] font-black text-gray-600 uppercase tracking-wide text-center align-middle whitespace-nowrap border-b border-gray-50">규격</th>
                         <th className="w-[100px] px-2 py-4 text-[12px] font-black text-gray-600 uppercase tracking-wide text-center align-middle whitespace-nowrap border-b border-gray-50">판매단가</th>
-                        <th className="px-3 py-4 text-[12px] font-black text-gray-600 uppercase tracking-wide text-center align-middle whitespace-nowrap border-b border-gray-50">품목구분</th>
                         <th className="px-4 py-4 text-[12px] font-black text-gray-600 uppercase tracking-wide text-center align-middle border-b border-gray-50"></th>
                       </tr>
                     </thead>
@@ -251,9 +239,6 @@ const handleCloseModal = () => {
                           </td>
                           <td className="w-[120px] px-2 py-4 text-center align-middle text-xs font-bold text-gray-400 whitespace-nowrap">{item.spec}</td>
                           <td className="w-[100px] px-2 py-4 text-center align-middle text-sm font-black text-emerald-600 whitespace-nowrap">₩{(item.unitPrice ?? 0).toLocaleString()}</td>
-                          <td className="px-3 py-4 text-center align-middle whitespace-nowrap">
-                            <span className="text-[11px] font-bold text-gray-500 bg-gray-50 px-2.5 py-1 rounded-md">{item.type}</span>
-                          </td>
                           <td className="px-3 py-4 text-center align-middle">
                             <button onClick={() => handleSelectSupplierItem(item)} className="px-3 py-2 bg-emerald-50 text-emerald-600 text-[11px] font-black rounded-lg hover:bg-emerald-600 hover:text-white transition-all active:scale-95 border border-emerald-100/50 whitespace-nowrap">선택</button>
                           </td>
@@ -378,13 +363,13 @@ const handleCloseModal = () => {
               <p className="text-base text-gray-500 font-semibold mb-5">
                 선택한 거래처 품목: 
                 <span className="text-emerald-600 font-black ml-2">
-                  {selectedSupplierItem.name}
+                  {selectedSupplierItem?.itemName}
                 </span>
               </p>
 
               
 
-              {recommendList.length === 0 ? (
+              {recommendedStocks.length === 0 ? (
                 <>
                 <div className="bg-gray-50 rounded-2xl p-6 flex flex-col items-center justify-center">
                   <p className="text-[15px] font-bold text-gray-600 mb-4">
@@ -402,7 +387,7 @@ const handleCloseModal = () => {
                 </>
               ) : (
                 <div className="space-y-3">
-                  {recommendList.map((stock) => (
+                  {recommendedStocks.map((stock) => (
                     <div
                       key={stock.stockSeq}
                       className="border border-emerald-100 bg-emerald-50/40 rounded-2xl p-5 flex justify-between items-center"

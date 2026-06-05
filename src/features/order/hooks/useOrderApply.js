@@ -56,7 +56,7 @@ export const useOrderApply = () => {
   // 물품 선택 시 발주 목록에 추가
   const addSelectedItem = (selectedItem) => {
     // 이미 목록에 있는 품목인지 확인
-    const exists = items.find(item => item.name === selectedItem.name);
+    const exists = items.find(item => item.itemSeq === selectedItem.itemSeq);
     if (exists) {
       handleItemChange(exists.id, 'quantity', exists.quantity + 1);
       return;
@@ -65,14 +65,14 @@ export const useOrderApply = () => {
     const newId = items.length > 0 ? Math.max(...items.map(i => i.id)) + 1 : 1;
     const newItem = {
       id: newId,
-      name: selectedItem.name,
+      name: selectedItem.itemName,
       category: selectedItem.group, // 품목그룹을 카테고리에 매핑
-      unit: selectedItem.unit,
+      unit: selectedItem.spec,
       quantity: 1,
-      price: selectedItem.price,
-      supplyValue: selectedItem.price,
-      tax: Math.floor(selectedItem.price * 0.1),
-      total: Math.floor(selectedItem.price * 1.1)
+      price: selectedItem.unitPrice,
+      supplyValue: selectedItem.unitPrice,
+      tax: Math.floor(selectedItem.unitPrice * 0.1),
+      total: Math.floor(selectedItem.unitPrice * 1.1)
     };
     
     // 만약 첫 번째 행이 비어있다면 해당 행을 교체, 아니면 추가
