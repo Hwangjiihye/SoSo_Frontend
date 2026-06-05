@@ -10,17 +10,108 @@ import logo from "../../assets/soso로고.png";
 import authStore from "../../store/authStore";
 import { useBusinessInfo } from './hooks/useBusinessInfo';
 
+// 비밀번호 변경 팝업 컴포넌트
+const PasswordChangeModal = ({ isOpen, onClose }) => {
+  const [pwData, setPwData] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmNewPassword: ''
+  });
+
+  if (!isOpen) return null;
+
+  const handlePwChange = (e) => {
+    const { name, value } = e.target;
+    setPwData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handlePwSubmit = (e) => {
+    e.preventDefault();
+    // TODO: 현재 비밀번호 검증 및 비밀번호 변경 API 연동
+    if (pwData.newPassword !== pwData.confirmNewPassword) {
+      alert("새 비밀번호가 일치하지 않습니다.");
+      return;
+    }
+    console.log("비밀번호 변경 데이터:", pwData);
+    alert("비밀번호가 성공적으로 변경되었습니다. (API 연동 필요)");
+    onClose();
+  };
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-fade-in-up">
+        <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-emerald-50">
+          <h3 className="text-lg font-bold text-emerald-800">비밀번호 변경</h3>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+        </div>
+        <form onSubmit={handlePwSubmit} className="p-6 flex flex-col gap-5">
+          <div>
+            <label className="block text-xs font-bold text-gray-500 mb-2">현재 비밀번호</label>
+            <input 
+              type="password" 
+              name="currentPassword"
+              placeholder="현재 비밀번호를 입력하세요"
+              value={pwData.currentPassword}
+              onChange={handlePwChange}
+              className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl focus:bg-white focus:border-emerald-500 outline-none transition-all text-sm"
+              required
+            />
+          </div>
+          <div className="border-t border-gray-50 pt-4">
+            <label className="block text-xs font-bold text-gray-500 mb-2">새 비밀번호</label>
+            <input 
+              type="password" 
+              name="newPassword"
+              placeholder="새 비밀번호를 입력하세요"
+              value={pwData.newPassword}
+              onChange={handlePwChange}
+              className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl focus:bg-white focus:border-emerald-500 outline-none transition-all text-sm"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-bold text-gray-500 mb-2">새 비밀번호 확인</label>
+            <input 
+              type="password" 
+              name="confirmNewPassword"
+              placeholder="새 비밀번호를 다시 입력하세요"
+              value={pwData.confirmNewPassword}
+              onChange={handlePwChange}
+              className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl focus:bg-white focus:border-emerald-500 outline-none transition-all text-sm"
+              required
+            />
+          </div>
+          <div className="mt-4 flex gap-2">
+            <button 
+              type="button" 
+              onClick={onClose}
+              className="flex-1 py-3 border border-gray-200 rounded-xl text-sm font-bold text-gray-500 hover:bg-gray-50 transition-colors"
+            >
+              취소
+            </button>
+            <button 
+              type="submit"
+              className="flex-1 py-3 bg-emerald-500 text-white rounded-xl text-sm font-bold hover:bg-emerald-600 transition-colors shadow-lg shadow-emerald-100"
+            >
+              변경 완료
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
 const UserUpdateTab = () => {
   const { profile, isLoading, storeImg1, storeImg2 } = useBusinessInfo();
   const navigate = useNavigate();
+  const [isPwModalOpen, setIsPwModalOpen] = useState(false);
 
   // 폼 데이터 상태 관리
   const [formData, setFormData] = useState({
     nickname: '',
     phone: '',
     email: '',
-    password: '',
-    confirmPassword: '',
     bizNumber: '',
     bizname: '',
     address: '',
@@ -39,8 +130,6 @@ const UserUpdateTab = () => {
         nickname: profile.user_nickname || '',
         phone: profile.phone || '',
         email: profile.email || '',
-        password: '',
-        confirmPassword: '',
         bizNumber: profile.bizNumber || '',
         bizname: profile.bizname || '',
         address: profile.address1 || '',
@@ -75,11 +164,6 @@ const UserUpdateTab = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (formData.password && formData.password !== formData.confirmPassword) {
-      alert("비밀번호가 일치하지 않습니다.");
-      return;
-    }
-    
     // TODO: 회원정보 및 사진 수정 API 연동 (FormData 사용)
     console.log("수정된 텍스트 데이터:", formData);
     console.log("수정된 이미지 데이터:", images);
@@ -89,194 +173,187 @@ const UserUpdateTab = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white border border-emerald-100 rounded-lg p-8 shadow-sm">
-      <h2 className="text-xl font-bold mb-2">개인정보 수정</h2>
-      <p className="text-sm text-gray-500 mb-8 border-b border-gray-100 pb-4">회원님의 정보를 최신 상태로 유지하세요.</p>
-      
-      {/* 기본 계정 정보 수정 */}
-      <div className="mb-10">
-        <h3 className="font-bold text-emerald-700 flex items-center gap-2 mb-4">
-          기본 계정 정보 수정
-        </h3>
-        <div className="grid grid-cols-2 gap-x-6 gap-y-6 text-sm">
-          <div>
-            <label className="block text-xs font-semibold text-gray-500 mb-1">아이디 (변경 불가)</label>
-            <div className="p-2 border-b bg-gray-50 text-gray-400">{profile?.userId}</div>
+    <>
+      <form onSubmit={handleSubmit} className="bg-white border border-emerald-100 rounded-lg p-8 shadow-sm">
+        <h2 className="text-xl font-bold mb-2">개인정보 수정</h2>
+        <p className="text-sm text-gray-500 mb-8 border-b border-gray-100 pb-4">회원님의 정보를 최신 상태로 유지하세요.</p>
+        
+        {/* 기본 계정 정보 수정 */}
+        <div className="mb-10">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="font-bold text-emerald-700 flex items-center gap-2">
+              기본 계정 정보 수정
+            </h3>
+            <button 
+              type="button"
+              onClick={() => setIsPwModalOpen(true)}
+              className="px-4 py-1.5 bg-emerald-50 text-emerald-600 text-xs font-bold rounded-lg hover:bg-emerald-100 transition-colors border border-emerald-100"
+            >
+              비밀번호 변경
+            </button>
           </div>
-          <div>
-            <label className="block text-xs font-semibold text-gray-500 mb-1">닉네임</label>
-            <input 
-              type="text" 
-              name="nickname"
-              value={formData.nickname}
-              onChange={handleChange}
-              className="w-full p-2 border-b border-gray-200 focus:border-emerald-500 outline-none transition-colors"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-semibold text-gray-500 mb-1">전화번호</label>
-            <input 
-              type="text" 
-              name="phone"
-              value={formData.phone}
-              onChange={handleChange}
-              className="w-full p-2 border-b border-gray-200 focus:border-emerald-500 outline-none transition-colors"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-semibold text-gray-500 mb-1">이메일</label>
-            <input 
-              type="email" 
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              className="w-full p-2 border-b border-gray-200 focus:border-emerald-500 outline-none transition-colors"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-semibold text-gray-500 mb-1">새 비밀번호</label>
-            <input 
-              type="password" 
-              name="password"
-              placeholder="변경할 때만 입력"
-              value={formData.password}
-              onChange={handleChange}
-              className="w-full p-2 border-b border-gray-200 focus:border-emerald-500 outline-none transition-colors"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-semibold text-gray-500 mb-1">비밀번호 확인</label>
-            <input 
-              type="password" 
-              name="confirmPassword"
-              placeholder="변경할 때만 입력"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              className="w-full p-2 border-b border-gray-200 focus:border-emerald-500 outline-none transition-colors"
-            />
-          </div>
-        </div>
-      </div>
-      
-      {/* 사업자 정보 수정 */}
-      <div className="mb-10">
-        <h3 className="font-bold text-emerald-700 flex items-center gap-2 mb-4">
-          사업자 정보 수정
-        </h3>
-        <div className="grid grid-cols-2 gap-x-6 gap-y-6 text-sm">
-          <div>
-            <label className="block text-xs font-semibold text-gray-500 mb-1">상호명</label>
-            <input 
-              type="text" 
-              name="bizname"
-              value={formData.bizname}
-              onChange={handleChange}
-              className="w-full p-2 border-b border-gray-200 focus:border-emerald-500 outline-none transition-colors"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-semibold text-gray-500 mb-1">사업자 번호</label>
-            <input 
-              type="text" 
-              name="bizNumber"
-              value={formData.bizNumber}
-              onChange={handleChange}
-              className="w-full p-2 border-b border-gray-200 focus:border-emerald-500 outline-none transition-colors"
-            />
-          </div>
-          <div className="col-span-2">
-            <label className="block text-xs font-semibold text-gray-500 mb-1">가게 주소</label>
-            <div className="flex gap-2 mb-2">
+          <div className="grid grid-cols-2 gap-x-6 gap-y-6 text-sm">
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 mb-1">아이디 (변경 불가)</label>
+              <div className="p-2 border-b bg-gray-50 text-gray-400">{profile?.userId}</div>
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 mb-1">닉네임</label>
               <input 
                 type="text" 
-                name="address"
-                value={formData.address}
-                readOnly
-                className="flex-grow p-2 border-b border-gray-200 bg-gray-50 outline-none"
+                name="nickname"
+                value={formData.nickname}
+                onChange={handleChange}
+                className="w-full p-2 border-b border-gray-200 focus:border-emerald-500 outline-none transition-colors"
               />
-              <button type="button" className="px-3 py-1 bg-gray-100 text-xs font-bold rounded-lg hover:bg-gray-200 transition-colors">주소 검색</button>
             </div>
-            <input 
-              type="text" 
-              name="detailAddress"
-              placeholder="상세 주소를 입력하세요"
-              value={formData.detailAddress}
-              onChange={handleChange}
-              className="w-full p-2 border-b border-gray-200 focus:border-emerald-500 outline-none transition-colors"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-semibold text-gray-500 mb-1">오픈일자</label>
-            <input 
-              type="date" 
-              name="openDate"
-              value={formData.openDate}
-              onChange={handleChange}
-              className="w-full p-2 border-b border-gray-200 focus:border-emerald-500 outline-none transition-colors"
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* 가게 사진 수정 */}
-      <div className="mb-10">
-        <h3 className="font-bold text-emerald-700 flex items-center gap-2 mb-4">
-          가게 사진 수정
-        </h3>
-        <div className="grid grid-cols-2 gap-8">
-          {/* 외관 사진 */}
-          <div>
-            <label className="block text-xs font-semibold text-gray-500 mb-3">가게 외관</label>
-            <div className="relative group">
-              <div className="w-full aspect-video rounded-2xl overflow-hidden border-2 border-dashed border-emerald-100 bg-gray-50 flex items-center justify-center">
-                {previews.exterior ? (
-                  <img src={previews.exterior} alt="Exterior Preview" className="w-full h-full object-cover" />
-                ) : (
-                  <span className="text-gray-400 text-xs">사진을 선택해 주세요</span>
-                )}
-              </div>
-              <label className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer rounded-2xl">
-                <span className="text-white text-xs font-bold bg-emerald-500 px-4 py-2 rounded-full shadow-lg">사진 변경</span>
-                <input type="file" className="hidden" accept="image/*" onChange={(e) => handleFileChange(e, 'exterior')} />
-              </label>
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 mb-1">전화번호</label>
+              <input 
+                type="text" 
+                name="phone"
+                value={formData.phone}
+                onChange={handleChange}
+                className="w-full p-2 border-b border-gray-200 focus:border-emerald-500 outline-none transition-colors"
+              />
             </div>
-          </div>
-          {/* 내관 사진 */}
-          <div>
-            <label className="block text-xs font-semibold text-gray-500 mb-3">가게 내관</label>
-            <div className="relative group">
-              <div className="w-full aspect-video rounded-2xl overflow-hidden border-2 border-dashed border-emerald-100 bg-gray-50 flex items-center justify-center">
-                {previews.interior ? (
-                  <img src={previews.interior} alt="Interior Preview" className="w-full h-full object-cover" />
-                ) : (
-                  <span className="text-gray-400 text-xs">사진을 선택해 주세요</span>
-                )}
-              </div>
-              <label className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer rounded-2xl">
-                <span className="text-white text-xs font-bold bg-emerald-500 px-4 py-2 rounded-full shadow-lg">사진 변경</span>
-                <input type="file" className="hidden" accept="image/*" onChange={(e) => handleFileChange(e, 'interior')} />
-              </label>
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 mb-1">이메일</label>
+              <input 
+                type="email" 
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                className="w-full p-2 border-b border-gray-200 focus:border-emerald-500 outline-none transition-colors"
+              />
             </div>
           </div>
         </div>
-      </div>
+        
+        {/* 사업자 정보 수정 */}
+        <div className="mb-10">
+          <h3 className="font-bold text-emerald-700 flex items-center gap-2 mb-4">
+            사업자 정보 수정
+          </h3>
+          <div className="grid grid-cols-2 gap-x-6 gap-y-6 text-sm">
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 mb-1">상호명</label>
+              <input 
+                type="text" 
+                name="bizname"
+                value={formData.bizname}
+                onChange={handleChange}
+                className="w-full p-2 border-b border-gray-200 focus:border-emerald-500 outline-none transition-colors"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 mb-1">사업자 번호</label>
+              <input 
+                type="text" 
+                name="bizNumber"
+                value={formData.bizNumber}
+                onChange={handleChange}
+                className="w-full p-2 border-b border-gray-200 focus:border-emerald-500 outline-none transition-colors"
+              />
+            </div>
+            <div className="col-span-2">
+              <label className="block text-xs font-semibold text-gray-500 mb-1">가게 주소</label>
+              <div className="flex gap-2 mb-2">
+                <input 
+                  type="text" 
+                  name="address"
+                  value={formData.address}
+                  readOnly
+                  className="flex-grow p-2 border-b border-gray-200 bg-gray-50 outline-none"
+                />
+                <button type="button" className="px-3 py-1 bg-gray-100 text-xs font-bold rounded-lg hover:bg-gray-200 transition-colors">주소 검색</button>
+              </div>
+              <input 
+                type="text" 
+                name="detailAddress"
+                placeholder="상세 주소를 입력하세요"
+                value={formData.detailAddress}
+                onChange={handleChange}
+                className="w-full p-2 border-b border-gray-200 focus:border-emerald-500 outline-none transition-colors"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 mb-1">오픈일자</label>
+              <input 
+                type="date" 
+                name="openDate"
+                value={formData.openDate}
+                onChange={handleChange}
+                className="w-full p-2 border-b border-gray-200 focus:border-emerald-500 outline-none transition-colors"
+              />
+            </div>
+          </div>
+        </div>
 
-      <div className="flex justify-end gap-3 mt-8">
-        <button 
-          type="button" 
-          onClick={() => navigate("/business-mypage")}
-          className="px-6 py-2 border border-gray-200 rounded-xl text-sm font-bold text-gray-500 hover:bg-gray-50 transition-colors"
-        >
-          취소
-        </button>
-        <button 
-          type="submit"
-          className="px-6 py-2 bg-emerald-500 text-white rounded-xl text-sm font-bold hover:bg-emerald-600 transition-colors shadow-lg shadow-emerald-100"
-        >
-          저장하기
-        </button>
-      </div>
-    </form>
+        {/* 가게 사진 수정 */}
+        <div className="mb-10">
+          <h3 className="font-bold text-emerald-700 flex items-center gap-2 mb-4">
+            가게 사진 수정
+          </h3>
+          <div className="grid grid-cols-2 gap-8">
+            {/* 외관 사진 */}
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 mb-3">가게 외관</label>
+              <div className="relative group">
+                <div className="w-full aspect-video rounded-2xl overflow-hidden border-2 border-dashed border-emerald-100 bg-gray-50 flex items-center justify-center">
+                  {previews.exterior ? (
+                    <img src={previews.exterior} alt="Exterior Preview" className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-gray-400 text-xs">사진을 선택해 주세요</span>
+                  )}
+                </div>
+                <label className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer rounded-2xl">
+                  <span className="text-white text-xs font-bold bg-emerald-500 px-4 py-2 rounded-full shadow-lg">사진 변경</span>
+                  <input type="file" className="hidden" accept="image/*" onChange={(e) => handleFileChange(e, 'exterior')} />
+                </label>
+              </div>
+            </div>
+            {/* 내관 사진 */}
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 mb-3">가게 내관</label>
+              <div className="relative group">
+                <div className="w-full aspect-video rounded-2xl overflow-hidden border-2 border-dashed border-emerald-100 bg-gray-50 flex items-center justify-center">
+                  {previews.interior ? (
+                    <img src={previews.interior} alt="Interior Preview" className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-gray-400 text-xs">사진을 선택해 주세요</span>
+                  )}
+                </div>
+                <label className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer rounded-2xl">
+                  <span className="text-white text-xs font-bold bg-emerald-500 px-4 py-2 rounded-full shadow-lg">사진 변경</span>
+                  <input type="file" className="hidden" accept="image/*" onChange={(e) => handleFileChange(e, 'interior')} />
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex justify-end gap-3 mt-8">
+          <button 
+            type="button" 
+            onClick={() => navigate("/business-mypage")}
+            className="px-6 py-2 border border-gray-200 rounded-xl text-sm font-bold text-gray-500 hover:bg-gray-50 transition-colors"
+          >
+            취소
+          </button>
+          <button 
+            type="submit"
+            className="px-6 py-2 bg-emerald-500 text-white rounded-xl text-sm font-bold hover:bg-emerald-600 transition-colors shadow-lg shadow-emerald-100"
+          >
+            저장하기
+          </button>
+        </div>
+      </form>
+      <PasswordChangeModal 
+        isOpen={isPwModalOpen} 
+        onClose={() => setIsPwModalOpen(false)} 
+      />
+    </>
   );
 };
 
