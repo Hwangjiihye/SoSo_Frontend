@@ -235,7 +235,7 @@ const handleCloseModal = () => {
                           <td className="px-3 py-4 text-center align-middle text-xs font-bold text-gray-500 font-mono truncate whitespace-nowrap">{item.itemCode}</td>
                           <td className="px-3 py-4 text-center align-middle text-sm font-black text-gray-800 truncate whitespace-nowrap">{item.itemName}</td>
                           <td className="px-3 py-4 text-center align-middle whitespace-nowrap">
-                            <span className="inline-block px-2.5 py-1 bg-gray-100 text-gray-600 text-[10px] font-black rounded-md uppercase">{item.categorySeq}</span>
+                            <span className="inline-block px-2.5 py-1 bg-gray-100 text-gray-600 text-[10px] font-black rounded-md uppercase">{item.categoryName}</span>
                           </td>
                           <td className="w-[120px] px-2 py-4 text-center align-middle text-xs font-bold text-gray-400 whitespace-nowrap">{item.spec}</td>
                           <td className="w-[100px] px-2 py-4 text-center align-middle text-sm font-black text-emerald-600 whitespace-nowrap">₩{(item.unitPrice ?? 0).toLocaleString()}</td>
