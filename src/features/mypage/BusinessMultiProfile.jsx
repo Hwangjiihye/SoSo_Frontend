@@ -1,30 +1,24 @@
 /**
- * @file BusinessUpdateMyPage.jsx
- * @description 사업자 정보 수정 페이지 컴포넌트입니다.
- * BusinessMyPage와 동일한 레이아웃을 유지하며, 정보를 수정할 수 있는 폼을 제공합니다.
+ * @file BusinessMultiProfile.jsx
+ * @description 다중 매장 관리 및 추가 페이지 컴포넌트입니다.
+ * BusinessMyPage와 동일한 레이아웃을 유지하며, 새로운 매장 정보를 추가할 수 있는 폼을 제공합니다.
  */
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MainFooter from '../../components/layout/MainFooter';
 import logo from "../../assets/soso로고.png";
 import authStore from "../../store/authStore";
 
-const UserUpdateTab = () => {
-  const { member, loginId } = authStore();
+const MultiProfileTab = () => {
   const navigate = useNavigate();
 
-  // 폼 데이터 상태 관리
+  // 새로운 매장 등록을 위한 폼 데이터 상태
   const [formData, setFormData] = useState({
-    nickname: member?.nickname || '',
-    phone: member?.phone || '',
-    email: member?.email || '',
-    password: '',
-    confirmPassword: '',
-    bizNumber: member?.biz_number || '',
-    bizName: member?.company_name || '',
-    address: member?.address1 || '',
-    detailAddress: member?.address2 || '',
-    openDate: member?.opening_date?.split('T')[0] || ''
+    bizName: '',
+    bizNumber: '',
+    address: '',
+    detailAddress: '',
+    openDate: ''
   });
 
   const handleChange = (e) => {
@@ -34,123 +28,63 @@ const UserUpdateTab = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // TODO: 회원정보 수정 API 연동
-    if (formData.password && formData.password !== formData.confirmPassword) {
-      alert("비밀번호가 일치하지 않습니다.");
-      return;
-    }
-    console.log("수정된 데이터:", formData);
-    alert("정보가 성공적으로 수정되었습니다. (API 연동 필요)");
+    // TODO: 다중 매장 등록 API 연동
+    console.log("새로운 매장 등록 데이터:", formData);
+    alert("새로운 매장이 성공적으로 등록되었습니다. (API 연동 필요)");
     navigate("/business-mypage");
   };
 
   return (
     <form onSubmit={handleSubmit} className="bg-white border border-emerald-100 rounded-lg p-8 shadow-sm">
-      <h2 className="text-xl font-bold mb-2">개인정보 수정</h2>
-      <p className="text-sm text-gray-500 mb-8 border-b border-gray-100 pb-4">회원님의 정보를 최신 상태로 유지하세요.</p>
-      
-      {/* 기본 계정 정보 수정 */}
-      <div className="mb-10">
-        <h3 className="font-bold text-emerald-700 flex items-center gap-2 mb-4">
-          기본 계정 정보 수정
-        </h3>
-        <div className="grid grid-cols-2 gap-x-6 gap-y-6 text-sm">
-          <div>
-            <label className="block text-xs font-semibold text-gray-500 mb-1">아이디 (변경 불가)</label>
-            <div className="p-2 border-b bg-gray-50 text-gray-400">{loginId}</div>
-          </div>
-          <div>
-            <label className="block text-xs font-semibold text-gray-500 mb-1">닉네임</label>
-            <input 
-              type="text" 
-              name="nickname"
-              value={formData.nickname}
-              onChange={handleChange}
-              className="w-full p-2 border-b border-gray-200 focus:border-emerald-500 outline-none transition-colors"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-semibold text-gray-500 mb-1">전화번호</label>
-            <input 
-              type="text" 
-              name="phone"
-              value={formData.phone}
-              onChange={handleChange}
-              className="w-full p-2 border-b border-gray-200 focus:border-emerald-500 outline-none transition-colors"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-semibold text-gray-500 mb-1">이메일</label>
-            <input 
-              type="email" 
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              className="w-full p-2 border-b border-gray-200 focus:border-emerald-500 outline-none transition-colors"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-semibold text-gray-500 mb-1">새 비밀번호</label>
-            <input 
-              type="password" 
-              name="password"
-              placeholder="변경할 때만 입력"
-              value={formData.password}
-              onChange={handleChange}
-              className="w-full p-2 border-b border-gray-200 focus:border-emerald-500 outline-none transition-colors"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-semibold text-gray-500 mb-1">비밀번호 확인</label>
-            <input 
-              type="password" 
-              name="confirmPassword"
-              placeholder="변경할 때만 입력"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              className="w-full p-2 border-b border-gray-200 focus:border-emerald-500 outline-none transition-colors"
-            />
-          </div>
-        </div>
+      <div className="flex justify-between items-center mb-2">
+        <h2 className="text-xl font-bold">다중 매장 관리</h2>
+        <span className="px-3 py-1 bg-emerald-50 text-emerald-600 text-xs font-bold rounded-full">최대 5개 등록 가능</span>
       </div>
+      <p className="text-sm text-gray-500 mb-8 border-b border-gray-100 pb-4">새로운 사업자 정보를 등록하여 매장을 추가로 관리할 수 있습니다.</p>
       
-      {/* 사업자 정보 수정 */}
-      <div className="mb-10">
-        <h3 className="font-bold text-emerald-700 flex items-center gap-2 mb-4">
-          사업자 정보 수정
+      {/* 매장 추가 폼 */}
+      <div>
+        <h3 className="font-bold text-emerald-700 flex items-center gap-2 mb-6 text-base">
+          <span className="w-1.5 h-6 bg-emerald-500 rounded-full inline-block"></span>
+          신규 매장 정보 입력
         </h3>
         <div className="grid grid-cols-2 gap-x-6 gap-y-6 text-sm">
-          <div>
-            <label className="block text-xs font-semibold text-gray-500 mb-1">상호명</label>
+          <div className="col-span-2 md:col-span-1">
+            <label className="block text-xs font-semibold text-gray-500 mb-2">상호명</label>
             <input 
               type="text" 
               name="bizName"
+              placeholder="예: 소소마을 강남점"
               value={formData.bizName}
               onChange={handleChange}
-              className="w-full p-2 border-b border-gray-200 focus:border-emerald-500 outline-none transition-colors"
+              className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl focus:bg-white focus:border-emerald-500 outline-none transition-all"
+              required
             />
           </div>
-          <div>
-            <label className="block text-xs font-semibold text-gray-500 mb-1">사업자 번호</label>
+          <div className="col-span-2 md:col-span-1">
+            <label className="block text-xs font-semibold text-gray-500 mb-2">사업자 번호</label>
             <input 
               type="text" 
               name="bizNumber"
+              placeholder="000-00-00000"
               value={formData.bizNumber}
               onChange={handleChange}
-              className="w-full p-2 border-b border-gray-200 focus:border-emerald-500 outline-none transition-colors"
+              className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl focus:bg-white focus:border-emerald-500 outline-none transition-all"
+              required
             />
           </div>
           <div className="col-span-2">
-            <label className="block text-xs font-semibold text-gray-500 mb-1">가게 주소</label>
-            <div className="flex gap-2 mb-2">
+            <label className="block text-xs font-semibold text-gray-500 mb-2">가게 주소</label>
+            <div className="flex gap-2 mb-3">
               <input 
                 type="text" 
                 name="address"
+                placeholder="주소 검색을 이용해 주세요"
                 value={formData.address}
                 readOnly
-                className="flex-grow p-2 border-b border-gray-200 bg-gray-50 outline-none"
+                className="flex-grow p-3 bg-gray-100 border border-gray-100 rounded-xl text-gray-500 outline-none"
               />
-              <button type="button" className="px-3 py-1 bg-gray-100 text-xs font-bold rounded-lg hover:bg-gray-200 transition-colors">주소 검색</button>
+              <button type="button" className="px-5 bg-gray-800 text-white text-xs font-bold rounded-xl hover:bg-black transition-colors whitespace-nowrap">주소 검색</button>
             </div>
             <input 
               type="text" 
@@ -158,45 +92,46 @@ const UserUpdateTab = () => {
               placeholder="상세 주소를 입력하세요"
               value={formData.detailAddress}
               onChange={handleChange}
-              className="w-full p-2 border-b border-gray-200 focus:border-emerald-500 outline-none transition-colors"
+              className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl focus:bg-white focus:border-emerald-500 outline-none transition-all"
             />
           </div>
-          <div>
-            <label className="block text-xs font-semibold text-gray-500 mb-1">오픈일자</label>
+          <div className="col-span-2 md:col-span-1">
+            <label className="block text-xs font-semibold text-gray-500 mb-2">오픈일자</label>
             <input 
               type="date" 
               name="openDate"
               value={formData.openDate}
               onChange={handleChange}
-              className="w-full p-2 border-b border-gray-200 focus:border-emerald-500 outline-none transition-colors"
+              className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl focus:bg-white focus:border-emerald-500 outline-none transition-all"
+              required
             />
           </div>
         </div>
       </div>
 
-      <div className="flex justify-end gap-3 mt-8">
+      <div className="flex justify-end gap-3 mt-12 pt-8 border-t border-gray-50">
         <button 
           type="button" 
           onClick={() => navigate("/business-mypage")}
-          className="px-6 py-2 border border-gray-200 rounded-xl text-sm font-bold text-gray-500 hover:bg-gray-50 transition-colors"
+          className="px-8 py-3 border border-gray-200 rounded-xl text-sm font-bold text-gray-500 hover:bg-gray-50 transition-colors"
         >
           취소
         </button>
         <button 
           type="submit"
-          className="px-6 py-2 bg-emerald-500 text-white rounded-xl text-sm font-bold hover:bg-emerald-600 transition-colors shadow-lg shadow-emerald-100"
+          className="px-8 py-3 bg-emerald-500 text-white rounded-xl text-sm font-bold hover:bg-emerald-600 transition-colors shadow-lg shadow-emerald-100"
         >
-          저장하기
+          매장 등록하기
         </button>
       </div>
     </form>
   );
 };
 
-function BusinessUpdateMyPage() {
+function BusinessMultiProfile() {
   const { logout, user_type, member } = authStore();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('개인정보 수정');
+  const [activeTab, setActiveTab] = useState('다중 매장 관리');
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   
   const menuGroups = [
@@ -315,8 +250,8 @@ function BusinessUpdateMyPage() {
         
         {/* 콘텐츠 영역 */}
         <section className="flex-grow">
-          {activeTab === '개인정보 수정' ? (
-            <UserUpdateTab />
+          {activeTab === '다중 매장 관리' ? (
+            <MultiProfileTab />
           ) : (
             <div className="bg-white border border-gray-100 rounded-lg p-12 text-center text-gray-400">
               <h2 className="font-bold text-lg mb-2">{activeTab}</h2>
@@ -330,4 +265,4 @@ function BusinessUpdateMyPage() {
   );
 }
 
-export default BusinessUpdateMyPage;
+export default BusinessMultiProfile;

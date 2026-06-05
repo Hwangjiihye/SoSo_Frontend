@@ -204,6 +204,8 @@ function BusinessMyPage() {
                       onClick={() => {
                         if (item === '개인정보 수정') {
                           navigate('/business-update-mypage');
+                        } else if (item === '다중 매장 관리') {
+                          navigate('/business-multiprofile');
                         } else {
                           setActiveTab(item);
                         }

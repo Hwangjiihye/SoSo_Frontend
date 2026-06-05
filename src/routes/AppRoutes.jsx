@@ -8,6 +8,7 @@ import React from 'react';
 import MainPage from '../features/main/MainPage';
 import BusinessMyPage from '../features/mypage/BusinessMyPage';
 import BusinessUpdateMyPage from '../features/mypage/BusinessUpdateMyPage';
+import BusinessMultiProfile from '../features/mypage/BusinessMultiProfile';
 import LoginPage from '../features/member/LoginPage';
 import PartnerMain from '../features/main/PartnerMain';
 import BusinessMain from '../features/main/BusinessMain';
@@ -36,6 +37,10 @@ const router = createBrowserRouter([
       {
         path: "/business-update-mypage",
         element: <BusinessUpdateMyPage />,
+      },
+      {
+        path: "/business-multiprofile",
+        element: <BusinessMultiProfile />,
       },
       {
         path: "/login",
