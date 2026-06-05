@@ -294,7 +294,7 @@ const handleCloseModal = () => {
                               <input type="text" placeholder="품목명" value={item.name} readOnly className="w-[120px] bg-gray-50 border border-gray-100 rounded-lg py-2 px-3 text-sm font-bold text-gray-500 cursor-not-allowed outline-none transition-all text-center" />
                             </td>
                             <td className="align-middle px-2 py-4">
-                              <select value={item.categoryName || ''} disabled className="w-[115px] bg-gray-50 border border-gray-100 rounded-lg py-2 px-3 text-sm font-bold text-gray-500 cursor-not-allowed appearance-none text-center">
+                              <select value={item.categoryName || ''} readOnly className="w-[115px] bg-gray-50 border border-gray-100 rounded-lg py-2 px-3 text-sm font-bold text-gray-500 cursor-not-allowed appearance-none text-center">
                                    <option value={item.categoryName || ''}>
                                       {item.categoryName || '미분류'}
                                    </option>
@@ -304,7 +304,7 @@ const handleCloseModal = () => {
                               <input type="number" value={item.quantity === 0 ? '' : item.quantity} className="w-full max-w-[60px] bg-gray-50 border border-gray-100 rounded-lg py-2 px-2 text-sm font-bold text-gray-500 text-center cursor-not-allowed outline-none transition-all mx-auto" />
                             </td>
                             <td className="align-middle px-2 py-4 text-center">
-                              <select value={item.spec} disabled className="w-[70px] bg-gray-50 border border-gray-100 rounded-lg py-2 px-3 text-sm font-bold text-gray-500 cursor-not-allowed appearance-none text-center">
+                              <select value={item.spec} readOnly className="w-[70px] bg-gray-50 border border-gray-100 rounded-lg py-2 px-3 text-sm font-bold text-gray-500 cursor-not-allowed appearance-none text-center">
                                 <option value={item.spec || ''}>
                                       {item.spec || '미분류'}
                                    </option>
