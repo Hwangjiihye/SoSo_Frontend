@@ -3,6 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import { getPartnerProfileApi, updatePartnerProfileApi, changePasswordApi } from '../../../apis/memberApi';
 
 /**
+ * 회원가입 시와 동일한 정규식 정의
+ */
+const REGEX = {
+  PASSWORD: /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[!@#$%^&*()_+])[A-Za-z\d!@#$%^&*()_+]{8,}$/,
+  PHONE: /^010-\d{4}-\d{4}$/,
+  EMAIL: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+};
+
+/**
  * @file usePartnerEditProfile.js
  * @description 거래처 업체 정보 수정을 위한 커스텀 훅
  */
@@ -33,6 +42,10 @@ export const usePartnerEditProfile = () => {
     newPassword: '',
     confirmPassword: ''
   });
+
+  // 에러 메시지 상태
+  const [errors, setErrors] = useState({});
+  const [passwordErrors, setPasswordErrors] = useState({});
   
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -77,16 +90,42 @@ export const usePartnerEditProfile = () => {
     fetchInitialData();
   }, []);
 
+  /**
+   * 개별 필드 유효성 검사
+   */
+  const validateField = (name, value) => {
+    let error = '';
+    if (name === 'phone' && value && !REGEX.PHONE.test(value)) {
+      error = '010-XXXX-XXXX 형식으로 입력해주세요.';
+    } else if (name === 'email' && value && !REGEX.EMAIL.test(value)) {
+      error = '올바른 이메일 형식이 아닙니다.';
+    }
+    setErrors(prev => ({ ...prev, [name]: error }));
+  };
+
+  const validatePasswordField = (name, value, currentPasswordForm = passwordForm) => {
+    let error = '';
+    if (name === 'newPassword' && value && !REGEX.PASSWORD.test(value)) {
+      error = '8자 이상, 영문+숫자+특수문자 조합이어야 합니다.';
+    } else if (name === 'confirmPassword' && value !== currentPasswordForm.newPassword) {
+      error = '비밀번호가 일치하지 않습니다.';
+    }
+    setPasswordErrors(prev => ({ ...prev, [name]: error }));
+  };
+
   // 업체 정보 변경 핸들러
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+    validateField(name, value);
   };
 
   // 비밀번호 입력 핸들러
   const handlePasswordChange = (e) => {
     const { name, value } = e.target;
-    setPasswordForm(prev => ({ ...prev, [name]: value }));
+    const nextForm = { ...passwordForm, [name]: value };
+    setPasswordForm(nextForm);
+    validatePasswordField(name, value, nextForm);
   };
 
   const handleFileChange = (e, type) => {
@@ -138,6 +177,12 @@ export const usePartnerEditProfile = () => {
       return;
     }
 
+    // 정규식 최종 체크
+    if (errors.phone || errors.email) {
+      alert('입력 형식이 올바르지 않은 항목이 있습니다.');
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const updateData = {
@@ -180,8 +225,9 @@ export const usePartnerEditProfile = () => {
       return false;
     }
 
-    if (newPassword !== confirmPassword) {
-      alert('새 비밀번호가 일치하지 않습니다.');
+    // 정규식 및 일치 여부 최종 체크
+    if (passwordErrors.newPassword || passwordErrors.confirmPassword) {
+      alert('비밀번호 형식이 올바르지 않거나 일치하지 않습니다.');
       return false;
     }
 
@@ -189,15 +235,23 @@ export const usePartnerEditProfile = () => {
     try {
       const result = await changePasswordApi({ currentPassword, newPassword });
       if (result && result.status === 'success') {
-        alert(result.message);        
-        return true; // 모달 닫기용
-      }else if(result && (result.status === 'isNotPw' || result.status === 'difPw' || result.status === 'fail' )){
         alert(result.message);
-         setPasswordForm({
+        setPasswordForm({
           currentPassword: '',
           newPassword: '',
           confirmPassword: ''
         });
+        setPasswordErrors({});
+        return true; // 모달 닫기용
+      } else if (result && (result.status === 'isNotPw' || result.status === 'difPw' || result.status === 'fail')) {
+        alert(result.message);
+        setPasswordForm({
+          currentPassword: '',
+          newPassword: '',
+          confirmPassword: ''
+        });
+        setPasswordErrors({});
+        return false;
       }
     } catch (err) {
       console.error('비밀번호 변경 실패:', err);
@@ -211,6 +265,8 @@ export const usePartnerEditProfile = () => {
   return {
     formData,
     passwordForm,
+    errors,
+    passwordErrors,
     isLoading,
     isSubmitting,
     isPasswordSubmitting,

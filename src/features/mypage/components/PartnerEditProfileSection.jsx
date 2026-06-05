@@ -2,7 +2,7 @@ import React from 'react';
 /**
  * 편집 필드 공통 컴포넌트
  */
-export const EditField = ({ label, type = "text", value, onChange, name, disabled, placeholder }) => (
+export const EditField = ({ label, type = "text", value, onChange, name, disabled, placeholder, error }) => (
   <div className="flex flex-col gap-1.5">
     <label className="text-xs font-bold text-gray-400 ml-1">{label}</label>
     <input 
@@ -15,9 +15,12 @@ export const EditField = ({ label, type = "text", value, onChange, name, disable
       className={`h-10 px-4 rounded-xl text-sm border outline-none transition-all ${
         disabled 
         ? 'bg-gray-100 text-gray-400 border-gray-100 cursor-not-allowed' 
-        : 'bg-white text-gray-800 border-gray-200 focus:border-emerald-500'
+        : error
+          ? 'bg-white text-gray-800 border-red-500 focus:border-red-600'
+          : 'bg-white text-gray-800 border-gray-200 focus:border-emerald-500'
       }`}
     />
+    {error && <span className="text-[10px] text-red-500 ml-1 font-medium">{error}</span>}
   </div>
 );
 

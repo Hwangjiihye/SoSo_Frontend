@@ -15,6 +15,8 @@ const PartnerEditProfilePage = () => {
   const { 
     formData, 
     passwordForm,
+    errors,
+    passwordErrors,
     isLoading, 
     isSubmitting, 
     isPasswordSubmitting,
@@ -109,9 +111,9 @@ const PartnerEditProfilePage = () => {
           <div className="h-px bg-gray-100 mb-6"></div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <EditField label="닉네임" name="nickname" value={formData.nickname} onChange={handleChange} />
-            <EditField label="휴대전화" name="phone" value={formData.phone} onChange={handleChange} />
-            <EditField label="이메일" name="email" value={formData.email} onChange={handleChange} />
+            <EditField label="닉네임" name="nickname" value={formData.nickname} onChange={handleChange} error={errors.nickname} />
+            <EditField label="휴대전화" name="phone" value={formData.phone} onChange={handleChange} error={errors.phone} />
+            <EditField label="이메일" name="email" value={formData.email} onChange={handleChange} error={errors.email} />
           </div>
 
           <button 
@@ -259,6 +261,7 @@ const PartnerEditProfilePage = () => {
                 value={passwordForm.currentPassword}
                 onChange={handlePasswordChange}
                 placeholder="현재 비밀번호 입력" 
+                error={passwordErrors.currentPassword}
               />
               <EditField 
                 label="새 비밀번호" 
@@ -267,6 +270,7 @@ const PartnerEditProfilePage = () => {
                 value={passwordForm.newPassword}
                 onChange={handlePasswordChange}
                 placeholder="새 비밀번호 입력" 
+                error={passwordErrors.newPassword}
               />
               <EditField 
                 label="새 비밀번호 확인" 
@@ -275,6 +279,7 @@ const PartnerEditProfilePage = () => {
                 value={passwordForm.confirmPassword}
                 onChange={handlePasswordChange}
                 placeholder="새 비밀번호 재입력" 
+                error={passwordErrors.confirmPassword}
               />
             </div>
 
