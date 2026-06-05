@@ -7,6 +7,7 @@
 import React from 'react';
 import MainPage from '../features/main/MainPage';
 import BusinessMyPage from '../features/mypage/BusinessMyPage';
+import BusinessUpdateMyPage from '../features/mypage/BusinessUpdateMyPage';
 import LoginPage from '../features/member/LoginPage';
 import PartnerMain from '../features/main/PartnerMain';
 import BusinessMain from '../features/main/BusinessMain';
@@ -33,7 +34,12 @@ const router = createBrowserRouter([
         element: <BusinessMyPage />,
       },
       {
-        path: "/login", // 로그인 경로도 안전하게 등록
+        path: "/business-update-mypage",
+        element: <BusinessUpdateMyPage />,
+      },
+      {
+        path: "/login",
+ // 로그인 경로도 안전하게 등록
         element: <LoginPage />,
       },
       // 추후 로그인, 마이페이지 등 새로운 페이지가 생기면 여기에 객체를 추가합니다.
