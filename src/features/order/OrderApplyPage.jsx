@@ -301,7 +301,7 @@ const handleCloseModal = () => {
                               </select>
                             </td>
                             <td className="align-middle px-4 py-4 text-center">
-                              <input type="number" value={item.quantity === 0 ? '' : item.quantity} readOnly className="w-full max-w-[60px] bg-gray-50 border border-gray-100 rounded-lg py-2 px-2 text-sm font-bold text-gray-500 text-center cursor-not-allowed outline-none transition-all mx-auto" />
+                              <input type="number" value={item.quantity === 0 ? '' : item.quantity} className="w-full max-w-[60px] bg-gray-50 border border-gray-100 rounded-lg py-2 px-2 text-sm font-bold text-gray-500 text-center cursor-not-allowed outline-none transition-all mx-auto" />
                             </td>
                             <td className="align-middle px-2 py-4 text-center">
                               <select value={item.spec} disabled className="w-[70px] bg-gray-50 border border-gray-100 rounded-lg py-2 px-3 text-sm font-bold text-gray-500 cursor-not-allowed appearance-none text-center">
