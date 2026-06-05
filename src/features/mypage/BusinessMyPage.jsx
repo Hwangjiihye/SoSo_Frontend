@@ -8,26 +8,28 @@ import { useNavigate } from 'react-router-dom';
 import MainFooter from '../../components/layout/MainFooter';
 import logo from "../../assets/soso로고.png";
 import authStore from "../../store/authStore";
+import { useBusinessInfo } from './hooks/useBusinessInfo';
 
 // '개인정보 확인' 탭에 대한 상세 콘텐츠
 const UserProfileTab = () => {
-  const { member, loginId } = authStore();
+  const { profile, isLoading, error, formattedDate, formattedOpeningDate, fullAddress, storeImg1, storeImg2 } = useBusinessInfo();
+
+  if (isLoading) return <div className="p-8 text-center text-gray-500">정보를 불러오는 중입니다...</div>;
+  if (error) return <div className="p-8 text-center text-red-500">정보를 불러오는데 실패했습니다.</div>;
 
   // 데이터가 없을 경우를 대비한 초기값 설정
   const userData = {
-    id: loginId || '정보 없음',
-    nickname: member?.nickname || '정보 없음',
-    name: member?.name || '정보 없음',
-    joinDate: member?.created_at?.split('T')[0]?.replace(/-/g, '/') || '정보 없음', 
-    phone: member?.phone || '정보 없음',
-    email: member?.email || '정보 없음',
-    bizNumber: member?.biz_number?.replace(/(\d{3})(\d{2})(\d{5})/, '$1-$2-$3') || '정보 없음',
-    bizName: member?.company_name || '정보 없음',
-    address: member?.address1 ? `${member.address1} ${member.address2 || ''}` : '정보 없음',
-    openDate: member?.opening_date?.split('T')[0]?.replace(/-/g, '/') || '정보 없음'
-    };
-
-
+    id: profile?.userId || '정보 없음',
+    nickname: profile?.user_nickname || '정보 없음',
+    name: profile?.name || '정보 없음',
+    joinDate: formattedDate, 
+    phone: profile?.phone || '정보 없음',
+    email: profile?.email || '정보 없음',
+    bizNumber: profile?.bizNumber?.replace(/(\d{3})(\d{2})(\d{5})/, '$1-$2-$3') || '정보 없음',
+    bizName: profile?.bizname || '정보 없음',
+    address: fullAddress,
+    openDate: formattedOpeningDate
+  };
 
   return (
     <div className="bg-white border border-emerald-100 rounded-lg p-8 shadow-sm">
@@ -68,7 +70,7 @@ const UserProfileTab = () => {
       </div>
       
       {/* 사업자 정보 */}
-      <div>
+      <div className="mb-10">
         <h3 className="font-bold text-emerald-700 flex items-center gap-2 mb-4">
           사업자 정보
         </h3>
@@ -91,12 +93,33 @@ const UserProfileTab = () => {
           </div>
         </div>
       </div>
+
+      {/* 가게 사진 정보 */}
+      <div>
+        <h3 className="font-bold text-emerald-700 flex items-center gap-2 mb-4">
+          가게 사진
+        </h3>
+        <div className="grid grid-cols-2 gap-6">
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 mb-2">가게 외관</label>
+            <div className="w-full aspect-video rounded-xl overflow-hidden border border-gray-100 bg-gray-50">
+              <img src={storeImg1} alt="가게 외관" className="w-full h-full object-cover" />
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 mb-2">가게 내관</label>
+            <div className="w-full aspect-video rounded-xl overflow-hidden border border-gray-100 bg-gray-50">
+              <img src={storeImg2} alt="가게 내관" className="w-full h-full object-cover" />
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
 
 function BusinessMyPage() {
-  const { logout, user_type, member, loginId } = authStore();
+  const { logout, user_type, user_nickname, bizname, loginId } = authStore();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('개인정보 확인');
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -148,12 +171,12 @@ function BusinessMyPage() {
               className="flex items-center gap-2 border border-gray-200 rounded-full py-1.5 px-3 bg-white hover:bg-emerald-50 cursor-pointer transition-colors"
             >
               <div className="w-6 h-6 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-[10px] font-bold">
-                {member?.nickname ? member.nickname.substring(0, 1) : 'G'}
+                {user_nickname ? user_nickname.substring(0, 1) : 'G'}
               </div>
               <span className="text-sm font-semibold whitespace-nowrap text-gray-700">
-                {member?.nickname || '회원님'} 
+                {user_nickname || '회원님'}
                 <span className="text-xs text-gray-400 font-normal ml-1">
-                  {member?.company_name || '상호명 미등록'}
+                  {bizname || '상호명 미등록'}
                 </span>
               </span>
             </div>
@@ -165,7 +188,7 @@ function BusinessMyPage() {
                 </div>
                 <div className="py-2">
                   <button className="w-full text-left px-4 py-3 text-sm font-bold text-emerald-600 bg-emerald-50 rounded-xl mb-1 flex justify-between items-center">
-                    {member?.company_name || '강남 본점'}
+                    {bizname || '강남 본점'}
                     <span className="text-[10px] bg-emerald-500 text-white px-1.5 py-0.5 rounded uppercase">Main</span>
                   </button>
                   <button className="w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-xl transition-colors">
@@ -191,7 +214,7 @@ function BusinessMyPage() {
         {/* 사이드바 */}
         <aside className="w-64 shrink-0 flex flex-col gap-6">
           <div className="bg-white border border-emerald-100 rounded-lg p-6 shadow-sm">
-            <h2 className="font-bold text-gray-900">{member?.company_name || '소소마을'}</h2>
+            <h2 className="font-bold text-gray-900">{bizname || '소소마을'}</h2>
             <p className="text-xs text-gray-500 mt-1">사업자 회원</p>
           </div>
           {menuGroups.map((group) => (

@@ -1,4 +1,3 @@
-
 import { create } from 'zustand';
 
 // 1. return 값이 jsx인 함수는 use를 붙이지 않는다.
@@ -9,29 +8,39 @@ import { create } from 'zustand';
 // 로그인, 로그아웃 기능
 const authStore = create(set => ({
     token: sessionStorage.getItem("token") || null, // store에서 token값을 가져온다.
-    loginId: sessionStorage.getItem("loginId") || null,
+    user_seq: sessionStorage.getItem("user_seq") || null,
     user_type: sessionStorage.getItem("user_type") || null,
+    user_nickname: sessionStorage.getItem("user_nickname") || null,
+    bizname: sessionStorage.getItem("bizname") || null,
 
     login:(result) => {
     sessionStorage.setItem("token", result.token);
-    sessionStorage.setItem("loginId", result.id);
+    sessionStorage.setItem("user_seq", result.user_seq);
     sessionStorage.setItem("user_type", result.user_type);
+    sessionStorage.setItem("user_nickname", result.user_nickname);
+    sessionStorage.setItem("bizname", result.bizname);
 
     set({
         token: result.token,
-        loginId: result.id,
+        user_seq: result.user_seq,
         user_type: result.user_type,
+        user_nickname: result.user_nickname,
+        bizname: result.bizname,
     });
     },
     logout: () => {
     sessionStorage.removeItem("token");
-    sessionStorage.removeItem("loginId");
+    sessionStorage.removeItem("user_seq");
     sessionStorage.removeItem("user_type");
+    sessionStorage.removeItem("user_nickname");
+    sessionStorage.removeItem("bizname");
 
     set({
         token: null,
-        loginId: null,
+        user_seq: null,
         user_type: null,
+        user_nickname: null,
+        bizname: null,
     });
     }
 }));

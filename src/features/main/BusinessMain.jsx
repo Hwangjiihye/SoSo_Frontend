@@ -37,7 +37,7 @@ ChartJS.register(
 
 function BusinessMain({ setRole }) {
   // authStore 훅을 한 번만 호출하여 필요한 상태를 구조분해 할당으로 가져옵니다.
-  const { logout, user_type, member } = authStore();
+  const { logout, user_type, user_nickname, bizname } = authStore();
   const navigate = useNavigate();
 
   // 프로필 드롭다운 상태
@@ -106,7 +106,7 @@ function BusinessMain({ setRole }) {
   return (
     <div className="min-h-screen bg-gray-50 text-gray-800 font-sans">
       <header className="grid grid-cols-3 items-center py-5 px-6 md:px-12 border-b border-gray-200 bg-white sticky top-0 z-50">
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 cursor-pointer" onClick={() => navigate("/")}>
           <img src={logo} alt="SoSo Logo" className="w-12 h-12 object-contain relative top-[5px]" />
           <div className="text-[40px] font-black text-[#1d9e75] tracking-tighter leading-none">SoSo</div>
         </div>
@@ -128,12 +128,12 @@ function BusinessMain({ setRole }) {
               className="flex items-center gap-2 border border-gray-200 rounded-full py-1.5 px-3 bg-white hover:bg-emerald-50 cursor-pointer transition-colors"
             >
               <div className="w-6 h-6 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-[10px] font-bold">
-                {member?.nickname ? member.nickname.substring(0, 1) : 'G'}
+                {user_nickname ? user_nickname.substring(0, 1) : 'G'}
               </div>
               <span className="text-sm font-semibold whitespace-nowrap text-gray-700">
-                {member?.nickname || '회원님'} 
+                {user_nickname || '회원님'}
                 <span className="text-xs text-gray-400 font-normal ml-1">
-                  {member?.company_name || '상호명 미등록'}
+                  {bizname || '상호명 미등록'}
                 </span>
               </span>
             </div>
@@ -145,7 +145,7 @@ function BusinessMain({ setRole }) {
                 </div>
                 <div className="py-2">
                   <button className="w-full text-left px-4 py-3 text-sm font-bold text-emerald-600 bg-emerald-50 rounded-xl mb-1 flex justify-between items-center">
-                    {member?.company_name || '강남 본점'}
+                    {bizname || '강남 본점'}
                     <span className="text-[10px] bg-emerald-500 text-white px-1.5 py-0.5 rounded uppercase">Main</span>
                   </button>
                   <button className="w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-xl transition-colors">

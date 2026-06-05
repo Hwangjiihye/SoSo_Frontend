@@ -129,7 +129,7 @@ const MultiProfileTab = () => {
 };
 
 function BusinessMultiProfile() {
-  const { logout, user_type, member } = authStore();
+  const { logout, user_type, user_nickname, bizname } = authStore();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('다중 매장 관리');
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -179,12 +179,12 @@ function BusinessMultiProfile() {
               className="flex items-center gap-2 border border-gray-200 rounded-full py-1.5 px-3 bg-white hover:bg-emerald-50 cursor-pointer transition-colors"
             >
               <div className="w-6 h-6 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-[10px] font-bold">
-                {member?.nickname ? member.nickname.substring(0, 1) : 'G'}
+                {user_nickname ? user_nickname.substring(0, 1) : 'G'}
               </div>
               <span className="text-sm font-semibold whitespace-nowrap text-gray-700">
-                {member?.nickname || '회원님'} 
+                {user_nickname || '회원님'} 
                 <span className="text-xs text-gray-400 font-normal ml-1">
-                  {member?.company_name || '상호명 미등록'}
+                  {bizname || '상호명 미등록'}
                 </span>
               </span>
             </div>
@@ -196,7 +196,7 @@ function BusinessMultiProfile() {
                 </div>
                 <div className="py-2">
                   <button className="w-full text-left px-4 py-3 text-sm font-bold text-emerald-600 bg-emerald-50 rounded-xl mb-1 flex justify-between items-center">
-                    {member?.company_name || '강남 본점'}
+                    {bizname || '강남 본점'}
                     <span className="text-[10px] bg-emerald-500 text-white px-1.5 py-0.5 rounded uppercase">Main</span>
                   </button>
                 </div>
@@ -219,9 +219,10 @@ function BusinessMultiProfile() {
         {/* 사이드바 */}
         <aside className="w-64 shrink-0 flex flex-col gap-6">
           <div className="bg-white border border-emerald-100 rounded-lg p-6 shadow-sm">
-            <h2 className="font-bold text-gray-900">{member?.company_name || '소소마을'}</h2>
+            <h2 className="font-bold text-gray-900">{bizname || '소소마을'}</h2>
             <p className="text-xs text-gray-500 mt-1">사업자 회원</p>
           </div>
+
           {menuGroups.map((group) => (
             <div key={group.title}>
               <h4 className="text-xs font-bold text-gray-400 mb-2 px-2">{group.title}</h4>

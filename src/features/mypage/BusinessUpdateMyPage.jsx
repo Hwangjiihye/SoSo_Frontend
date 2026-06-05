@@ -8,39 +8,83 @@ import { useNavigate } from 'react-router-dom';
 import MainFooter from '../../components/layout/MainFooter';
 import logo from "../../assets/soso로고.png";
 import authStore from "../../store/authStore";
+import { useBusinessInfo } from './hooks/useBusinessInfo';
 
 const UserUpdateTab = () => {
-  const { member, loginId } = authStore();
+  const { profile, isLoading, storeImg1, storeImg2 } = useBusinessInfo();
   const navigate = useNavigate();
 
   // 폼 데이터 상태 관리
   const [formData, setFormData] = useState({
-    nickname: member?.nickname || '',
-    phone: member?.phone || '',
-    email: member?.email || '',
+    nickname: '',
+    phone: '',
+    email: '',
     password: '',
     confirmPassword: '',
-    bizNumber: member?.biz_number || '',
-    bizName: member?.company_name || '',
-    address: member?.address1 || '',
-    detailAddress: member?.address2 || '',
-    openDate: member?.opening_date?.split('T')[0] || ''
+    bizNumber: '',
+    bizname: '',
+    address: '',
+    detailAddress: '',
+    openDate: ''
   });
+
+  // 사진 상태 관리 (파일 객체 및 미리보기 URL)
+  const [images, setImages] = useState({ exterior: null, interior: null });
+  const [previews, setPreviews] = useState({ exterior: '', interior: '' });
+
+  // 데이터 로드 완료 시 폼 초기값 설정
+  useEffect(() => {
+    if (profile) {
+      setFormData({
+        nickname: profile.user_nickname || '',
+        phone: profile.phone || '',
+        email: profile.email || '',
+        password: '',
+        confirmPassword: '',
+        bizNumber: profile.bizNumber || '',
+        bizname: profile.bizname || '',
+        address: profile.address1 || '',
+        detailAddress: profile.address2 || '',
+        openDate: profile.openingDate?.split('T')[0] || ''
+      });
+      setPreviews({
+        exterior: storeImg1 || '',
+        interior: storeImg2 || ''
+      });
+    }
+  }, [profile, storeImg1, storeImg2]);
+
+  if (isLoading) return <div className="p-8 text-center text-gray-500">정보를 불러오는 중입니다...</div>;
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  const handleFileChange = (e, type) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImages(prev => ({ ...prev, [type]: file }));
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviews(prev => ({ ...prev, [type]: reader.result }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    // TODO: 회원정보 수정 API 연동
     if (formData.password && formData.password !== formData.confirmPassword) {
       alert("비밀번호가 일치하지 않습니다.");
       return;
     }
-    console.log("수정된 데이터:", formData);
-    alert("정보가 성공적으로 수정되었습니다. (API 연동 필요)");
+    
+    // TODO: 회원정보 및 사진 수정 API 연동 (FormData 사용)
+    console.log("수정된 텍스트 데이터:", formData);
+    console.log("수정된 이미지 데이터:", images);
+    
+    alert("정보 및 사진이 성공적으로 수정되었습니다. (API 연동 필요)");
     navigate("/business-mypage");
   };
 
@@ -57,7 +101,7 @@ const UserUpdateTab = () => {
         <div className="grid grid-cols-2 gap-x-6 gap-y-6 text-sm">
           <div>
             <label className="block text-xs font-semibold text-gray-500 mb-1">아이디 (변경 불가)</label>
-            <div className="p-2 border-b bg-gray-50 text-gray-400">{loginId}</div>
+            <div className="p-2 border-b bg-gray-50 text-gray-400">{profile?.userId}</div>
           </div>
           <div>
             <label className="block text-xs font-semibold text-gray-500 mb-1">닉네임</label>
@@ -124,8 +168,8 @@ const UserUpdateTab = () => {
             <label className="block text-xs font-semibold text-gray-500 mb-1">상호명</label>
             <input 
               type="text" 
-              name="bizName"
-              value={formData.bizName}
+              name="bizname"
+              value={formData.bizname}
               onChange={handleChange}
               className="w-full p-2 border-b border-gray-200 focus:border-emerald-500 outline-none transition-colors"
             />
@@ -174,6 +218,49 @@ const UserUpdateTab = () => {
         </div>
       </div>
 
+      {/* 가게 사진 수정 */}
+      <div className="mb-10">
+        <h3 className="font-bold text-emerald-700 flex items-center gap-2 mb-4">
+          가게 사진 수정
+        </h3>
+        <div className="grid grid-cols-2 gap-8">
+          {/* 외관 사진 */}
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 mb-3">가게 외관</label>
+            <div className="relative group">
+              <div className="w-full aspect-video rounded-2xl overflow-hidden border-2 border-dashed border-emerald-100 bg-gray-50 flex items-center justify-center">
+                {previews.exterior ? (
+                  <img src={previews.exterior} alt="Exterior Preview" className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-gray-400 text-xs">사진을 선택해 주세요</span>
+                )}
+              </div>
+              <label className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer rounded-2xl">
+                <span className="text-white text-xs font-bold bg-emerald-500 px-4 py-2 rounded-full shadow-lg">사진 변경</span>
+                <input type="file" className="hidden" accept="image/*" onChange={(e) => handleFileChange(e, 'exterior')} />
+              </label>
+            </div>
+          </div>
+          {/* 내관 사진 */}
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 mb-3">가게 내관</label>
+            <div className="relative group">
+              <div className="w-full aspect-video rounded-2xl overflow-hidden border-2 border-dashed border-emerald-100 bg-gray-50 flex items-center justify-center">
+                {previews.interior ? (
+                  <img src={previews.interior} alt="Interior Preview" className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-gray-400 text-xs">사진을 선택해 주세요</span>
+                )}
+              </div>
+              <label className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer rounded-2xl">
+                <span className="text-white text-xs font-bold bg-emerald-500 px-4 py-2 rounded-full shadow-lg">사진 변경</span>
+                <input type="file" className="hidden" accept="image/*" onChange={(e) => handleFileChange(e, 'interior')} />
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div className="flex justify-end gap-3 mt-8">
         <button 
           type="button" 
@@ -194,7 +281,7 @@ const UserUpdateTab = () => {
 };
 
 function BusinessUpdateMyPage() {
-  const { logout, user_type, member } = authStore();
+  const { logout, user_type, user_nickname, bizname } = authStore();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('개인정보 수정');
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -244,12 +331,12 @@ function BusinessUpdateMyPage() {
               className="flex items-center gap-2 border border-gray-200 rounded-full py-1.5 px-3 bg-white hover:bg-emerald-50 cursor-pointer transition-colors"
             >
               <div className="w-6 h-6 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-[10px] font-bold">
-                {member?.nickname ? member.nickname.substring(0, 1) : 'G'}
+                {user_nickname ? user_nickname.substring(0, 1) : 'G'}
               </div>
               <span className="text-sm font-semibold whitespace-nowrap text-gray-700">
-                {member?.nickname || '회원님'} 
+                {user_nickname || '회원님'} 
                 <span className="text-xs text-gray-400 font-normal ml-1">
-                  {member?.company_name || '상호명 미등록'}
+                  {bizname || '상호명 미등록'}
                 </span>
               </span>
             </div>
@@ -261,7 +348,7 @@ function BusinessUpdateMyPage() {
                 </div>
                 <div className="py-2">
                   <button className="w-full text-left px-4 py-3 text-sm font-bold text-emerald-600 bg-emerald-50 rounded-xl mb-1 flex justify-between items-center">
-                    {member?.company_name || '강남 본점'}
+                    {bizname || '강남 본점'}
                     <span className="text-[10px] bg-emerald-500 text-white px-1.5 py-0.5 rounded uppercase">Main</span>
                   </button>
                 </div>
@@ -284,7 +371,7 @@ function BusinessUpdateMyPage() {
         {/* 사이드바 */}
         <aside className="w-64 shrink-0 flex flex-col gap-6">
           <div className="bg-white border border-emerald-100 rounded-lg p-6 shadow-sm">
-            <h2 className="font-bold text-gray-900">{member?.company_name || '소소마을'}</h2>
+            <h2 className="font-bold text-gray-900">{bizname || '소소마을'}</h2>
             <p className="text-xs text-gray-500 mt-1">사업자 회원</p>
           </div>
           {menuGroups.map((group) => (
