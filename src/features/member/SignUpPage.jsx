@@ -179,7 +179,7 @@ const SignUpPage = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
               <div className="space-y-1">
                 <span className="text-xs font-bold text-gray-500">
-                  {formData.userType === 'BUSINESS' ? '가게 외부 사진' : '영업소 전경 사진'}
+                  {formData.userType === 'BUSINESS' ? '가게 외부 사진' : '영업소 전경 사진'} <span className="text-red-500">*</span>
                 </span>
                 <div className="relative border-2 border-dashed border-gray-200 rounded-lg h-40 flex items-center justify-center overflow-hidden hover:bg-gray-50 transition-all">
                   <input type="file" onChange={(e) => handleFileChange(e, 'exterior')} className="absolute inset-0 opacity-0 cursor-pointer z-10" accept="image/jpeg,image/png" />
@@ -195,7 +195,7 @@ const SignUpPage = () => {
               </div>
               <div className="space-y-1">
                 <span className="text-xs font-bold text-gray-500">
-                  {formData.userType === 'BUSINESS' ? '가게 내부 사진' : '영업소 내부 사진'}
+                  {formData.userType === 'BUSINESS' ? '가게 내부 사진' : '영업소 내부 사진'} <span className="text-red-500">*</span>
                 </span>
                 <div className="relative border-2 border-dashed border-gray-200 rounded-lg h-40 flex items-center justify-center overflow-hidden hover:bg-gray-50 transition-all">
                   <input type="file" onChange={(e) => handleFileChange(e, 'interior')} className="absolute inset-0 opacity-0 cursor-pointer z-10" accept="image/jpeg,image/png" />
@@ -244,7 +244,9 @@ const SignUpPage = () => {
               !apiStatus.bizVerified || 
               !apiStatus.userIdChecked || 
               !apiStatus.nicknameChecked || 
-              !apiStatus.emailChecked
+              !apiStatus.emailChecked ||
+              !images.exterior ||
+              !images.interior
             }
             className="w-full py-4 bg-[#1D9E75] text-white rounded-xl text-lg font-bold hover:opacity-90 transition-all disabled:bg-gray-300 disabled:cursor-not-allowed shadow-lg"
           >
