@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { check, items as getSupplierItems } from '../../../apis/orderApi';
+import { check, items as getSupplierItems, identityCheck   } from '../../../apis/orderApi';
 
 /**
  * @file useOrderApply.js
@@ -14,12 +14,33 @@ export const useOrderApply = () => {
   const [orderInfo, setOrderInfo] = useState({
     orderDate: new Date().toISOString().split('T')[0],
     supplier: '',
-    manager: '김민준', // 기본값
+    manager: '', 
     deliveryDate: '',
     paymentMethod: '',
     deliveryNotes: '',
-    deliveryAddress: '서울시 강남구 테헤란로 123 (Soso 식당)',
+    deliveryAddress: '',
   });
+
+  // 페이지 렌더링 시작할 때, 사업자 정보 불러오기
+  useEffect(() => {
+    const fetchIdentity = async () => {
+    try {
+      const data = await identityCheck();
+
+      const fullAddress = `(${data.zoneCode}) ${data.address1} ${data.address2 || ''}`;
+
+      setOrderInfo(prev => ({
+        ...prev,
+        manager: data.companyName,
+        deliveryAddress: fullAddress,
+      }));
+    } catch (error) {
+      console.error('사업자명/주소 조회 실패:', error);
+    }
+  };
+
+  fetchIdentity();
+  }, [])
 
   // 발주 품목 목록 상태
   const [items, setItems] = useState([
@@ -41,6 +62,7 @@ export const useOrderApply = () => {
     } catch (error) {
       console.error('거래처 품목 목록 조회 실패:', error);
       alert('거래처 품목 목록 조회에 실패했습니다.');
+      setSupplierItems([]);
   }
 };
 
@@ -157,7 +179,6 @@ export const useOrderApply = () => {
     supplierItems,
     supplierNames,
     filteredSupplierItems,
-    supplierItems: supplierItems[orderInfo.supplier] || [],
     handleInfoChange,
     handleItemChange,
     addItem,

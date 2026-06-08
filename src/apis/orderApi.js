@@ -13,3 +13,9 @@ export const items = async (itemName) => {
         params: {itemName}});
     return resp.data;
 }
+
+// 발주 신청 폼에 사업자 정보 불러오기
+export const identityCheck = async () => {
+    const resp = await maxios.get('/order/identity');
+    return resp.data;
+}
