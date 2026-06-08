@@ -103,7 +103,46 @@ export const getBusinessProfileApi = async () => {
 export const updateBusinessProfileApi = async (updateData, exteriorImg, interiorImg) => {
   const formData = new FormData();
   
-  formData.append('updateData', JSON.stringify(updateData));
+  // 1. ⚠️ 중요: JSON.stringify를 하지 않고, 객체의 각 필드를 낱개로 풀어 append 합니다.
+  // 이래야 백엔드의 @ModelAttribute가 DTO 필드명과 매칭을 시켜줄 수 있어!
+  Object.keys(updateData).forEach((key) => {
+    // 값이 null이거나 undefined가 아닐 때만 보냅니다.
+    if (updateData[key] !== null && updateData[key] !== undefined) {
+      formData.append(key, updateData[key]);
+    }
+  });
+  
+  // 2. 파일 추가 (기존 코드 유지)
+  if (exteriorImg instanceof File) {
+    formData.append('exteriorImg', exteriorImg);
+  }
+  
+  if (interiorImg instanceof File) {
+    formData.append('interiorImg', interiorImg);
+  }
+
+  console.log("멤버API 요청 전송 시작", formData);
+
+  const response = await axiosInstance.put('/api/member/business/update', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+  return response.data;
+};
+
+/**
+ * 다중 매장 등록 (Multipart/form-data)
+ * @param {Object} registerData - 신규 매장 정보 DTO
+ * @param {File|null} exteriorImg - 가게 외부 사진
+ * @param {File|null} interiorImg - 가게 내부 사진
+ * @returns {Promise<{status: string, message: string}>}
+ */
+export const registerMultiProfileApi = async (registerData, exteriorImg, interiorImg) => {
+  const formData = new FormData();
+  
+  // 백엔드 요구사항에 맞춰 JSON 데이터를 'registerData' 파트로 추가 (사용자 요청 방식 적용)
+  formData.append('registerData', JSON.stringify(registerData));
   
   if (exteriorImg instanceof File) {
     formData.append('exteriorImg', exteriorImg);
@@ -113,7 +152,7 @@ export const updateBusinessProfileApi = async (updateData, exteriorImg, interior
     formData.append('interiorImg', interiorImg);
   }
 
-  const response = await axiosInstance.put('/api/member/business/update', formData, {
+  const response = await axiosInstance.post('/api/member/business/multiprofile/register', formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
     },
@@ -170,12 +209,11 @@ export const changePasswordApi = async (passwordData) => {
 };
 
 /**
- * 회원 탈퇴 (RESTful DELETE - Soft Delete 방식)
+ * 회원 탈퇴 (RESTful PATCH - Soft Delete 방식)
  * @param {Object} withdrawalData - { withdrawReason }
  * @returns {Promise<{status: string, message: string}>}
  */
 export const withdrawMemberApi = async (withdrawalData) => {
-  // ⭕ '수정'의 의미를 살려 PATCH를 사용하고, 바디 데이터를 안전하게 전송하세!
   const response = await axiosInstance.patch('/api/member/partner/withdraw', withdrawalData);
   return response.data;
 };

@@ -173,27 +173,32 @@ export const useBusinessUpdate = () => {
 
     setIsSubmitting(true);
     try {
+      // ⚠️ 백엔드 DTO 변수명과 일치하는지 꼭 체크해봐! (예: nickname인지 user_nickname인지)
       const updateData = {
-        user_nickname: formData.nickname,
+        nickname: formData.nickname, // 만약 서버 DTO가 nickname 이라면 nickname: formData.nickname 으로 변경
         phone: formData.phone,
         email: formData.email,
-        bizname: formData.bizname,
+        companyName: formData.bizname,        // 만약 서버 DTO가 companyName 이라면 companyName: formData.bizname 으로 변경
         bizNumber: formData.bizNumber,
         address1: formData.address1,
         address2: formData.address2,
         openingDate: formData.openingDate,
       };
 
+      // 💡 파일이 진짜 있을 때만 넘기고, 없으면 undefined나 null 처리가 문자열 "null"로 가지 않도록 방어 코드 작성
+      const exteriorFile = formData.exteriorImg instanceof File ? formData.exteriorImg : null;
+      const interiorFile = formData.interiorImg instanceof File ? formData.interiorImg : null;
+
       const result = await updateBusinessProfileApi(
         updateData, 
-        formData.exteriorImg, 
-        formData.interiorImg
+        exteriorFile, 
+        interiorFile
       );
       
       if (result && result.status === 'success') {
         alert('정보가 성공적으로 수정되었습니다.');
         
-        // 전역 상태 동기화 (헤더 반영)
+        // 전역 상태 동기화
         const currentStore = authStore.getState();
         login({
           ...currentStore,

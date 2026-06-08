@@ -3,36 +3,28 @@
  * @description 다중 매장 관리 및 추가 페이지 컴포넌트입니다.
  * BusinessMyPage와 동일한 레이아웃을 유지하며, 새로운 매장 정보를 추가할 수 있는 폼을 제공합니다.
  */
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MainFooter from '../../components/layout/MainFooter';
 import logo from "../../assets/soso로고.png";
 import authStore from "../../store/authStore";
+import { useBusinessMultiProfile } from './hooks/useBusinessMultiProfile';
+import { PhotoSlot, AddPhotoBtn } from './components/PartnerEditProfileSection';
 
 const MultiProfileTab = () => {
   const navigate = useNavigate();
+  const exteriorInputRef = useRef(null);
+  const interiorInputRef = useRef(null);
 
-  // 새로운 매장 등록을 위한 폼 데이터 상태
-  const [formData, setFormData] = useState({
-    bizName: '',
-    bizNumber: '',
-    address: '',
-    detailAddress: '',
-    openDate: ''
-  });
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // TODO: 다중 매장 등록 API 연동
-    console.log("새로운 매장 등록 데이터:", formData);
-    alert("새로운 매장이 성공적으로 등록되었습니다. (API 연동 필요)");
-    navigate("/business-mypage");
-  };
+  const {
+    formData,
+    isSubmitting,
+    handleChange,
+    handleFileChange,
+    handleRemovePhoto,
+    handleAddressSearch,
+    handleSubmit
+  } = useBusinessMultiProfile();
 
   return (
     <form onSubmit={handleSubmit} className="bg-white border border-emerald-100 rounded-lg p-8 shadow-sm">
@@ -43,69 +35,135 @@ const MultiProfileTab = () => {
       <p className="text-sm text-gray-500 mb-8 border-b border-gray-100 pb-4">새로운 사업자 정보를 등록하여 매장을 추가로 관리할 수 있습니다.</p>
       
       {/* 매장 추가 폼 */}
-      <div>
-        <h3 className="font-bold text-emerald-700 flex items-center gap-2 mb-6 text-base">
-          <span className="w-1.5 h-6 bg-emerald-500 rounded-full inline-block"></span>
-          신규 매장 정보 입력
-        </h3>
-        <div className="grid grid-cols-2 gap-x-6 gap-y-6 text-sm">
-          <div className="col-span-2 md:col-span-1">
-            <label className="block text-xs font-semibold text-gray-500 mb-2">상호명</label>
-            <input 
-              type="text" 
-              name="bizName"
-              placeholder="예: 소소마을 강남점"
-              value={formData.bizName}
-              onChange={handleChange}
-              className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl focus:bg-white focus:border-emerald-500 outline-none transition-all"
-              required
-            />
-          </div>
-          <div className="col-span-2 md:col-span-1">
-            <label className="block text-xs font-semibold text-gray-500 mb-2">사업자 번호</label>
-            <input 
-              type="text" 
-              name="bizNumber"
-              placeholder="000-00-00000"
-              value={formData.bizNumber}
-              onChange={handleChange}
-              className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl focus:bg-white focus:border-emerald-500 outline-none transition-all"
-              required
-            />
-          </div>
-          <div className="col-span-2">
-            <label className="block text-xs font-semibold text-gray-500 mb-2">가게 주소</label>
-            <div className="flex gap-2 mb-3">
+      <div className="space-y-10">
+        <div>
+          <h3 className="font-bold text-emerald-700 flex items-center gap-2 mb-6 text-base">
+            <span className="w-1.5 h-6 bg-emerald-500 rounded-full inline-block"></span>
+            신규 매장 정보 입력
+          </h3>
+          <div className="grid grid-cols-2 gap-x-6 gap-y-6 text-sm">
+            <div className="col-span-2 md:col-span-1">
+              <label className="block text-xs font-semibold text-gray-500 mb-2">상호명</label>
               <input 
                 type="text" 
-                name="address"
-                placeholder="주소 검색을 이용해 주세요"
-                value={formData.address}
-                readOnly
-                className="flex-grow p-3 bg-gray-100 border border-gray-100 rounded-xl text-gray-500 outline-none"
+                name="bizName"
+                placeholder="예: 소소마을 강남점"
+                value={formData.bizName}
+                onChange={handleChange}
+                className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl focus:bg-white focus:border-emerald-500 outline-none transition-all"
+                required
               />
-              <button type="button" className="px-5 bg-gray-800 text-white text-xs font-bold rounded-xl hover:bg-black transition-colors whitespace-nowrap">주소 검색</button>
             </div>
-            <input 
-              type="text" 
-              name="detailAddress"
-              placeholder="상세 주소를 입력하세요"
-              value={formData.detailAddress}
-              onChange={handleChange}
-              className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl focus:bg-white focus:border-emerald-500 outline-none transition-all"
-            />
+            <div className="col-span-2 md:col-span-1">
+              <label className="block text-xs font-semibold text-gray-500 mb-2">사업자 번호</label>
+              <input 
+                type="text" 
+                name="bizNumber"
+                placeholder="000-00-00000"
+                value={formData.bizNumber}
+                onChange={handleChange}
+                className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl focus:bg-white focus:border-emerald-500 outline-none transition-all"
+                required
+              />
+            </div>
+            <div className="col-span-2">
+              <label className="block text-xs font-semibold text-gray-500 mb-2">가게 주소</label>
+              <div className="flex gap-2 mb-3">
+                <input 
+                  type="text" 
+                  name="address"
+                  placeholder="주소 검색을 이용해 주세요"
+                  value={formData.address}
+                  readOnly
+                  className="flex-grow p-3 bg-gray-100 border border-gray-100 rounded-xl text-gray-500 outline-none"
+                />
+                <button 
+                  type="button" 
+                  onClick={handleAddressSearch}
+                  className="px-5 bg-gray-800 text-white text-xs font-bold rounded-xl hover:bg-black transition-colors whitespace-nowrap"
+                >
+                  주소 검색
+                </button>
+              </div>
+              <input 
+                type="text" 
+                name="detailAddress"
+                placeholder="상세 주소를 입력하세요"
+                value={formData.detailAddress}
+                onChange={handleChange}
+                className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl focus:bg-white focus:border-emerald-500 outline-none transition-all"
+              />
+            </div>
+            <div className="col-span-2 md:col-span-1">
+              <label className="block text-xs font-semibold text-gray-500 mb-2">오픈일자</label>
+              <input 
+                type="date" 
+                name="openDate"
+                value={formData.openDate}
+                onChange={handleChange}
+                className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl focus:bg-white focus:border-emerald-500 outline-none transition-all"
+                required
+              />
+            </div>
           </div>
-          <div className="col-span-2 md:col-span-1">
-            <label className="block text-xs font-semibold text-gray-500 mb-2">오픈일자</label>
-            <input 
-              type="date" 
-              name="openDate"
-              value={formData.openDate}
-              onChange={handleChange}
-              className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl focus:bg-white focus:border-emerald-500 outline-none transition-all"
-              required
-            />
+        </div>
+
+        {/* 매장 사진 등록 */}
+        <div>
+          <h3 className="font-bold text-emerald-700 flex items-center gap-2 mb-6 text-base">
+            <span className="w-1.5 h-6 bg-emerald-500 rounded-full inline-block"></span>
+            매장 사진 등록
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* 외부 사진 */}
+            <div className="space-y-3">
+              <label className="block text-xs font-semibold text-gray-500 ml-1">가게 외부 사진</label>
+              <input 
+                type="file" 
+                accept="image/*" 
+                className="hidden" 
+                ref={exteriorInputRef}
+                onChange={(e) => handleFileChange(e, 'exterior')}
+              />
+              {formData.exteriorPreview ? (
+                <PhotoSlot 
+                  label="외부 사진" 
+                  preview={formData.exteriorPreview} 
+                  onRemove={() => handleRemovePhoto('exterior')} 
+                />
+              ) : (
+                <AddPhotoBtn 
+                  label="외부 사진" 
+                  onClick={() => exteriorInputRef.current.click()} 
+                />
+              )}
+            </div>
+
+            {/* 내부 사진 */}
+            <div className="space-y-3">
+              <label className="block text-xs font-semibold text-gray-500 ml-1">가게 내부 사진</label>
+              <input 
+                type="file" 
+                accept="image/*" 
+                className="hidden" 
+                ref={interiorInputRef}
+                onChange={(e) => handleFileChange(e, 'interior')}
+              />
+              {formData.interiorPreview ? (
+                <PhotoSlot 
+                  label="내부 사진" 
+                  preview={formData.interiorPreview} 
+                  onRemove={() => handleRemovePhoto('interior')} 
+                />
+              ) : (
+                <AddPhotoBtn 
+                  label="내부 사진" 
+                  onClick={() => interiorInputRef.current.click()} 
+                />
+              )}
+            </div>
           </div>
+          <p className="text-[11px] text-gray-400 mt-4 ml-1 italic">* 매장 홍보 시 고객들에게 노출되는 사진입니다. 선명한 사진을 등록해주세요.</p>
         </div>
       </div>
 
@@ -114,14 +172,16 @@ const MultiProfileTab = () => {
           type="button" 
           onClick={() => navigate("/business-mypage")}
           className="px-8 py-3 border border-gray-200 rounded-xl text-sm font-bold text-gray-500 hover:bg-gray-50 transition-colors"
+          disabled={isSubmitting}
         >
           취소
         </button>
         <button 
           type="submit"
-          className="px-8 py-3 bg-emerald-500 text-white rounded-xl text-sm font-bold hover:bg-emerald-600 transition-colors shadow-lg shadow-emerald-100"
+          className="px-8 py-3 bg-emerald-500 text-white rounded-xl text-sm font-bold hover:bg-emerald-600 transition-colors shadow-lg shadow-emerald-100 disabled:bg-emerald-300"
+          disabled={isSubmitting}
         >
-          매장 등록하기
+          {isSubmitting ? '등록 중...' : '매장 등록하기'}
         </button>
       </div>
     </form>
