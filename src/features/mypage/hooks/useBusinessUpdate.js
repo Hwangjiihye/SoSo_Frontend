@@ -54,6 +54,7 @@ export const useBusinessUpdate = () => {
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
+        
         setIsLoading(true);
         const result = await getBusinessProfileApi();
         
@@ -67,11 +68,11 @@ export const useBusinessUpdate = () => {
 
         setFormData(prev => ({
           ...prev,
-          nickname: result.user_nickname,
+          nickname: result.nickname,
           phone: result.phone,
           email: result.email,
           bizNumber: result.bizNumber,
-          bizname: result.bizname,
+          bizname: result.companyName,
           openingDate: result.openingDate?.split('T')[0],
           address1: result.address1,
           address2: result.address2,

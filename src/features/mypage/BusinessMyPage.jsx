@@ -20,13 +20,13 @@ const UserProfileTab = () => {
   // 데이터가 없을 경우를 대비한 초기값 설정
   const userData = {
     id: profile?.userId || '정보 없음',
-    nickname: profile?.user_nickname || '정보 없음',
+    nickname: profile?.nickname || '정보 없음',
     name: profile?.name || '정보 없음',
     joinDate: formattedDate, 
     phone: profile?.phone || '정보 없음',
     email: profile?.email || '정보 없음',
     bizNumber: profile?.bizNumber?.replace(/(\d{3})(\d{2})(\d{5})/, '$1-$2-$3') || '정보 없음',
-    bizName: profile?.bizname || '정보 없음',
+    bizName: profile?.companyName || '정보 없음',
     address: fullAddress,
     openDate: formattedOpeningDate
   };
