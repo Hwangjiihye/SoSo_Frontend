@@ -422,6 +422,7 @@ function BusinessUpdateMyPage() {
                         else if (item === '개인정보 수정') navigate("/business-update-mypage");
                         else if (item === '다중 매장 관리') navigate("/business-multiprofile");
                         else if (item === '회원 탈퇴') navigate("/business-withdrawal");
+                        else if (item === '직원 근태 관리') navigate("/business-attendance");
                         else setActiveTab(item);
                       }}
                       className={`w-full text-left px-3 py-2.5 rounded-lg text-sm font-semibold ${

@@ -1,5 +1,6 @@
 import BusinessMyPage from '../features/mypage/BusinessMyPage';
 import BusinessWithdrawalPage from '../features/mypage/BusinessWithdrawalPage';
+import BusinessAttendancePage from '../features/mypage/BusinessAttendancePage';
 import PartnerInfoPage from '../features/mypage/PartnerInfoPage';
 import PartnerEditProfilePage from '../features/mypage/PartnerEditProfilePage';
 import PartnerWithdrawalPage from '../features/mypage/PartnerWithdrawalPage';
@@ -17,6 +18,10 @@ const mypageRoutes = [
   {
     path: 'business-withdrawal',
     element: <BusinessWithdrawalPage />,
+  },
+  {
+    path: 'business-attendance',
+    element: <BusinessAttendancePage />,
   },
   {
     path: 'partner-info',
