@@ -6,11 +6,22 @@ import { orderList } from '../../../apis/orderApi';
  * @description 발주 관리 도메인의 비즈니스 로직을 담당하는 커스텀 훅입니다.
  */
 export const useOrder = () => {
-  // 발주 목록 데이터 (확장된 임시 데이터)
+
+  // 발주 목록 데이터
   const [orders, setOrders] = useState([]);
 
   const [filterStatus, setFilterStatus] = useState('전체');
   const [dateRange, setDateRange] = useState('7일'); // 오늘, 7일, 1개월, 3개월
+
+  // 검색
+  const featchSearch = async () => {
+    try {
+      const data = await searchOrders(keyword);
+      setOrders(data);
+    } catch (error) {
+      console.error('발주 목록 검색 실패:', error);
+  }
+  };
 
   useEffect(() => {
     fetchOrderList();

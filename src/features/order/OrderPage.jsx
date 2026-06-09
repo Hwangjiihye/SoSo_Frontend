@@ -16,6 +16,7 @@ function OrderPage() {
   const navigate = useNavigate();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isOrderDropdownOpen, setIsOrderDropdownOpen] = useState(false);
+  const [search, setSearch] = useState('');
 
   const handleLogOut = () => {
     logout();
@@ -222,6 +223,13 @@ function OrderPage() {
               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">🔍</span>
               <input 
                 type="text" 
+                value={search}
+                onChange={(e) => setSearch(e.target.search)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    fetchOrders();
+                  }
+                }}
                 placeholder="발주 번호, 공급업체, 또는 품목명을 입력하세요" 
                 className="w-full bg-gray-50 border-none rounded-2xl py-4 pl-12 pr-4 text-sm font-medium focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
               />
