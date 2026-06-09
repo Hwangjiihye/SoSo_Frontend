@@ -249,12 +249,11 @@ function OrderPage() {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-gray-50/50">
-                <th className="px-18 py-5 text-[12px] font-black text-gray-600 uppercase tracking-widest border-b border-gray-50">발주정보</th>
+                <th className="px-18 py-5 text-[12px] font-black text-gray-600 uppercase tracking-widest border-b border-gray-50">발주번호</th>
                 <th className="px-16 py-5 text-[12px] font-black text-gray-600 uppercase tracking-widest border-b border-gray-50">공급업체</th>
                 <th className="px-15 py-5 text-[12px] font-black text-gray-600 uppercase tracking-widest border-b border-gray-50">발주 품목</th>
                 <th className="px-7 py-5 text-[12px] font-black text-gray-600 uppercase tracking-widest border-b border-gray-50">결제 금액/수단</th>
                 <th className="px-12 py-5 text-[12px] font-black text-gray-600 uppercase tracking-widest border-b border-gray-50">상태</th>
-                <th className="px-10 py-5 text-[12px] font-black text-gray-600 uppercase tracking-widest border-b border-gray-50">납품 요청일</th>
                 <th className="px-8 py-5 text-[12px] font-black text-gray-600 uppercase tracking-widest border-b border-gray-50 text-center">관리</th>
               </tr>
             </thead>
@@ -285,9 +284,6 @@ function OrderPage() {
                     <span className={`px-4 py-1.5 rounded-xl text-[10px] font-black border shadow-sm inline-block ${statusColors[order.status]}`}>
                       {order.status}
                     </span>
-                  </td>
-                  <td className="px-8 py-6 text-sm font-bold text-gray-700">
-                    {order.expectedDate}
                   </td>
                   <td className="px-8 py-6 text-center">
                     <div className="flex items-center justify-center gap-3">

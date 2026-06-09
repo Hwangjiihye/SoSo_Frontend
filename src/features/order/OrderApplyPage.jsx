@@ -27,15 +27,20 @@ function OrderApplyPage() {
     items,
     totalSummary,
     supplierItems,
-    supplierNames,
+    suppliers,
     filteredSupplierItems,
     handleInfoChange,
     handleItemChange,
     addItem,
     addSelectedItem,
     removeItem,
-    handleSubmit,
+    handleSubmit
   } = useOrderApply();
+
+// 공급업체 seq를 이름으로 찾기
+const supplierRealName = suppliers.find(
+  (supplier) => String(supplier.userSeq) === String(orderInfo.supplier)
+);
 
   const handleLogOut = () => {
     logout();
@@ -178,9 +183,9 @@ const handleCloseModal = () => {
                     className="w-full bg-gray-50 border-none rounded-2xl py-4 px-4 text-sm font-bold focus:ring-2 focus:ring-emerald-500/20 outline-none"
                   >
                     <option value="">공급업체 선택</option>
-                      {supplierNames.map((name) => (
-                        <option key={name} value={name}>
-                          {name}
+                      {suppliers.map((supplier) => (
+                        <option key={supplier.userSeq} value={supplier.userSeq}>
+                          {supplier.partnerName}
                         </option>
                       ))}
                   </select>
@@ -203,7 +208,7 @@ const handleCloseModal = () => {
                 <div className="p-8 border-b border-gray-50 flex justify-between items-center bg-white">
                   <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
                     <span className="w-1.5 h-6 bg-emerald-500 rounded-full"></span>
-                    {orderInfo.supplier} 등록 물품
+                    {supplierRealName?.partnerName} 등록 물품
                     <span className="text-[14px] font-medium text-gray-500 ml-2">업체에서 공급하는 품목 리스트입니다.</span>
                   </h3>
                 </div>
@@ -291,7 +296,7 @@ const handleCloseModal = () => {
                           <tr key={item.id} className="hover:bg-gray-50/50 transition-colors">
                             <td className="align-middle px-9 py-4 text-center font-bold text-gray-400 text-sm">{index + 1}</td>
                             <td className="align-middle px-6 py-4">
-                              <input type="text" placeholder="품목명" value={item.name} readOnly className="w-[120px] bg-gray-50 border border-gray-100 rounded-lg py-2 px-3 text-sm font-bold text-gray-500 cursor-not-allowed outline-none transition-all text-center" />
+                              <input type="text" placeholder="품목명" value={item.itemName} readOnly className="w-[120px] bg-gray-50 border border-gray-100 rounded-lg py-2 px-3 text-sm font-bold text-gray-500 cursor-not-allowed outline-none transition-all text-center" />
                             </td>
                             <td className="align-middle px-2 py-4">
                               <select value={item.categoryName || ''} readOnly className="w-[115px] bg-gray-50 border border-gray-100 rounded-lg py-2 px-3 text-sm font-bold text-gray-500 cursor-not-allowed appearance-none text-center">
@@ -320,10 +325,10 @@ const handleCloseModal = () => {
                               </select>
                             </td>
                             <td className="align-middle px-4 py-4 text-center">
-                              <input type="text" value={item.price === 0 ? '' : `₩${item.price.toLocaleString()}`} readOnly className="w-[90px] max-w-[120px] bg-gray-50 border border-gray-100 rounded-lg py-2 px-3 text-sm font-bold text-gray-500 text-center cursor-not-allowed outline-none transition-all ml-auto" />
+                              <input type="text" value={item.unitPrice === 0 ? '' : `₩${item.unitPrice.toLocaleString()}`} readOnly className="w-[90px] max-w-[120px] bg-gray-50 border border-gray-100 rounded-lg py-2 px-3 text-sm font-bold text-gray-500 text-center cursor-not-allowed outline-none transition-all ml-auto" />
                             </td>
                             <td className="align-middle px-4 py-4 text-center">
-                              <div className="text-sm font-black text-gray-900 pr-2">₩{item.total.toLocaleString()}</div>
+                              <div className="text-sm font-black text-gray-900 pr-2">₩{Number((item.unitPrice || 0) * (item.quantity || 0)).toLocaleString()}원</div>
                             </td>
                             <td className="align-middle px-1 py-4 text-center">
                               <button onClick={() => removeItem(item.id)} className="p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all" title="삭제">✕</button>

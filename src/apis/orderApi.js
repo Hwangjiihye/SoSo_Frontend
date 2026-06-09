@@ -19,3 +19,9 @@ export const identityCheck = async () => {
     const resp = await maxios.get('/order/identity');
     return resp.data;
 }
+
+// 발주서 작성
+export const orderForm = async (orderData) => {
+    const resp = await maxios.post('/order/form', orderData);
+    return resp.data;
+}

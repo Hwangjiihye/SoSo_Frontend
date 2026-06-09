@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { check, items as getSupplierItems, identityCheck   } from '../../../apis/orderApi';
+import { check, items as getSupplierItems, identityCheck, orderForm   } from '../../../apis/orderApi';
 
 /**
  * @file useOrderApply.js
@@ -17,9 +17,15 @@ export const useOrderApply = () => {
     manager: '', 
     deliveryDate: '',
     paymentMethod: '',
-    deliveryNotes: '',
-    deliveryAddress: '',
+    zonecode: '',
+    address1: '',
+    address2: '',
+    totalAmount: '',
+    orderMemo: '',
+    deliveryAddress: ''
   });
+
+  
 
   // 페이지 렌더링 시작할 때, 사업자 정보 불러오기
   useEffect(() => {
@@ -32,6 +38,9 @@ export const useOrderApply = () => {
       setOrderInfo(prev => ({
         ...prev,
         manager: data.companyName,
+        zonecode: data.zoneCode,
+        address1: data.address1,
+        address2: data.address2,
         deliveryAddress: fullAddress,
       }));
     } catch (error) {
@@ -44,7 +53,7 @@ export const useOrderApply = () => {
 
   // 발주 품목 목록 상태
   const [items, setItems] = useState([
-    { id: 1, name: '', category: '', unit: '', quantity: 0, price: 0, supplyValue: 0, tax: 0, total: 0 }
+    { id: 1, itemSeq: '', itemName: '', categoryName: '', unitPrice: '', quantity: 0, totalPrice: 0, supplyValue: 0, tax: 0, spec: '', totalSummary: 0}
   ]);
 
   // 공급업체별 물품 목록
@@ -67,13 +76,16 @@ export const useOrderApply = () => {
 };
 
   // 중복제거 : 품목이 5개여도 공급업체가 같으면 option하나만 나오게함
-  const supplierNames = [...new Set(supplierItems.map((item) => item.partnerName))];
+  const suppliers = supplierItems.filter(
+    (item, index, self) =>
+      index === self.findIndex((s) => s.userSeq === item.userSeq)
+  );
+  // const supplierNames = [...new Set(supplierItems.map((item) => item.partnerName))];
 
   // 공급업체 선택값 기준으로 필터링
   const filteredSupplierItems = orderInfo.supplier
-    ? supplierItems.filter((item) => item.partnerName === orderInfo.supplier)
+    ? supplierItems.filter((item) => String(item.userSeq) === String(orderInfo.supplier))
     : supplierItems;
-
 
   // 물품 선택 시 발주 목록에 추가
   const addSelectedItem = (selectedItem) => {
@@ -87,19 +99,20 @@ export const useOrderApply = () => {
     const newId = items.length > 0 ? Math.max(...items.map(i => i.id)) + 1 : 1;
     const newItem = {
       id: newId,
-      name: selectedItem.itemName,
+      itemSeq: selectedItem.itemSeq,
+      itemName: selectedItem.itemName,
       categorySeq: selectedItem.categorySeq, 
       categoryName: selectedItem.categoryName,
       spec: selectedItem.spec,
       quantity: 1,
-      price: selectedItem.unitPrice,
+      unitPrice: selectedItem.unitPrice,
       supplyValue: selectedItem.unitPrice,
       tax: Math.floor(selectedItem.unitPrice * 0.1),
       total: Math.floor(selectedItem.unitPrice * 1.1)
     };
     
     // 만약 첫 번째 행이 비어있다면 해당 행을 교체, 아니면 추가
-    if (items.length === 1 && !items[0].name) {
+    if (items.length === 1 && !items[0].itemName) {
       setItems([newItem]);
     } else {
       setItems([...items, newItem]);
@@ -154,36 +167,76 @@ export const useOrderApply = () => {
   }), { supplyValue: 0, tax: 0, total: 0 });
 
   // 발주 신청 제출
-  const handleSubmit = () => {
-    if (!orderInfo.supplier) {
+  const handleSubmit = async () => {
+
+    try{
+      if (!orderInfo.supplier) {
       alert('공급업체를 선택해주세요.');
       return;
     }
-    if (items.length === 0 || items.some(item => !item.name || item.quantity <= 0)) {
+    if (items.length === 0 || items.some(item => !item.itemName || item.quantity <= 0)) {
       alert('발주할 품목을 선택하고 수량을 정확히 입력해주세요.');
       return;
     }
+
+
+    console.log("orderInfo:", orderInfo);
+console.log("zonecode:", orderInfo.zonecode);
+
+      const orderData = {
+        sellerSeq : Number(orderInfo.supplier),
+        totalAmount : totalSummary.total,
+        orderMemo: orderInfo.deliveryNotes,
+        zonecode : orderInfo.zonecode,
+        address1 : orderInfo.address1,
+        address2 : orderInfo.address2,
+      
+
+      items: items.map((item) => ({
+        itemSeq : item.itemSeq,
+        itemName : item.itemName,
+        categoryName : item.categoryName,
+        quantity: item.quantity,
+        spec : item.spec,
+        unitPrice: item.unitPrice,
+        totalPrice: Number(item.unitPrice || 0) * Number(item.quantity || 0)
+      })),
+    };
+
+    console.log('최종 발주 데이터:', JSON.stringify(orderData, null, 2));
+
+    // API 호출
+    const result = await orderForm(orderData);
+
     if (orderInfo.paymentMethod !== '계좌이체') {
       alert('결제 방식을 선택해주세요.');
       return;
     }
-    
-    console.log('발주 신청 데이터:', { orderInfo, items, totalSummary });
+  
+    console.log('발주 신청 결과:', result);
+    console.log('발주 신청 데이터:', orderData);
+
     alert('발주 신청이 완료되었습니다.');
+
+  } catch (error) {
+    console.error('발주 신청 실패:', error);
+    alert('발주 신청 중 오류가 발생했습니다.');
   };
+}
+  
 
   return {
     orderInfo,
     items,
     totalSummary,
     supplierItems,
-    supplierNames,
+    suppliers,
     filteredSupplierItems,
     handleInfoChange,
     handleItemChange,
     addItem,
     addSelectedItem,
     removeItem,
-    handleSubmit,
+    handleSubmit
   };
 };
