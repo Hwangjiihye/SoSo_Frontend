@@ -25,3 +25,9 @@ export const orderForm = async (orderData) => {
     const resp = await maxios.post('/order/form', orderData);
     return resp.data;
 }
+
+// 발주서 목록으로 출력
+export const orderList = async () => {
+    const resp = await maxios.get('/order/list');
+    return resp.data;
+}

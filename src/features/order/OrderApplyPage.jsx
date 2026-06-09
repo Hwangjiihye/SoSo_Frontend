@@ -234,7 +234,7 @@ const handleCloseModal = () => {
                         </tr>
                       ) : (filteredSupplierItems.map((item) => (
                         <tr key={item.itemSeq} className="group hover:bg-emerald-50/40 transition-all cursor-default">
-                          <td className="px-3 py-4 text-center align-middle">
+                          <td className="px-3 py-4 text-center text-[12px] align-middle">
                             이미지{/* <img src={item.image} alt={item.name} className="w-14 h-14 rounded-lg object-cover mx-auto border border-gray-100 bg-white shadow-sm group-hover:border-emerald-200 transition-all" /> */}
                           </td>
                           <td className="px-3 py-4 text-center align-middle text-sm font-bold text-gray-500 font-mono truncate whitespace-nowrap">{item.itemCode}</td>
@@ -349,7 +349,7 @@ const handleCloseModal = () => {
                     </div>
                     <div className="text-right">
                       <div className="text-[14px] font-black text-emerald-500 uppercase mb-1 tracking-widest">최종 합계 금액</div>
-                      <div className="text-3xl font-black text-emerald-600">₩{totalSummary.total.toLocaleString()}</div>
+                      <div className="text-3xl font-black text-emerald-600">₩{Number(totalSummary.total || 0).toLocaleString()}</div>
                     </div>
                   </div>
                 </>
@@ -477,7 +477,7 @@ const handleCloseModal = () => {
               <div className="mt-8 pt-8 border-t border-gray-50">
                 <div className="bg-emerald-50 rounded-2xl p-6">
                   <div className="text-[11px] font-black text-emerald-600 uppercase mb-2 tracking-widest">예상 결제 총액</div>
-                  <div className="text-2xl font-black text-emerald-700">₩{totalSummary.total.toLocaleString()}</div>
+                  <div className="text-2xl font-black text-emerald-700">₩{Number(totalSummary.total || 0).toLocaleString()}</div>
                   <p className="text-[10px] text-emerald-500 mt-2 font-medium">* 부가세 포함 금액입니다.</p>
                 </div>
               </div>

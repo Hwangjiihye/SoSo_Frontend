@@ -259,27 +259,31 @@ function OrderPage() {
             </thead>
             <tbody className="divide-y divide-gray-50">
               {orders.map((order) => (
-                <tr key={order.id} className="hover:bg-emerald-50/30 transition-colors group">
+                <tr key={order.orderSeq} className="hover:bg-emerald-50/30 transition-colors group">
                   <td className="px-8 py-6">
-                    <div className="text-sm font-black text-gray-900 mb-1">{order.id}</div>
-                    <div className="text-[11px] font-bold text-gray-400 uppercase tracking-tighter">{order.date}</div>
+                    <div className="text-sm font-black text-gray-900 mb-1">{order.orderNo}</div>
                   </td>
                   <td className="px-8 py-6">
                     <div className="flex items-center gap-2">
                       <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center text-xs">🏢</div>
-                      <div className="text-sm font-bold text-gray-700">{order.supplier}</div>
+                      <div className="text-sm font-bold text-gray-700">{order.companyName || '-'}</div>
                     </div>
                   </td>
                   <td className="px-8 py-6">
-                    <div className="text-sm text-gray-600 font-medium">{order.items}</div>
+                    <div className="text-sm text-gray-600 font-medium">{order.itemSummary || '-'}</div>
                   </td>
                   <td className="px-8 py-6">
-                    <div className="text-sm font-black text-emerald-600 mb-1">₩{order.totalAmount.toLocaleString()}</div>
+                    <div className="text-sm font-black text-emerald-600 mb-1">
+                      {order.totalAmount != null ? `${order.totalAmount.toLocaleString()}원` : '-'}
+                    </div>
+                  </td>
+                  {/* <td className="px-8 py-6">
+                    <div className="text-sm font-black text-emerald-600 mb-1">{order.totalAmount ? order.totalAmount.toLocaleString() + '원' : '-'}</div>
                     <div className="flex items-center gap-1.5">
                       <span className="text-[10px] font-bold text-gray-400">{order.paymentMethod}</span>
                       <span className={`px-1.5 py-0.5 rounded text-[9px] font-black border ${paymentColors[order.paymentStatus]}`}>{order.paymentStatus}</span>
                     </div>
-                  </td>
+                  </td> */}
                   <td className="px-8 py-6">
                     <span className={`px-4 py-1.5 rounded-xl text-[10px] font-black border shadow-sm inline-block ${statusColors[order.status]}`}>
                       {order.status}

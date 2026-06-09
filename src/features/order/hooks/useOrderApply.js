@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { check, items as getSupplierItems, identityCheck, orderForm   } from '../../../apis/orderApi';
+import { useNavigate } from 'react-router-dom';
 
 /**
  * @file useOrderApply.js
@@ -25,7 +26,7 @@ export const useOrderApply = () => {
     deliveryAddress: ''
   });
 
-  
+  const navi = useNavigate();
 
   // 페이지 렌더링 시작할 때, 사업자 정보 불러오기
   useEffect(() => {
@@ -132,7 +133,7 @@ export const useOrderApply = () => {
           updatedItem[field] = validatedValue;
           
           const qty = field === 'quantity' ? validatedValue : item.quantity;
-          const prc = field === 'price' ? validatedValue : item.price;
+          const prc = field === 'price' ? validatedValue : item.unitPrice;
           updatedItem.supplyValue = qty * prc;
           updatedItem.tax = Math.floor(updatedItem.supplyValue * 0.1);
           updatedItem.total = updatedItem.supplyValue + updatedItem.tax;
@@ -165,6 +166,7 @@ export const useOrderApply = () => {
     tax: acc.tax + item.tax,
     total: acc.total + item.total,
   }), { supplyValue: 0, tax: 0, total: 0 });
+
 
   // 발주 신청 제출
   const handleSubmit = async () => {
@@ -217,6 +219,8 @@ console.log("zonecode:", orderInfo.zonecode);
     console.log('발주 신청 데이터:', orderData);
 
     alert('발주 신청이 완료되었습니다.');
+
+    navi('/orders');
 
   } catch (error) {
     console.error('발주 신청 실패:', error);
