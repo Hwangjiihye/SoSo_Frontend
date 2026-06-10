@@ -12,29 +12,36 @@ export const useOrder = () => {
 
   const [filterStatus, setFilterStatus] = useState('전체');
   const [dateRange, setDateRange] = useState('7일'); // 오늘, 7일, 1개월, 3개월
+  const [keyword, setKeyword] = useState('');
 
   // 검색
-  const featchSearch = async () => {
-    try {
-      const data = await searchOrders(keyword);
-      setOrders(data);
-    } catch (error) {
-      console.error('발주 목록 검색 실패:', error);
-  }
+  const fetchSearch = async () => {
+    console.log("검색어 : " + keyword);
+    fetchOrderList(keyword);
   };
+
+  // 검색어 입력
+  const handleKeywordChange = useCallback((e) => {
+    setKeyword(e.target.value);
+  }, []);
+
+  // 검색 초기화
+  const reset = async () => {
+    setKeyword('');
+    await fetchOrderList('');
+  }
 
   useEffect(() => {
     fetchOrderList();
   }, [])
 
-  const fetchOrderList = async () => {
-    try {
-      const data = await orderList();
+  const fetchOrderList = async (searchKeyword = '') => {
+     try {
+      const data = await orderList(searchKeyword);
 
       console.log('발주 목록 조회 결과:', data);
 
       setOrders(data);
-
     } catch (error) {
       console.error('발주 목록 조회 실패:', error);
       setOrders([]);
@@ -62,5 +69,10 @@ export const useOrder = () => {
     dateRange,
     handleFilterChange,
     handleDateRangeChange,
+    fetchSearch,
+    keyword,
+    handleKeywordChange,
+    fetchSearch,
+    reset
   };
 };

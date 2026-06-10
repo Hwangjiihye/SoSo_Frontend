@@ -27,7 +27,11 @@ export const orderForm = async (orderData) => {
 }
 
 // 발주서 목록으로 출력
-export const orderList = async () => {
-    const resp = await maxios.get('/order/list');
+export const orderList = async (keyword = '') => {
+    const resp = await maxios.get('/order/list', {
+        params : {
+            keyword : keyword
+        }
+    });
     return resp.data;
 }

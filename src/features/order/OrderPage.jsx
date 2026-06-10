@@ -11,12 +11,11 @@ import { useOrder } from './hooks/useOrder';
  * 발주 목록 조회, 기간/상태 필터링, 엑셀 다운로드 등 상세 기능을 포함합니다.
  */
 function OrderPage() {
-  const { orders, filterStatus, dateRange, handleFilterChange, handleDateRangeChange } = useOrder();
+  const { orders, keyword, filterStatus, dateRange, handleKeywordChange, fetchSearch, reset, handleFilterChange, handleDateRangeChange } = useOrder();
   const logout = authStore((state) => state.logout);
   const navigate = useNavigate();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isOrderDropdownOpen, setIsOrderDropdownOpen] = useState(false);
-  const [search, setSearch] = useState('');
 
   const handleLogOut = () => {
     logout();
@@ -223,19 +222,19 @@ function OrderPage() {
               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">🔍</span>
               <input 
                 type="text" 
-                value={search}
-                onChange={(e) => setSearch(e.target.search)}
+                value={keyword}
+                onChange={handleKeywordChange}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
-                    fetchOrders();
+                    fetchSearch();
                   }
                 }}
                 placeholder="발주 번호, 공급업체, 또는 품목명을 입력하세요" 
                 className="w-full bg-gray-50 border-none rounded-2xl py-4 pl-12 pr-4 text-sm font-medium focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
               />
             </div>
-            <button className="bg-gray-900 text-white px-10 py-4 rounded-2xl font-black text-sm hover:bg-black transition-all">검색하기</button>
-            <button className="bg-white border border-gray-200 text-gray-400 px-4 py-4 rounded-2xl font-bold text-sm hover:bg-gray-50 transition-all">🔄 초기화</button>
+            <button onClick={fetchSearch} className="bg-gray-900 text-white px-10 py-4 rounded-2xl font-black text-sm hover:bg-black transition-all">검색하기</button>
+            <button onClick={reset} className="bg-white border border-gray-200 text-gray-400 px-4 py-4 rounded-2xl font-bold text-sm hover:bg-gray-50 transition-all">🔄 초기화</button>
           </div>
         </div>
 
