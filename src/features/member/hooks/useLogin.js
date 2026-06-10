@@ -119,10 +119,14 @@ export const useLogin = () => {
         const token = resp.data.token;
         const user_type = resp.data.user_type;
         const user_seq = resp.data.user_seq;
+        const user_nickname = resp.data.user_nickname;
+        const bizname = resp.data.company_name;
 
         console.log("token:", token);
         console.log("user_type:", user_type);
         console.log("user_seq:", user_seq);
+        console.log("user_nickname:", user_nickname);
+        console.log("bizname:", bizname);
 
         if (!token) {
           alert("로그인 정보가 올바르지 않거나 권한이 없습니다.");
@@ -135,6 +139,8 @@ export const useLogin = () => {
           token: token,
           user_seq: user_seq,
           user_type: user_type,
+          user_nickname: user_nickname,
+          bizname: bizname
         });
 
         // 3. 성공했으니 메인 화면으로 이동

@@ -1,7 +1,7 @@
 /**
  * @file PartnerMain.jsx
  * @description '거래처' 대시보드 페이지입니다. 
- * Chart.js를 사용하여 매출, 수금 및 미수금 현황을 시각화하며, 프로필 드롭다운이 추가되었습니다.
+ * Chart.js를 사용하여 매출, 수금 및 미수금 현황을 시각화하며, 훅 사용을 최적화했습니다.
  */
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -36,9 +36,9 @@ ChartJS.register(
 );
 
 function PartnerMain({ setRole }) {
+  // authStore 훅을 한 번만 호출하여 필요한 상태를 구조분해 할당으로 가져옵니다.
+  const { logout, user_type, member } = authStore();
   const navigate = useNavigate();
-  const logout = authStore((state) => state.logout);
-  const user_type = authStore((state) => state.user_type);
 
   // 프로필 드롭다운 상태
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -50,75 +50,40 @@ function PartnerMain({ setRole }) {
   };
 
   const handleProfileClick = () => {
-    // 세션 스토리지 또는 스토어에서 유저 타입 확인
-    const type = sessionStorage.getItem("user_type") || user_type;
-    
-    if (type === 'BUSINESS') {
+    if (user_type === 'BUSINESS') {
       navigate('/business-mypage');
     } else {
-      // 현재는 사업자 마이페이지 경로만 명시되었으므로 알림 처리
-      alert("사업자 전용 마이페이지로 이동합니다. (현재 유저 타입: " + type + ")");
-      // 실제 프로젝트에 파트너 마이페이지가 있다면 navigate('/partner-mypage') 등으로 연결
+      alert("사업자 전용 마이페이지입니다. (현재 권한: " + user_type + ")");
     }
   };
 
-  // --- 차트 데이터: 월별 매출/수금 추이 (Grouped Bar) ---
+  // --- 차트 데이터 (기존과 동일) ---
   const trendChartData = {
     labels: ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월'],
     datasets: [
-      {
-        label: '매출',
-        data: [4000, 6000, 5500, 8000, 4500, 9000, 7000, 8500],
-        backgroundColor: 'rgba(16, 185, 129, 0.6)', 
-        borderRadius: 4,
-      },
-      {
-        label: '수금',
-        data: [3500, 5000, 4800, 7200, 4000, 8200, 6500, 7800],
-        backgroundColor: 'rgba(59, 130, 246, 0.6)', 
-        borderRadius: 4,
-      },
-    ],
+      { label: '매출', data: [4000, 6000, 5500, 8000, 4500, 9000, 7000, 8500], backgroundColor: 'rgba(16, 185, 129, 0.6)', borderRadius: 4 },
+      { label: '수금', data: [3500, 5000, 4800, 7200, 4000, 8200, 6500, 7800], backgroundColor: 'rgba(59, 130, 246, 0.6)', borderRadius: 4 },
+    ]
   };
 
   const trendChartOptions = {
     responsive: true,
     maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        position: 'top',
-        align: 'end',
-        labels: {
-          boxWidth: 12,
-          font: { size: 12, weight: 'bold' },
-        },
-      },
-    },
-    scales: {
-      y: {
-        beginAtZero: true,
-        grid: { color: '#f3f4f6' },
-      },
-      x: {
-        grid: { display: false },
-      },
-    },
+    plugins: { legend: { position: 'top', align: 'end', labels: { boxWidth: 12, font: { size: 12, weight: 'bold' } } } },
+    scales: { y: { beginAtZero: true, grid: { color: '#f3f4f6' } }, x: { grid: { display: false } } }
   };
 
-  // --- 차트 데이터: 미수금 추이 (Line) ---
   const receivableChartData = {
     labels: ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월'],
-    datasets: [
-      {
-        label: '누적 미수금',
-        data: [500, 1000, 700, 800, 500, 800, 500, 700],
-        borderColor: 'rgb(239, 68, 68)', 
-        backgroundColor: 'rgba(239, 68, 68, 0.1)',
-        fill: true,
-        tension: 0.4,
-        pointRadius: 4,
-      },
-    ],
+    datasets: [{
+      label: '누적 미수금',
+      data: [500, 1000, 700, 800, 500, 800, 500, 700],
+      borderColor: 'rgb(239, 68, 68)', 
+      backgroundColor: 'rgba(239, 68, 68, 0.1)',
+      fill: true,
+      tension: 0.4,
+      pointRadius: 4,
+    }]
   };
 
   const notifications = [
@@ -161,17 +126,22 @@ function PartnerMain({ setRole }) {
             <span className="absolute -top-1 -right-1 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"></span>
           </button>
           
-          {/* 프로필 및 드롭다운 컨테이너 */}
           <div className="relative">
             <div 
               onClick={() => setIsProfileOpen(!isProfileOpen)} 
               className="flex items-center gap-2 border border-gray-200 rounded-full py-1.5 px-3 bg-white hover:bg-emerald-50 cursor-pointer transition-colors"
             >
-              <div className="w-6 h-6 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-[10px] font-bold">김</div>
-              <span className="text-sm font-semibold whitespace-nowrap text-gray-700">김민준 <span className="text-xs text-gray-400 font-normal">거래처 관리자</span></span>
+              <div className="w-6 h-6 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-[10px] font-bold">
+                {member?.nickname ? member.nickname.substring(0, 1) : 'G'}
+              </div>
+              <span className="text-sm font-semibold whitespace-nowrap text-gray-700">
+                {member?.nickname || '회원님'} 
+                <span className="text-xs text-gray-400 font-normal ml-1">
+                  {member?.company_name || '거래처 관리자'}
+                </span>
+              </span>
             </div>
 
-            {/* 프로필 드롭다운 메뉴 */}
             {isProfileOpen && (
               <div className="absolute right-0 mt-2 w-56 bg-white border border-gray-100 rounded-2xl shadow-2xl p-2 z-[60] animate-fade-in-up">
                 <div className="p-3 border-b border-gray-50">
@@ -179,11 +149,11 @@ function PartnerMain({ setRole }) {
                 </div>
                 <div className="py-2">
                   <button className="w-full text-left px-4 py-3 text-sm font-bold text-emerald-600 bg-emerald-50 rounded-xl mb-1 flex justify-between items-center">
-                    한빛 식품 유통
+                    {member?.company_name || '한빛 식품 유통'}
                     <span className="text-[10px] bg-emerald-500 text-white px-1.5 py-0.5 rounded uppercase">Main</span>
                   </button>
-                  <button className="w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl transition-colors">
-                    대성 식자재
+                  <button className="w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-xl transition-colors">
+                    대성 식자재 (더미)
                   </button>
                 </div>
                 <div className="border-t border-gray-50 pt-2 mt-2">
@@ -203,7 +173,6 @@ function PartnerMain({ setRole }) {
       </header>
 
       <main className="flex-grow max-w-7xl mx-auto px-8 py-8 space-y-8 w-full">
-        {/* Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {[
             { t: '신규 발주 (오늘)', v: '12', u: '건', b: '↑ 어제 대비 +3건', c: 'border-emerald-100' },
@@ -218,7 +187,6 @@ function PartnerMain({ setRole }) {
           ))}
         </div>
 
-        {/* Charts Section */}
         <div className="bg-white rounded-[2.5rem] border border-gray-200 p-10 shadow-sm">
           <div className="flex justify-between items-center mb-10">
             <h3 className="text-2xl font-black text-gray-900 flex items-center gap-3">
@@ -279,7 +247,6 @@ function PartnerMain({ setRole }) {
           </div>
         </div>
 
-        {/* Bottom Grid Section */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
            <div className="bg-white rounded-[2.5rem] border border-gray-200 p-8 shadow-sm">
               <h3 className="text-xl font-black mb-8 flex justify-between items-center text-gray-900">
