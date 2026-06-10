@@ -13,11 +13,6 @@ const StockHeader = ({ onAddClick }) => {
       </div>
       <div className="flex items-center gap-2">
         <button 
-          className="flex-1 md:flex-none px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-700 hover:bg-gray-50 transition-colors shadow-sm"
-        >
-          📥 엑셀 다운로드
-        </button>
-        <button 
           onClick={onAddClick}
           className="flex-1 md:flex-none px-6 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-bold hover:bg-emerald-700 transition-colors shadow-lg shadow-emerald-600/20"
         >
