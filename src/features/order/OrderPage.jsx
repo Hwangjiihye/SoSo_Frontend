@@ -27,7 +27,7 @@ function OrderPage() {
   const stompClientRef = useRef(null);
   // 웹소켓으로 받은 최신 발주 상태
   const [liveOrderStatus, setLiveOrderStatus] = useState(null);
-
+  
   // userSeq 가져오기
   useEffect(() => {
     const fetchWebSocketMe = async () => {
@@ -103,7 +103,7 @@ function OrderPage() {
     { key: 'ACCEPTED', label: '접수완료', icon: '📩' },
     { key: 'PREPARING', label: '상품준비', icon: '📦' },
     { key: 'SHIPPING', label: '배송중', icon: '🚚' },
-    { key: 'DELIVERED', label: '배송완료', icon: '☑️' },
+    { key: 'DELIVERED', label: '배송완료', icon: '📬' },
   ];
 
   // 발주 상태별 개수 계산
@@ -209,8 +209,7 @@ const currentStepIndex = liveStepIndex >= 0 ? liveStepIndex : listCurrentStepInd
           <div className="relative">
             <div 
               onClick={() => setIsProfileOpen(!isProfileOpen)} 
-              className="flex items-center gap-2 border border-gray-200 rounded-full py-1.5 px-3 bg-white hover:border-emerald-200 cursor-pointer transition-all"
-            >
+              className="flex items-center gap-2 border border-gray-200 rounded-full py-1.5 px-3 bg-white hover:border-emerald-200 cursor-pointer transition-all">
               <div className="w-7 h-7 bg-emerald-500 text-white rounded-full flex items-center justify-center text-xs font-bold">김</div>
               <span className="text-sm font-bold text-gray-700">김민준</span>
             </div>
