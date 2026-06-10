@@ -1,107 +1,157 @@
 /**
- * @file BusinessAttendancePage.jsx
- * @description 직원 근태 관리 페이지 컴포넌트입니다.
+ * @file BusinessSmartNotificationPage.jsx
+ * @description 사업자 전용 스마트 알림 설정 페이지입니다.
+ * BusinessMyPage의 레이아웃을 기반으로 하며, 파트너 페이지의 알림 설정 로직을 참고하여 구현했습니다.
  */
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MainFooter from '../../components/layout/MainFooter';
 import logo from "../../assets/soso로고.png";
 import authStore from "../../store/authStore";
-import { useBusinessAttendance } from './hooks/useBusinessAttendance';
+import { useBusinessSmartNotification } from './hooks/useBusinessSmartNotification';
+import { useStores } from '../../hooks/useStores';
 
-const AttendanceSection = () => {
-  const { staffList, isLoading, handleStatusChange } = useBusinessAttendance();
+/**
+ * 알림 설정 항목 컴포넌트
+ */
+const NotificationRow = ({ title, desc, isOn, onToggle, disabled }) => (
+  <div className={`flex items-center justify-between py-5 border-b border-gray-50 last:border-0 transition-opacity ${disabled ? 'opacity-40 pointer-events-none' : 'opacity-100'}`}>
+    <div className="flex-1 pr-4">
+      <h4 className="text-sm font-bold text-gray-800">{title}</h4>
+      <p className="text-xs text-gray-400 mt-1 leading-relaxed">{desc}</p>
+    </div>
+    <ToggleSwitch isOn={isOn} onToggle={onToggle} />
+  </div>
+);
 
-  if (isLoading) return <div className="p-12 text-center text-gray-400">근태 정보를 불러오는 중입니다...</div>;
+/**
+ * 토글 스위치 컴포넌트
+ */
+const ToggleSwitch = ({ isOn, onToggle, theme = "emerald" }) => {
+  const bgColor = theme === "white" 
+    ? (isOn ? "bg-white" : "bg-emerald-700") 
+    : (isOn ? "bg-emerald-500" : "bg-gray-200");
+  
+  const circleColor = theme === "white"
+    ? (isOn ? "bg-emerald-600" : "bg-emerald-200")
+    : "bg-white";
+
+  return (
+    <div 
+      onClick={onToggle}
+      className={`relative w-12 h-6 rounded-full cursor-pointer transition-colors duration-200 ${bgColor}`}
+    >
+      <div 
+        className={`absolute top-1 left-1 w-4 h-4 rounded-full transition-transform duration-200 shadow-sm ${circleColor} ${
+          isOn ? 'translate-x-6' : 'translate-x-0'
+        }`}
+      />
+    </div>
+  );
+};
+
+const SmartNotificationTab = () => {
+  const { settings, isSubmitting, toggleSetting, handleSave } = useBusinessSmartNotification();
 
   return (
     <div className="bg-white border border-emerald-100 rounded-lg p-8 shadow-sm">
-      <div className="flex justify-between items-center mb-2">
-        <h2 className="text-xl font-bold text-gray-900">직원 근태 관리</h2>
-        <div className="flex gap-2">
-          <span className="px-3 py-1 bg-emerald-50 text-emerald-600 text-xs font-bold rounded-full">실시간 현황</span>
-          <span className="px-3 py-1 bg-gray-50 text-gray-500 text-xs font-bold rounded-full">2026.06.08</span>
+      <h2 className="text-xl font-bold mb-2">스마트 알림 설정</h2>
+      <p className="text-sm text-gray-500 mb-8 border-b border-gray-100 pb-4">사장님에게 꼭 필요한 소식만 골라서 알려드립니다.</p>
+      
+      <div className="space-y-8">
+        {/* 마스터 스위치 */}
+        <div className="bg-emerald-600 rounded-2xl p-6 shadow-lg shadow-emerald-100 flex items-center justify-between text-white">
+          <div>
+            <h3 className="font-bold text-lg">전체 푸시 알림</h3>
+            <p className="text-emerald-50 text-xs mt-1">앱에서 보내는 모든 스마트 알림을 켜거나 끕니다.</p>
+          </div>
+          <ToggleSwitch 
+            isOn={settings.pushEnabled} 
+            onToggle={() => toggleSetting('pushEnabled')} 
+            theme="white"
+          />
+        </div>
+
+        {/* 세부 설정 섹션 */}
+        <div className="space-y-6">
+          <h3 className="font-bold text-gray-800 flex items-center gap-2 text-base">
+            <span className="w-1.5 h-6 bg-emerald-500 rounded-full inline-block"></span>
+            서비스별 상세 알림
+          </h3>
+          
+          <div className="bg-gray-50/50 rounded-2xl p-6 border border-gray-100">
+            <NotificationRow 
+              title="발주 및 배송 알림" 
+              desc="식자재 발주 확인, 배송 시작 등 물류 상태를 실시간으로 알려드려요." 
+              isOn={settings.orderAlert} 
+              onToggle={() => toggleSetting('orderAlert')}
+              disabled={!settings.pushEnabled}
+            />
+            <NotificationRow 
+              title="거래처 채팅 알림" 
+              desc="납품 업체나 고객과의 새로운 채팅 메시지를 놓치지 않게 알려드려요." 
+              isOn={settings.chatAlert} 
+              onToggle={() => toggleSetting('chatAlert')}
+              disabled={!settings.pushEnabled}
+            />
+            <NotificationRow 
+              title="재고 부족 알림" 
+              desc="설정해둔 안전 재고 수량보다 적어지면 즉시 알려드려요." 
+              isOn={settings.stockAlert} 
+              onToggle={() => toggleSetting('stockAlert')}
+              disabled={!settings.pushEnabled}
+            />
+          </div>
+        </div>
+
+        {/* 혜택 및 에티켓 섹션 */}
+        <div className="space-y-6">
+          <h3 className="font-bold text-gray-800 flex items-center gap-2 text-base">
+            <span className="w-1.5 h-6 bg-emerald-500 rounded-full inline-block"></span>
+            혜택 및 에티켓 설정
+          </h3>
+          
+          <div className="bg-gray-50/50 rounded-2xl p-6 border border-gray-100">
+            <NotificationRow 
+              title="이벤트 및 마케팅 알림" 
+              desc="SoSo에서 제공하는 공동 발주 특가, 할인 쿠폰 소식을 알려드려요." 
+              isOn={settings.marketingAlert} 
+              onToggle={() => toggleSetting('marketingAlert')}
+              disabled={!settings.pushEnabled}
+            />
+            <NotificationRow 
+              title="야간 수신 제한 (매너 타임)" 
+              desc="밤 9시부터 다음 날 아침 8시까지는 모든 알림을 소리 없이 보관함에만 저장해요." 
+              isOn={settings.nightAlert} 
+              onToggle={() => toggleSetting('nightAlert')}
+              disabled={!settings.pushEnabled}
+            />
+          </div>
         </div>
       </div>
-      <p className="text-sm text-gray-500 mb-8 border-b border-gray-100 pb-4">매장 직원들의 출퇴근 기록 및 근무 상태를 관리합니다.</p>
 
-      {/* 대시보드 요약 */}
-      <div className="grid grid-cols-3 gap-4 mb-8">
-        <div className="bg-emerald-50 p-4 rounded-2xl border border-emerald-100">
-          <p className="text-xs text-emerald-600 font-bold mb-1">전체 직원</p>
-          <p className="text-2xl font-black text-emerald-700">{staffList.length}명</p>
-        </div>
-        <div className="bg-blue-50 p-4 rounded-2xl border border-blue-100">
-          <p className="text-xs text-blue-600 font-bold mb-1">현재 출근</p>
-          <p className="text-2xl font-black text-blue-700">{staffList.filter(s => s.status === '출근').length}명</p>
-        </div>
-        <div className="bg-orange-50 p-4 rounded-2xl border border-orange-100">
-          <p className="text-xs text-orange-600 font-bold mb-1">금일 결근</p>
-          <p className="text-2xl font-black text-orange-700">{staffList.filter(s => s.status === '결근').length}명</p>
-        </div>
-      </div>
-
-      {/* 직원 리스트 테이블 */}
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="bg-gray-50 text-gray-500 font-bold text-xs uppercase tracking-wider">
-              <th className="px-4 py-3 text-left rounded-l-xl">직원명</th>
-              <th className="px-4 py-3 text-left">직책</th>
-              <th className="px-4 py-3 text-left">상태</th>
-              <th className="px-4 py-3 text-left">출근 시간</th>
-              <th className="px-4 py-3 text-left">퇴근 시간</th>
-              <th className="px-4 py-3 text-left">근무 시간</th>
-              <th className="px-4 py-3 text-center rounded-r-xl">관리</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-50">
-            {staffList.map((staff) => (
-              <tr key={staff.id} className="hover:bg-gray-50/50 transition-colors">
-                <td className="px-4 py-4 font-bold text-gray-700">{staff.name}</td>
-                <td className="px-4 py-4 text-gray-500">{staff.position}</td>
-                <td className="px-4 py-4">
-                  <span className={`px-2 py-1 rounded-full text-[10px] font-black ${
-                    staff.status === '출근' ? 'bg-emerald-100 text-emerald-600' :
-                    staff.status === '퇴근' ? 'bg-gray-100 text-gray-400' :
-                    'bg-red-100 text-red-500'
-                  }`}>
-                    {staff.status}
-                  </span>
-                </td>
-                <td className="px-4 py-4 text-gray-500">{staff.checkInTime}</td>
-                <td className="px-4 py-4 text-gray-500">{staff.checkOutTime}</td>
-                <td className="px-4 py-4 text-gray-500">{staff.workHours}</td>
-                <td className="px-4 py-4 text-center">
-                  <button className="text-[10px] font-bold text-emerald-600 hover:underline">기록보기</button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      <div className="mt-8 pt-6 border-t border-gray-50 flex justify-between items-center">
-        <p className="text-[11px] text-gray-400">* 직원들의 QR코드 스캔 또는 수동 입력을 통해 근태가 기록됩니다.</p>
-        <button className="px-6 py-2 bg-emerald-500 text-white rounded-xl text-xs font-bold hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-100">
-          + 신규 직원 등록
+      <div className="mt-12 pt-8 border-t border-gray-50 flex justify-end">
+        <button 
+          onClick={handleSave}
+          disabled={isSubmitting}
+          className="px-10 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-lg shadow-emerald-100 transition-all active:scale-[0.98] disabled:bg-gray-300"
+        >
+          {isSubmitting ? '설정 저장 중...' : '💾 알림 설정 저장하기'}
         </button>
       </div>
     </div>
   );
 };
 
-import { useStores } from '../../hooks/useStores';
-
-function BusinessAttendancePage() {
+function BusinessSmartNotificationPage() {
   const { logout, user_type, user_nickname, bizname, selectedStoreSeq, setSelectedStore } = authStore();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('직원 근태 관리');
+  const [activeTab, setActiveTab] = useState('스마트 알림 설정');
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   // 🏪 [멀티 프로필] 사장님의 모든 매장 목록을 가져옵니다.
   const { stores, isLoading: isStoresLoading } = useStores();
-  
+
   const menuGroups = [
     { title: '계정', items: ['개인정보 확인', '개인정보 수정', '회원 탈퇴'] },
     { title: '설정', items: ['스마트 알림 설정'] },
@@ -159,7 +209,7 @@ function BusinessAttendancePage() {
                 {user_nickname ? user_nickname.substring(0, 1) : 'G'}
               </div>
               <span className="text-sm font-semibold whitespace-nowrap text-gray-700">
-                {user_nickname || '회원님'} 
+                {user_nickname || '회원님'}
                 <span className="text-xs text-gray-400 font-normal ml-1">
                   {bizname || '상호명 미등록'}
                 </span>
@@ -229,7 +279,6 @@ function BusinessAttendancePage() {
             <h2 className="font-bold text-gray-900">{bizname || '소소마을'}</h2>
             <p className="text-xs text-gray-500 mt-1">사업자 회원</p>
           </div>
-
           {menuGroups.map((group) => (
             <div key={group.title}>
               <h4 className="text-xs font-bold text-gray-400 mb-2 px-2">{group.title}</h4>
@@ -261,8 +310,8 @@ function BusinessAttendancePage() {
         
         {/* 콘텐츠 영역 */}
         <section className="flex-grow">
-          {activeTab === '직원 근태 관리' ? (
-            <AttendanceSection />
+          {activeTab === '스마트 알림 설정' ? (
+            <SmartNotificationTab />
           ) : (
             <div className="bg-white border border-gray-100 rounded-lg p-12 text-center text-gray-400">
               <h2 className="font-bold text-lg mb-2">{activeTab}</h2>
@@ -276,4 +325,4 @@ function BusinessAttendancePage() {
   );
 }
 
-export default BusinessAttendancePage;
+export default BusinessSmartNotificationPage;

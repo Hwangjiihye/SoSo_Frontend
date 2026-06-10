@@ -86,10 +86,22 @@ export const signUpApi = async (signUpData, exteriorImg, interiorImg) => {
 
 /**
  * 사업자 마이페이지(정보) 조회
+ * @param {number|null} storeSeq - 특정 매장의 정보를 가져오고 싶을 때 전달
  * @returns {Promise<Object>} 회원 및 매장 정보
  */
-export const getBusinessProfileApi = async () => {
-  const response = await axiosInstance.get('/api/member/business/profile');
+export const getBusinessProfileApi = async (storeSeq = null) => {
+  const response = await axiosInstance.get('/api/member/business/profile', {
+    params: { storeSeq }
+  });
+  return response.data;
+};
+
+/**
+ * 🏪 사장님이 소유한 모든 매장 목록 조회
+ * @returns {Promise<Array>} 매장 정보 리스트
+ */
+export const getAllStoresApi = async () => {
+  const response = await axiosInstance.get('/api/member/business/stores');
   return response.data;
 };
 

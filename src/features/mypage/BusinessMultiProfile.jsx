@@ -225,11 +225,16 @@ const MultiProfileTab = () => {
   );
 };
 
+import { useStores } from '../../hooks/useStores';
+
 function BusinessMultiProfile() {
-  const { logout, user_type, user_nickname, bizname } = authStore();
+  const { logout, user_type, user_nickname, bizname, selectedStoreSeq, setSelectedStore } = authStore();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('다중 매장 관리');
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+
+  // 🏪 [멀티 프로필] 사장님의 모든 매장 목록을 가져옵니다.
+  const { stores, isLoading: isStoresLoading } = useStores();
   
   const menuGroups = [
     { title: '계정', items: ['개인정보 확인', '개인정보 수정', '회원 탈퇴'] },
@@ -242,6 +247,15 @@ function BusinessMultiProfile() {
       navigate('/business-mypage');
       setIsProfileOpen(false);
     }
+  };
+
+  /**
+   * 🔄 매장 전환 핸들러
+   */
+  const handleStoreSwitch = (storeSeq, companyName) => {
+    setSelectedStore(storeSeq, companyName);
+    navigate('/business-mypage');
+    setIsProfileOpen(false);
   };
 
   const handleLogout = () => {
@@ -287,17 +301,47 @@ function BusinessMultiProfile() {
             </div>
 
             {isProfileOpen && (
-              <div className="absolute right-0 mt-2 w-56 bg-white border border-gray-100 rounded-2xl shadow-2xl p-2 z-[60] animate-fade-in-up">
-                <div className="p-3 border-b border-gray-50">
-                  <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">나의 매장</span>
+              <div className="absolute right-0 mt-2 w-64 bg-white border border-gray-100 rounded-2xl shadow-2xl p-2 z-[60] animate-fade-in-up">
+                <div className="p-3 border-b border-gray-50 flex justify-between items-center">
+                  <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">나의 매장 목록</span>
+                  {isStoresLoading && <span className="text-[10px] text-emerald-500 animate-pulse">로딩 중...</span>}
                 </div>
-                <div className="py-2">
-                  <button className="w-full text-left px-4 py-3 text-sm font-bold text-emerald-600 bg-emerald-50 rounded-xl mb-1 flex justify-between items-center">
-                    {bizname || '강남 본점'}
-                    <span className="text-[10px] bg-emerald-500 text-white px-1.5 py-0.5 rounded uppercase">Main</span>
-                  </button>
+                
+                <div className="py-2 max-h-60 overflow-y-auto custom-scrollbar">
+                  {stores.length > 0 ? (
+                    stores.map((store) => (
+                      <button 
+                        key={store.storeSeq}
+                        onClick={() => handleStoreSwitch(store.storeSeq, store.companyName)}
+                        className={`w-full text-left px-4 py-3 rounded-xl mb-1 flex justify-between items-center transition-all ${
+                          (selectedStoreSeq == store.storeSeq || (!selectedStoreSeq && stores[0].storeSeq === store.storeSeq))
+                            ? 'bg-emerald-50 text-emerald-600 font-bold border border-emerald-100' 
+                            : 'text-gray-600 hover:bg-gray-50 font-medium'
+                        }`}
+                      >
+                        <div className="flex flex-col">
+                          <span className="text-sm">{store.companyName}</span>
+                          <span className="text-[10px] text-gray-400 font-normal">{store.bizNumber.replace(/(\d{3})(\d{2})(\d{5})/, '$1-$2-$3')}</span>
+                        </div>
+                        {(selectedStoreSeq == store.storeSeq || (!selectedStoreSeq && stores[0].storeSeq === store.storeSeq)) && (
+                          <span className="text-[10px] bg-emerald-500 text-white px-1.5 py-0.5 rounded uppercase">Active</span>
+                        )}
+                      </button>
+                    ))
+                  ) : (
+                    <div className="px-4 py-6 text-center">
+                      <p className="text-xs text-gray-400">등록된 매장이 없습니다.</p>
+                    </div>
+                  )}
                 </div>
+
                 <div className="border-t border-gray-50 pt-2 mt-2">
+                  <button 
+                    onClick={() => { navigate("/business-multiprofile"); setIsProfileOpen(false); }}
+                    className="w-full text-center py-2 text-[11px] font-bold text-emerald-500 hover:bg-emerald-50 rounded-lg transition-all mb-1"
+                  >
+                    + 새 매장 추가하기
+                  </button>
                   <button 
                     onClick={handleProfileClick}
                     className="w-full text-center py-3 text-sm font-black text-gray-700 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all"
@@ -333,6 +377,7 @@ function BusinessMultiProfile() {
                         else if (item === '다중 매장 관리') navigate("/business-multiprofile");
                         else if (item === '회원 탈퇴') navigate("/business-withdrawal");
                         else if (item === '직원 근태 관리') navigate("/business-attendance");
+                        else if (item === '스마트 알림 설정') navigate("/business-notification");
                         else setActiveTab(item);
                       }}
                       className={`w-full text-left px-3 py-2.5 rounded-lg text-sm font-semibold ${

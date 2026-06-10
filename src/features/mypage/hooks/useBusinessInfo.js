@@ -1,11 +1,16 @@
 import { useState, useEffect } from 'react';
 import { getBusinessProfileApi } from '../../../apis/memberApi';
+import authStore from '../../../store/authStore';
 
 /**
  * @file useBusinessInfo.js
- * @description 사업자 정보 조회 및 가공 로직 (PartnerInfo 방식과 동일하게 구현)
+ * @description 사업자 정보 조회 및 가공 로직
+ * 현재 선택된 매장 번호(selectedStoreSeq)에 따라 데이터를 가져옵니다.
  */
 export const useBusinessInfo = () => {
+  // 🏪 [멀티 프로필] 현재 선택된 매장 번호를 전역 상태에서 가져옵니다.
+  const { selectedStoreSeq } = authStore();
+  
   const [data, setData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -14,8 +19,9 @@ export const useBusinessInfo = () => {
     const fetchBusinessInfo = async () => {
       try {
         setIsLoading(true);
-        const result = await getBusinessProfileApi();
-        console.log(result);
+        // [수정] selectedStoreSeq를 파라미터로 넘겨 해당 매장 정보를 요청합니다.
+        const result = await getBusinessProfileApi(selectedStoreSeq);
+        console.log("사업자 프로필 데이터:", result);
         setData(result);
         setIsLoading(false);
       } catch (err) {
@@ -26,7 +32,7 @@ export const useBusinessInfo = () => {
     };
 
     fetchBusinessInfo();
-  }, []);
+  }, [selectedStoreSeq]); // 💡 선택된 매장이 바뀌면 데이터를 다시 불러옵니다.
 
   // 가입 일자 포맷팅
   const formattedDate = data?.createdAt 
