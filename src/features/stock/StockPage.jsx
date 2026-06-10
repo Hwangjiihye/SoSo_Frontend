@@ -5,6 +5,7 @@ import StockFilter from './components/StockFilter';
 import StockTable from './components/StockTable';
 import StockHistoryModal from './components/StockHistoryModal';
 import StockRegistrationModal from './components/StockRegistrationModal';
+import StockIncomingModal from './components/StockIncomingModal';
 
 /**
  * @file StockPage.jsx
@@ -21,6 +22,7 @@ const StockPage = () => {
     deleteStocks,
     getStockHistory,
     registerStock,
+    addStockQuantity,
   } = useStock();
 
   const [selectedIds, setSelectedIds] = useState([]);
@@ -28,7 +30,10 @@ const StockPage = () => {
   // 모달 관련 상태
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
+  const [isIncomingModalOpen, setIsIncomingModalOpen] = useState(false);
+  
   const [selectedStockForHistory, setSelectedStockForHistory] = useState(null);
+  const [selectedStockForIncoming, setSelectedStockForIncoming] = useState(null);
   const [historyData, setHistoryData] = useState([]);
 
   const handleAddStock = () => {
@@ -76,6 +81,15 @@ const StockPage = () => {
     setIsHistoryModalOpen(true);
   };
 
+  const handleIncomingClick = (stock) => {
+    setSelectedStockForIncoming(stock);
+    setIsIncomingModalOpen(true);
+  };
+
+  const handleIncomingSubmit = (stockId, quantity) => {
+    addStockQuantity(stockId, quantity);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 pb-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -119,6 +133,7 @@ const StockPage = () => {
           onSelectChange={handleSelectChange}
           onSelectAll={handleSelectAll}
           onViewHistory={handleViewHistory}
+          onIncoming={handleIncomingClick}
         />
 
         {/* 하단 액션 바 */}
@@ -150,6 +165,14 @@ const StockPage = () => {
         isOpen={isRegisterModalOpen}
         onClose={() => setIsRegisterModalOpen(false)}
         onRegister={handleRegister}
+      />
+
+      {/* 재고 입고 모달 */}
+      <StockIncomingModal
+        isOpen={isIncomingModalOpen}
+        onClose={() => setIsIncomingModalOpen(false)}
+        stock={selectedStockForIncoming}
+        onIncoming={handleIncomingSubmit}
       />
     </div>
   );

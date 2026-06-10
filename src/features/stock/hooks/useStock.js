@@ -71,6 +71,28 @@ export const useStock = () => {
     ];
   };
 
+  const addStockQuantity = async (stockId, quantity) => {
+    // 실제 API 연동 시: await updateStockQuantityApi(stockId, quantity);
+    
+    setStocks(prev => prev.map(stock => {
+      if (stock.id === stockId) {
+        const newStock = stock.currentStock + Number(quantity);
+        let newStatus = 'NORMAL';
+        if (newStock === 0) newStatus = 'OUT_OF_STOCK';
+        else if (newStock < stock.safetyStock) newStatus = 'LACK';
+        
+        return {
+          ...stock,
+          currentStock: newStock,
+          status: newStatus
+        };
+      }
+      return stock;
+    }));
+    
+    alert(`성공적으로 ${quantity}개가 입고되었습니다.`);
+  };
+
   useEffect(() => {
     fetchStocks();
   }, [filters]);
@@ -94,5 +116,6 @@ export const useStock = () => {
     deleteStocks,
     getStockHistory,
     registerStock,
+    addStockQuantity,
   };
 };
