@@ -5,6 +5,23 @@ import React from 'react';
  * @description 재고 현황을 보여주는 테이블 컴포넌트
  */
 const StockTable = ({ stocks, isLoading, selectedIds, onSelectChange, onSelectAll, onViewHistory, onIncoming }) => {
+  // 날짜 차이 계산 함수 (D-Day 형식)
+  const getRemainingDays = (expiryDate) => {
+    if (!expiryDate || expiryDate === '-') return '-';
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const target = new Date(expiryDate);
+    target.setHours(0, 0, 0, 0);
+    
+    const diffTime = target - today;
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays < 0) return `만료 (${Math.abs(diffDays)}일 경과)`;
+    if (diffDays === 0) return '오늘 만료';
+    return `${diffDays}일`;
+  };
+
   const getStatusStyle = (status) => {
     switch (status) {
       case 'NORMAL':
@@ -55,6 +72,7 @@ const StockTable = ({ stocks, isLoading, selectedIds, onSelectChange, onSelectAl
               <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-right">현재 수량</th>
               <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">단위</th>
               <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-right">안전재고</th>
+              <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-center">소비기한</th>
               <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-center">재고상태</th>
               <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-center">입/출고</th>
               <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-center">이력/상세</th>
@@ -83,6 +101,17 @@ const StockTable = ({ stocks, isLoading, selectedIds, onSelectChange, onSelectAl
                   <td className="px-6 py-4 text-sm text-gray-600">{stock.unit}</td>
                   <td className="px-6 py-4 text-sm text-gray-500 text-right">{stock.safetyStock.toLocaleString()}</td>
                   <td className="px-6 py-4 text-center">
+                    <span className={`text-sm font-bold ${
+                      getRemainingDays(stock.expiryDate).includes('만료') 
+                      ? 'text-rose-600 animate-pulse' 
+                      : getRemainingDays(stock.expiryDate).includes('오늘')
+                      ? 'text-amber-600'
+                      : 'text-gray-600'
+                    }`}>
+                      {getRemainingDays(stock.expiryDate)}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 text-center">
                     <span className={`px-2.5 py-1 rounded-full text-[11px] font-bold border ${getStatusStyle(stock.status)}`}>
                       {getStatusLabel(stock.status)}
                     </span>
@@ -95,6 +124,7 @@ const StockTable = ({ stocks, isLoading, selectedIds, onSelectChange, onSelectAl
                       입/출고
                     </button>
                   </td>
+
                   <td className="px-6 py-4 text-center">
                     <button 
                       onClick={() => onViewHistory(stock)}
