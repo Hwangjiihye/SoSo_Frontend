@@ -23,13 +23,13 @@ export const useStock = () => {
       // const data = await getStockList(filters);
       // setStocks(data);
       
-      // 더미 데이터 (a4.png 구조 반영: 품목번호, 품목명, 규격, 단위, 매입가, 매출가, 현재고, 상태)
+      // 더미 데이터 (품목명, 카테고리, 현재 수량, 단위, 안전재고, 재고상태)
       const dummyData = [
-        { id: 'S00001', name: '냉동 삼겹살', spec: '1kg', unit: '팩', purchasePrice: 12000, salesPrice: 18000, currentStock: 45, status: 'NORMAL' },
-        { id: 'S00002', name: '신선 대파', spec: '단', unit: '개', purchasePrice: 1500, salesPrice: 2500, currentStock: 5, status: 'LACK' },
-        { id: 'S00003', name: '참기름', spec: '500ml', unit: '병', purchasePrice: 8000, salesPrice: 12000, currentStock: 0, status: 'OUT_OF_STOCK' },
-        { id: 'S00004', name: '백설탕', spec: '3kg', unit: '포', purchasePrice: 4500, salesPrice: 6500, currentStock: 120, status: 'NORMAL' },
-        { id: 'S00005', name: '진간장', spec: '1.8L', unit: '통', purchasePrice: 5500, salesPrice: 8000, currentStock: 15, status: 'NORMAL' },
+        { id: 'S00001', name: '냉동 삼겹살', category: '육류', currentStock: 45, unit: '팩', safetyStock: 20, status: 'NORMAL' },
+        { id: 'S00002', name: '신선 대파', category: '채소', currentStock: 5, unit: '단', safetyStock: 15, status: 'LACK' },
+        { id: 'S00003', name: '참기름', category: '소스/오일', currentStock: 0, unit: '병', safetyStock: 5, status: 'OUT_OF_STOCK' },
+        { id: 'S00004', name: '백설탕', category: '가공식품', currentStock: 120, unit: '포', safetyStock: 30, status: 'NORMAL' },
+        { id: 'S00005', name: '진간장', category: '소스/오일', currentStock: 15, unit: '통', safetyStock: 10, status: 'NORMAL' },
       ];
       setStocks(dummyData);
     } catch (err) {
@@ -37,6 +37,12 @@ export const useStock = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const deleteStocks = async (ids) => {
+    // 실제 API 연동 시: await Promise.all(ids.map(id => deleteStock(id)));
+    setStocks(prev => prev.filter(stock => !ids.includes(stock.id)));
+    alert(`${ids.length}개의 항목이 삭제되었습니다.`);
   };
 
   useEffect(() => {
@@ -59,5 +65,6 @@ export const useStock = () => {
     handleFilterChange,
     handleSearch,
     fetchStocks,
+    deleteStocks,
   };
 };

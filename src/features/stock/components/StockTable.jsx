@@ -4,7 +4,7 @@ import React from 'react';
  * @file StockTable.jsx
  * @description 재고 현황을 보여주는 테이블 컴포넌트
  */
-const StockTable = ({ stocks, isLoading }) => {
+const StockTable = ({ stocks, isLoading, selectedIds, onSelectChange, onSelectAll }) => {
   const getStatusStyle = (status) => {
     switch (status) {
       case 'NORMAL':
@@ -42,53 +42,60 @@ const StockTable = ({ stocks, isLoading }) => {
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-gray-50 border-b border-gray-100">
-              <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">품목번호</th>
+              <th className="px-6 py-4 w-10">
+                <input 
+                  type="checkbox" 
+                  checked={stocks.length > 0 && selectedIds.length === stocks.length}
+                  onChange={onSelectAll}
+                  className="w-4 h-4 accent-emerald-600 cursor-pointer"
+                />
+              </th>
               <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">품목명</th>
-              <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">규격/단위</th>
-              <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-right">매입가</th>
-              <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-right">매출가</th>
-              <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-right">현재고</th>
-              <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-center">상태</th>
+              <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">카테고리</th>
+              <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-right">현재 수량</th>
+              <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">단위</th>
+              <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-right">안전재고</th>
+              <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-center">재고상태</th>
+              <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-center">변동이력</th>
               <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-center">관리</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
             {stocks.length > 0 ? (
               stocks.map((stock) => (
-                <tr key={stock.id} className="hover:bg-gray-50/50 transition-colors">
-                  <td className="px-6 py-4 text-sm font-medium text-gray-500 font-mono">{stock.id}</td>
+                <tr key={stock.id} className={`hover:bg-gray-50/50 transition-colors ${selectedIds.includes(stock.id) ? 'bg-emerald-50/30' : ''}`}>
+                  <td className="px-6 py-4">
+                    <input 
+                      type="checkbox" 
+                      checked={selectedIds.includes(stock.id)}
+                      onChange={() => onSelectChange(stock.id)}
+                      className="w-4 h-4 accent-emerald-600 cursor-pointer"
+                    />
+                  </td>
                   <td className="px-6 py-4">
                     <div className="text-sm font-bold text-gray-900">{stock.name}</div>
+                    <div className="text-[11px] text-gray-400 mt-0.5">{stock.id}</div>
                   </td>
-                  <td className="px-6 py-4">
-                    <div className="text-sm text-gray-600">{stock.spec}</div>
-                    <div className="text-[11px] text-gray-400">{stock.unit}</div>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-600 text-right">
-                    {stock.purchasePrice.toLocaleString()}원
-                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-600">{stock.category}</td>
                   <td className="px-6 py-4 text-sm font-bold text-gray-900 text-right">
-                    {stock.salesPrice.toLocaleString()}원
+                    {stock.currentStock.toLocaleString()}
                   </td>
-                  <td className="px-6 py-4 text-sm font-bold text-gray-900 text-right">
-                    <span className={stock.currentStock <= 5 ? 'text-rose-500' : ''}>
-                      {stock.currentStock.toLocaleString()}
-                    </span>
-                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-600">{stock.unit}</td>
+                  <td className="px-6 py-4 text-sm text-gray-500 text-right">{stock.safetyStock.toLocaleString()}</td>
                   <td className="px-6 py-4 text-center">
                     <span className={`px-2.5 py-1 rounded-full text-[11px] font-bold border ${getStatusStyle(stock.status)}`}>
                       {getStatusLabel(stock.status)}
                     </span>
                   </td>
                   <td className="px-6 py-4 text-center">
-                    <div className="flex items-center justify-center gap-2">
-                      <button className="text-gray-400 hover:text-emerald-600 text-sm font-bold transition-colors">
-                        수정
-                      </button>
-                      <button className="text-gray-400 hover:text-rose-500 text-sm font-bold transition-colors">
-                        삭제
-                      </button>
-                    </div>
+                    <button className="text-[11px] font-bold text-gray-400 hover:text-gray-600 border border-gray-200 px-2 py-1 rounded-md transition-colors">
+                      보기
+                    </button>
+                  </td>
+                  <td className="px-6 py-4 text-center">
+                    <button className="text-gray-400 hover:text-emerald-600 text-sm font-bold transition-colors">
+                      수정
+                    </button>
                   </td>
                 </tr>
               ))
