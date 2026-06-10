@@ -6,13 +6,15 @@ import StockTable from './components/StockTable';
 import StockHistoryModal from './components/StockHistoryModal';
 import StockRegistrationModal from './components/StockRegistrationModal';
 import StockTransactionModal from './components/StockTransactionModal';
+import StockActionBar from './components/StockActionBar';
 
 /**
  * @file StockPage.jsx
  * @description 재고 관리 메인 페이지
- * 와이어프레임(a3, a4, a5, a6) 기반으로 사용자 요청 항목 및 기능 구현
+ * 와이어프레임(a3, a4, a5, a6, a7) 기반으로 사용자 요청 항목 및 기능 구현
  */
 const StockPage = () => {
+
   const {
     stocks,
     isLoading,
@@ -125,34 +127,26 @@ const StockPage = () => {
           onFilterChange={handleFilterChange} 
           onSearch={handleSearch} 
         />
-{/* 하단 액션 바 */}
-        <div className="mt-6 flex justify-between items-center">
-          <button
-            onClick={handleDeleteSelected}
-            disabled={selectedIds.length === 0}
-            className="px-6 py-2.5 bg-white border border-rose-200 text-rose-500 rounded-xl text-sm font-bold hover:bg-rose-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
-          >
-            🗑️ 선택 삭제
-          </button>
-          
-          <div className="md:hidden text-center">
-            <p className="text-[11px] text-gray-400">좌우로 스크롤하여 상세 정보를 확인할 수 있습니다.</p>
-          </div>
-        </div>
-        <StockTable 
-          stocks={stocks} 
-          isLoading={isLoading} 
-          selectedIds={selectedIds}
-          onSelectChange={handleSelectChange}
-          onSelectAll={handleSelectAll}
-          onViewHistory={handleViewHistory}
-          onIncoming={handleTransactionClick}
-        />
+<StockTable 
+  stocks={stocks} 
+  isLoading={isLoading} 
+  selectedIds={selectedIds}
+  onSelectChange={handleSelectChange}
+  onSelectAll={handleSelectAll}
+  onViewHistory={handleViewHistory}
+  onIncoming={handleTransactionClick}
+/>
+</div>
 
-        
-      </div>
+{/* 하단 플로팅 액션 바 - 리팩토링 및 고도화 적용 */}
+<StockActionBar 
+selectedCount={selectedIds.length}
+onCancel={() => setSelectedIds([])}
+onDelete={handleDeleteSelected}
+/>
 
-      {/* 변동 이력 모달 */}
+{/* 변동 이력 모달 */}
+
       <StockHistoryModal 
         isOpen={isHistoryModalOpen}
         onClose={() => setIsHistoryModalOpen(false)}
