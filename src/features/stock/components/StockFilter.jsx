@@ -12,7 +12,7 @@ const StockFilter = ({ filters, onFilterChange, onSearch }) => {
         <div className="md:col-span-2 relative">
           <input
             type="text"
-            placeholder="품목명 또는 품목번호 검색"
+            placeholder="품목명 검색"
             value={filters.search}
             onChange={(e) => onFilterChange('search', e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && onSearch()}
