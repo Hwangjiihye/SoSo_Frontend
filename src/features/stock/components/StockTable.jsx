@@ -59,7 +59,7 @@ const StockTable = ({ stocks, isLoading, selectedIds, onSelectChange, onSelectAl
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-gray-50 border-b border-gray-100">
-              <th className="px-6 py-4 w-10">
+              <th className="px-6 py-4 w-10 text-center">
                 <input 
                   type="checkbox" 
                   checked={stocks.length > 0 && selectedIds.length === stocks.length}
@@ -68,10 +68,10 @@ const StockTable = ({ stocks, isLoading, selectedIds, onSelectChange, onSelectAl
                 />
               </th>
               <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">품목명</th>
-              <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">카테고리</th>
-              <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-right">현재 수량</th>
-              <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">단위</th>
-              <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-right">안전재고</th>
+              <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-center">카테고리</th>
+              <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-center">현재 수량</th>
+              <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-center">단위</th>
+              <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-center">안전재고</th>
               <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-center">소비기한</th>
               <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-center">재고상태</th>
               <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-center">입/출고</th>
@@ -83,7 +83,7 @@ const StockTable = ({ stocks, isLoading, selectedIds, onSelectChange, onSelectAl
             {stocks.length > 0 ? (
               stocks.map((stock) => (
                 <tr key={stock.id} className={`hover:bg-gray-50/50 transition-colors ${selectedIds.includes(stock.id) ? 'bg-emerald-50/30' : ''}`}>
-                  <td className="px-6 py-4">
+                  <td className="px-6 py-4 text-center">
                     <input 
                       type="checkbox" 
                       checked={selectedIds.includes(stock.id)}
@@ -94,12 +94,12 @@ const StockTable = ({ stocks, isLoading, selectedIds, onSelectChange, onSelectAl
                   <td className="px-6 py-4">
                     <div className="text-sm font-bold text-gray-900">{stock.name}</div>
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-600">{stock.category}</td>
-                  <td className="px-6 py-4 text-sm font-bold text-gray-900 text-right">
+                  <td className="px-6 py-4 text-sm text-gray-600 text-center">{stock.category}</td>
+                  <td className="px-6 py-4 text-sm font-bold text-gray-900 text-center">
                     {stock.currentStock.toLocaleString()}
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-600">{stock.unit}</td>
-                  <td className="px-6 py-4 text-sm text-gray-500 text-right">{stock.safetyStock.toLocaleString()}</td>
+                  <td className="px-6 py-4 text-sm text-gray-600 text-center">{stock.unit}</td>
+                  <td className="px-6 py-4 text-sm text-gray-500 text-center">{stock.safetyStock.toLocaleString()}</td>
                   <td className="px-6 py-4 text-center">
                     <span className={`text-sm font-bold ${
                       getRemainingDays(stock.expiryDate).includes('만료') 

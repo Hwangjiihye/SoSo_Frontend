@@ -125,18 +125,7 @@ const StockPage = () => {
           onFilterChange={handleFilterChange} 
           onSearch={handleSearch} 
         />
-
-        <StockTable 
-          stocks={stocks} 
-          isLoading={isLoading} 
-          selectedIds={selectedIds}
-          onSelectChange={handleSelectChange}
-          onSelectAll={handleSelectAll}
-          onViewHistory={handleViewHistory}
-          onIncoming={handleTransactionClick}
-        />
-
-        {/* 하단 액션 바 */}
+{/* 하단 액션 바 */}
         <div className="mt-6 flex justify-between items-center">
           <button
             onClick={handleDeleteSelected}
@@ -150,6 +139,17 @@ const StockPage = () => {
             <p className="text-[11px] text-gray-400">좌우로 스크롤하여 상세 정보를 확인할 수 있습니다.</p>
           </div>
         </div>
+        <StockTable 
+          stocks={stocks} 
+          isLoading={isLoading} 
+          selectedIds={selectedIds}
+          onSelectChange={handleSelectChange}
+          onSelectAll={handleSelectAll}
+          onViewHistory={handleViewHistory}
+          onIncoming={handleTransactionClick}
+        />
+
+        
       </div>
 
       {/* 변동 이력 모달 */}
