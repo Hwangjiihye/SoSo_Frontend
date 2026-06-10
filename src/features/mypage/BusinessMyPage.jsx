@@ -4,7 +4,7 @@
  * '마이페이지 사업자.png' 디자인을 기반으로, 사이드바와 콘텐츠 영역을 구현합니다.
  */
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import MainFooter from '../../components/layout/MainFooter';
 import logo from "../../assets/soso로고.png";
 import authStore from "../../store/authStore";
@@ -171,8 +171,10 @@ function BusinessMyPage() {
           <div className="text-[40px] font-black text-[#1d9e75] tracking-tighter leading-none">SoSo</div>
         </div>
         <nav className="hidden md:flex justify-center gap-1 border border-gray-100 rounded-lg p-1 bg-gray-50 w-fit mx-auto">
-          <a href="/" className="px-4 py-1.5 text-sm font-medium text-gray-500 hover:text-emerald-600 transition-colors whitespace-nowrap">홈</a>
-          {['발주 관리', '수금 관리', '공동 발주', '업체 홍보', '통계'].map(m => (
+          <Link to="/" className="px-4 py-1.5 text-sm font-medium text-gray-500 hover:text-emerald-600 transition-colors whitespace-nowrap">홈</Link>
+          <Link to="#" className="px-4 py-1.5 text-sm font-medium text-gray-500 hover:text-emerald-600 transition-colors whitespace-nowrap">발주 관리</Link>
+          <Link to="/settlement" className="px-4 py-1.5 text-sm font-medium text-gray-500 hover:text-emerald-600 transition-colors whitespace-nowrap">수금 관리</Link>
+          {['공동 발주', '업체 홍보', '통계'].map(m => (
             <a key={m} href="#" className="px-4 py-1.5 text-sm font-medium text-gray-500 hover:text-emerald-600 transition-colors whitespace-nowrap">{m}</a>
           ))}
         </nav>

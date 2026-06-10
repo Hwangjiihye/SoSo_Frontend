@@ -15,6 +15,7 @@ import { createBrowserRouter, RouterProvider, Outlet } from 'react-router-dom';
 import memberRoutes from './memberRoutes';
 import mypageRoutes from './mypageRoutes';
 import orderRoutes from './orders';
+import settlementRoutes from './settlementRoutes';
 
 /**
  * @file AppRoutes.jsx
@@ -53,6 +54,7 @@ const router = createBrowserRouter([
       ...memberRoutes,
       ...mypageRoutes,
       ...orderRoutes,
+      ...settlementRoutes,
     ],
   },
 ]);
