@@ -4,7 +4,7 @@
  * authStore에서 실제 회원 정보를 가져와 프로필 영역에 표시하며, 훅 사용을 최적화했습니다.
  */
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -126,12 +126,17 @@ function BusinessMain({ setRole }) {
           <img src={logo} alt="SoSo Logo" className="w-12 h-12 object-contain relative top-[5px]" />
           <div className="text-[40px] font-black text-[#1d9e75] tracking-tighter leading-none">SoSo</div>
         </div>
+        
         <nav className="hidden md:flex justify-center gap-1 border border-gray-100 rounded-lg p-1 bg-gray-50 w-fit mx-auto">
           <a href="#" className="px-4 py-1.5 text-sm font-semibold bg-white text-gray-900 rounded shadow-sm border border-gray-200">홈</a>
           {['발주 관리', '수금 관리', '공동 발주', '업체 홍보', '통계'].map(m => (
             <a key={m} href="#" className="px-4 py-1.5 text-sm font-medium text-gray-500 hover:text-emerald-600 transition-colors whitespace-nowrap">{m}</a>
+
           ))}
         </nav>
+          
+
+       
         <div className="flex items-center justify-end gap-4">
           <button className="text-gray-400 hover:text-emerald-600 relative">
             <span className="text-xl">🔔</span>
