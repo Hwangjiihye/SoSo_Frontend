@@ -56,7 +56,7 @@ const StockTable = ({ stocks, isLoading, selectedIds, onSelectChange, onSelectAl
               <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">단위</th>
               <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-right">안전재고</th>
               <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-center">재고상태</th>
-              <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-center">변동이력</th>
+              <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-center">이력/상세</th>
               <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-center">관리</th>
             </tr>
           </thead>
@@ -74,7 +74,6 @@ const StockTable = ({ stocks, isLoading, selectedIds, onSelectChange, onSelectAl
                   </td>
                   <td className="px-6 py-4">
                     <div className="text-sm font-bold text-gray-900">{stock.name}</div>
-                    <div className="text-[11px] text-gray-400 mt-0.5">{stock.id}</div>
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-600">{stock.category}</td>
                   <td className="px-6 py-4 text-sm font-bold text-gray-900 text-right">

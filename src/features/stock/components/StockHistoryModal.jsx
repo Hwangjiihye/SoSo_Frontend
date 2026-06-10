@@ -13,7 +13,7 @@ const StockHistoryModal = ({ isOpen, onClose, stockName, historyData }) => {
         {/* 헤더 */}
         <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
           <div>
-            <h3 className="text-lg font-bold text-gray-900">재고 변동 이력</h3>
+            <h3 className="text-lg font-bold text-gray-900">이력/상세</h3>
             <p className="text-xs text-emerald-600 font-medium mt-0.5">{stockName}</p>
           </div>
           <button 
