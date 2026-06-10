@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getBusinessProfileApi, updateBusinessProfileApi, changePasswordApi } from '../../../apis/memberApi';
+import { getBusinessProfileApi, updateBusinessProfileApi, changePasswordApi, checkBusinessApi } from '../../../apis/memberApi';
 import authStore from '../../../store/authStore';
 
 /**
@@ -18,7 +18,7 @@ const REGEX = {
  */
 export const useBusinessUpdate = () => {
   const navigate = useNavigate();
-  const { login } = authStore();
+  const { login, selectedStoreSeq, setSelectedStore } = authStore(); // 🏪 [멀티 프로필] 현재 선택된 매장 번호 가져오기
   
   // 사업자 정보 폼 상태
   const [formData, setFormData] = useState({
@@ -27,6 +27,8 @@ export const useBusinessUpdate = () => {
     email: '',
     bizNumber: '',
     bizname: '',
+    ceoName: '', // 대표자명 (인증용 실명)
+    zonecode: '', // 📮 우편번호 추가
     address1: '',
     address2: '',
     openingDate: '',
@@ -35,6 +37,10 @@ export const useBusinessUpdate = () => {
     exteriorPreview: null,
     interiorPreview: null,
   });
+
+  // 🏪 [멀티 프로필] 사업자 인증 상태 관리
+  // 수정 페이지 진입 시에는 이미 인증된 정보이므로 true로 시작합니다.
+  const [isBizVerified, setIsBizVerified] = useState(true);
 
   // 비밀번호 변경 폼 상태
   const [passwordForm, setPasswordForm] = useState({
@@ -56,9 +62,10 @@ export const useBusinessUpdate = () => {
       try {
         
         setIsLoading(true);
-        const result = await getBusinessProfileApi();
+        // 💡 [수정] 현재 헤더 등에서 선택된 매장(selectedStoreSeq) 정보를 가져옵니다.
+        const result = await getBusinessProfileApi(selectedStoreSeq);
         
-        const sysNamesArray = result?.storeSysNames ? result.storeSysNames.split(',') : [];
+        const sysNamesArray = result?.profileImageUrl ? result.profileImageUrl.split(',') : [];
         const storeImg1 = sysNamesArray[0]
           ? `https://storage.googleapis.com/study_jcr/${sysNamesArray[0]}`
           : null;
@@ -73,6 +80,8 @@ export const useBusinessUpdate = () => {
           email: result.email,
           bizNumber: result.bizNumber,
           bizname: result.companyName,
+          ceoName: result.ceoName, // 대표자명 로드
+          zonecode: result.zonecode, // 📮 우편번호 로드
           openingDate: result.openingDate?.split('T')[0],
           address1: result.address1,
           address2: result.address2,
@@ -80,6 +89,9 @@ export const useBusinessUpdate = () => {
           interiorPreview: storeImg2,
           userId: result.userId // ID는 표시용
         }));
+
+        // 데이터 로드 후 인증 상태 유지
+        setIsBizVerified(true);
       } catch (err) {
         console.error('사업자 데이터 로드 실패:', err);
       } finally {
@@ -88,7 +100,7 @@ export const useBusinessUpdate = () => {
     };
 
     fetchInitialData();
-  }, []);
+  }, [selectedStoreSeq]); // 💡 [추가] 선택된 매장이 바뀌면 수정 페이지 데이터도 다시 불러옵니다.
 
   /**
    * 유효성 검사
@@ -117,6 +129,43 @@ export const useBusinessUpdate = () => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
     validateField(name, value);
+
+    // 💡 사업자 인증 관련 필드(번호, 상호, 대표자, 개업일)가 바뀌면 재인증 필요
+    if (['bizNumber', 'bizname', 'ceoName', 'openingDate'].includes(name)) {
+      setIsBizVerified(false);
+    }
+  };
+
+  /**
+   * 🛡️ 사업자 실명 인증 (국세청 API 연동)
+   */
+  const handleVerifyBusiness = async () => {
+    const { bizNumber, openingDate, ceoName, bizname } = formData;
+    
+    if (!bizNumber || !openingDate || !ceoName) {
+      alert("인증을 위해 사업자번호, 개업일자, 대표자명을 모두 입력해주세요.");
+      return;
+    }
+
+    try {
+      // API 호출 시 파라미터 규격에 맞게 정제 (날짜에서 하이픈 제거 등)
+      const cleanDate = openingDate.replaceAll("-", "");
+      // [수정] 정보 수정 시에도 중복 체크를 생략하도록 true를 전달합니다.
+      const result = await checkBusinessApi(bizNumber, cleanDate, ceoName, bizname, true);
+      
+      if (result) {
+        alert("✅ 사업자 인증에 성공하였습니다.");
+        setIsBizVerified(true);
+      } else {
+        alert("❌ 인증 실패: 입력하신 정보가 국세청 데이터와 일치하지 않습니다.");
+        setIsBizVerified(false);
+      }
+    } catch (error) {
+      console.error("사업자 인증 중 오류:", error);
+      alert("인증 서버와 통신 중 오류가 발생했습니다.");
+    }
+
+
   };
 
   const handlePasswordChange = (e) => {
@@ -149,9 +198,11 @@ export const useBusinessUpdate = () => {
     
     new window.daum.Postcode({
       oncomplete: (data) => {
+        // 📮 우편번호와 기본 주소(도로명 or 지번)를 폼 상태에 저장합니다.
         setFormData(prev => ({
           ...prev,
-          address1: data.roadAddress,
+          zonecode: data.zonecode,
+          address1: data.roadAddress || data.jibunAddress,
         }));
       },
     }).open();
@@ -173,16 +224,18 @@ export const useBusinessUpdate = () => {
 
     setIsSubmitting(true);
     try {
-      // ⚠️ 백엔드 DTO 변수명과 일치하는지 꼭 체크해봐! (예: nickname인지 user_nickname인지)
       const updateData = {
-        nickname: formData.nickname, // 만약 서버 DTO가 nickname 이라면 nickname: formData.nickname 으로 변경
+        nickname: formData.nickname,
         phone: formData.phone,
         email: formData.email,
-        companyName: formData.bizname,        // 만약 서버 DTO가 companyName 이라면 companyName: formData.bizname 으로 변경
+        companyName: formData.bizname,
+        ceoName: formData.ceoName,   // 👤 대표자명 포함
         bizNumber: formData.bizNumber,
+        zonecode: formData.zonecode, // 📮 우편번호 포함
         address1: formData.address1,
         address2: formData.address2,
         openingDate: formData.openingDate,
+        storeSeq: selectedStoreSeq,  // 🏪 [멀티 프로필] 수정을 원하는 매장 번호를 정확히 전달!
       };
 
       // 💡 파일이 진짜 있을 때만 넘기고, 없으면 undefined나 null 처리가 문자열 "null"로 가지 않도록 방어 코드 작성
@@ -198,13 +251,9 @@ export const useBusinessUpdate = () => {
       if (result && result.status === 'success') {
         alert('정보가 성공적으로 수정되었습니다.');
         
-        // 전역 상태 동기화
-        const currentStore = authStore.getState();
-        login({
-          ...currentStore,
-          user_nickname: formData.nickname,
-          bizname: formData.bizname
-        });
+        // 🔄 전역 상태(Zustand)와 동기화
+        // 현재 선택된 매장 정보가 바뀌었으므로 setSelectedStore를 통해 헤더 등 표시 업데이트
+        setSelectedStore(selectedStoreSeq, formData.bizname);
 
         navigate('/business-mypage');
       } else {
@@ -267,5 +316,7 @@ export const useBusinessUpdate = () => {
     handleAddressSearch,
     handleSubmit,
     handlePasswordSubmit,
+    handleVerifyBusiness,
+    isBizVerified
   };
 };

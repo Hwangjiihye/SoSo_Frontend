@@ -42,7 +42,15 @@ export const checkEmailApi = async (email) => {
 };
 
 
-export const checkBusinessApi = async (bNo, startDt, pNm, bNm) => {
+/**
+ * 사업자 실명 인증 (국세청 API 연동)
+ * @param {string} bNo - 사업자 번호
+ * @param {string} startDt - 개업 일자 (YYYYMMDD)
+ * @param {string} pNm - 대표자 성명
+ * @param {string} bNm - 상호명
+ * @param {boolean} isMultiProfile - 멀티프로필/정보수정 여부 (true일 경우 중복체크 생략)
+ */
+export const checkBusinessApi = async (bNo, startDt, pNm, bNm, isMultiProfile = false) => {
   // 백엔드 컨트롤러가 @RequestParam으로 받으므로 params 객체로 전달
   const response = await axiosInstance.get('/api/biz/check', {
     params: {
@@ -50,6 +58,7 @@ export const checkBusinessApi = async (bNo, startDt, pNm, bNm) => {
       startDt,
       pNm,
       bNm,
+      isMultiProfile // 🏪 true일 경우 백엔드에서 DB 중복 체크를 건너뜁니다.
     },
   });
   return response.data;

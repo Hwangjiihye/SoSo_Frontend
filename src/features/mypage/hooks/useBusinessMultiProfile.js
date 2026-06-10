@@ -57,8 +57,9 @@ export const useBusinessMultiProfile = () => {
       // 날짜 형식을 YYYYMMDD로 변환 (API 요구사항)
       const formattedDate = start_dt.replace(/-/g, '');
       
-      // 서버의 사업자 인증 API를 호출합니다.
-      const response = await checkBusinessApi(b_no, formattedDate, p_nm, b_nm);
+      // [수정] 멀티프로필 등록이므로 마지막 파라미터(isMultiProfile)에 true를 전달합니다.
+      // 이렇게 해야 백엔드에서 "이미 등록된 사업자 번호" 에러를 내지 않고 국세청 인증을 진행합니다.
+      const response = await checkBusinessApi(b_no, formattedDate, p_nm, b_nm, true);
       
       if (response) {
         setIsBizVerified(true);

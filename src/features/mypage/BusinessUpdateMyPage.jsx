@@ -9,6 +9,7 @@ import MainFooter from '../../components/layout/MainFooter';
 import logo from "../../assets/soso로고.png";
 import authStore from "../../store/authStore";
 import { useBusinessUpdate } from './hooks/useBusinessUpdate';
+import { useStores } from '../../hooks/useStores';
 
 // 비밀번호 변경 팝업 컴포넌트
 const PasswordChangeModal = ({ isOpen, onClose, form, errors, onChange, onSubmit, isSubmitting }) => {
@@ -95,6 +96,7 @@ const UserUpdateTab = () => {
   
   const {
     formData,
+    isBizVerified,       // 🏪 [멀티 프로필] 인증 여부
     passwordForm,
     errors,
     passwordErrors,
@@ -105,6 +107,7 @@ const UserUpdateTab = () => {
     handlePasswordChange,
     handleFileChange,
     handleAddressSearch,
+    handleVerifyBusiness,// 🛡️ [멀티 프로필] 인증 핸들러
     handleSubmit,
     handlePasswordSubmit,
   } = useBusinessUpdate();
@@ -182,6 +185,46 @@ const UserUpdateTab = () => {
           </h3>
           <div className="grid grid-cols-2 gap-x-6 gap-y-6 text-sm">
             <div>
+              <label className="block text-xs font-semibold text-gray-500 mb-1">대표자명 (실명)</label>
+              <input 
+                type="text" 
+                name="ceoName"
+                value={formData.ceoName}
+                onChange={handleChange}
+                placeholder="국세청 등록 대표자명"
+                className="w-full p-2 border-b border-gray-200 focus:border-emerald-500 outline-none transition-colors"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 mb-1">사업자 번호</label>
+              <div className="flex gap-2 items-end">
+                <input 
+                  type="text" 
+                  name="bizNumber"
+                  value={formData.bizNumber}
+                  onChange={handleChange}
+                  placeholder="000-00-00000"
+                  className="flex-grow p-2 border-b border-gray-200 focus:border-emerald-500 outline-none transition-colors"
+                />
+                <button 
+                  type="button" 
+                  onClick={handleVerifyBusiness}
+                  disabled={isBizVerified}
+                  className={`px-4 py-2 text-xs font-bold rounded-lg transition-all ${
+                    isBizVerified 
+                    ? 'bg-emerald-100 text-emerald-600' 
+                    : 'bg-gray-800 text-white hover:bg-black'
+                  }`}
+                >
+                  {isBizVerified ? '✅ 인증 완료' : '사업자 인증하기'}
+                </button>
+              </div>
+            </div>
+            <div className="col-span-2">
+               {!isBizVerified && <p className="text-[10px] text-orange-500 -mt-4 ml-1">* 사업자 정보 변경 시 실명 인증이 필요합니다.</p>}
+            </div>
+            <div>
               <label className="block text-xs font-semibold text-gray-500 mb-1">상호명</label>
               <input 
                 type="text" 
@@ -193,11 +236,11 @@ const UserUpdateTab = () => {
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-gray-500 mb-1">사업자 번호</label>
+              <label className="block text-xs font-semibold text-gray-500 mb-1">오픈일자</label>
               <input 
-                type="text" 
-                name="bizNumber"
-                value={formData.bizNumber}
+                type="date" 
+                name="openingDate"
+                value={formData.openingDate}
                 onChange={handleChange}
                 className="w-full p-2 border-b border-gray-200 focus:border-emerald-500 outline-none transition-colors"
               />
@@ -207,10 +250,11 @@ const UserUpdateTab = () => {
               <div className="flex gap-2 mb-2">
                 <input 
                   type="text" 
-                  name="address1"
-                  value={formData.address1}
+                  name="zonecode"
+                  placeholder="우편번호"
+                  value={formData.zonecode || ""}
                   readOnly
-                  className="flex-grow p-2 border-b border-gray-200 bg-gray-50 outline-none"
+                  className="w-32 p-2 border-b border-gray-200 bg-gray-50 outline-none text-gray-500"
                 />
                 <button 
                   type="button" 
@@ -222,19 +266,17 @@ const UserUpdateTab = () => {
               </div>
               <input 
                 type="text" 
+                name="address1"
+                placeholder="주소 검색을 이용해 주세요"
+                value={formData.address1 || ""}
+                readOnly
+                className="w-full p-2 border-b border-gray-200 bg-gray-50 outline-none text-gray-500 mb-2"
+              />
+              <input 
+                type="text" 
                 name="address2"
                 placeholder="상세 주소를 입력하세요"
-                value={formData.address2}
-                onChange={handleChange}
-                className="w-full p-2 border-b border-gray-200 focus:border-emerald-500 outline-none transition-colors"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-gray-500 mb-1">오픈일자</label>
-              <input 
-                type="date" 
-                name="openingDate"
-                value={formData.openingDate}
+                value={formData.address2 || ""}
                 onChange={handleChange}
                 className="w-full p-2 border-b border-gray-200 focus:border-emerald-500 outline-none transition-colors"
               />
@@ -295,8 +337,12 @@ const UserUpdateTab = () => {
           </button>
           <button 
             type="submit"
-            className="px-6 py-2 bg-emerald-500 text-white rounded-xl text-sm font-bold hover:bg-emerald-600 transition-colors shadow-lg shadow-emerald-100"
-            disabled={isSubmitting}
+            disabled={isSubmitting || !isBizVerified}
+            className={`px-6 py-2 rounded-xl text-sm font-bold transition-all shadow-lg ${
+              !isBizVerified 
+              ? 'bg-gray-200 text-gray-400 cursor-not-allowed' 
+              : 'bg-emerald-500 text-white hover:bg-emerald-600 shadow-emerald-100'
+            }`}
           >
             {isSubmitting ? '저장 중...' : '저장하기'}
           </button>
@@ -315,8 +361,6 @@ const UserUpdateTab = () => {
     </>
   );
 };
-
-import { useStores } from '../../hooks/useStores';
 
 function BusinessUpdateMyPage() {
   const { logout, user_type, user_nickname, bizname, selectedStoreSeq, setSelectedStore } = authStore();

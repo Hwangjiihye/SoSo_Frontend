@@ -69,30 +69,45 @@ const MultiProfileTab = () => {
                 required
               />
             </div>
-            <div className="col-span-2 md:col-span-1">
-              <label className="block text-xs font-semibold text-gray-500 mb-2">사업자 번호</label>
-              <div className="flex gap-2">
-                <input 
-                  type="text" 
-                  name="b_no"
-                  placeholder="000-00-00000"
-                  value={formData.b_no}
-                  onChange={handleChange}
-                  className="flex-grow p-3 bg-gray-50 border border-gray-100 rounded-xl focus:bg-white focus:border-emerald-500 outline-none transition-all"
-                  required
-                />
-                <button 
-                  type="button" 
-                  onClick={handleVerifyBusiness}
-                  disabled={isBizVerified}
-                  className={`px-4 text-xs font-bold rounded-xl transition-colors whitespace-nowrap ${
-                    isBizVerified 
-                      ? 'bg-emerald-100 text-emerald-600' 
-                      : 'bg-gray-800 text-white hover:bg-black'
-                  }`}
-                >
-                  {isBizVerified ? '인증 완료' : '인증하기'}
-                </button>
+            <div className="col-span-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 mb-2">오픈일자</label>
+                  <input 
+                    type="date" 
+                    name="start_dt"
+                    value={formData.start_dt}
+                    onChange={handleChange}
+                    className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl focus:bg-white focus:border-emerald-500 outline-none transition-all"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 mb-2">사업자 번호</label>
+                  <div className="flex gap-2">
+                    <input 
+                      type="text" 
+                      name="b_no"
+                      placeholder="000-00-00000"
+                      value={formData.b_no}
+                      onChange={handleChange}
+                      className="flex-grow p-3 bg-gray-50 border border-gray-100 rounded-xl focus:bg-white focus:border-emerald-500 outline-none transition-all"
+                      required
+                    />
+                    <button 
+                      type="button" 
+                      onClick={handleVerifyBusiness}
+                      disabled={isBizVerified}
+                      className={`px-4 text-xs font-bold rounded-xl transition-colors whitespace-nowrap ${
+                        isBizVerified 
+                          ? 'bg-emerald-100 text-emerald-600' 
+                          : 'bg-gray-800 text-white hover:bg-black'
+                      }`}
+                    >
+                      {isBizVerified ? '인증 완료' : '인증하기'}
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
             <div className="col-span-2">
@@ -129,17 +144,6 @@ const MultiProfileTab = () => {
                 value={formData.address2}
                 onChange={handleChange}
                 className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl focus:bg-white focus:border-emerald-500 outline-none transition-all"
-              />
-            </div>
-            <div className="col-span-2 md:col-span-1">
-              <label className="block text-xs font-semibold text-gray-500 mb-2">오픈일자</label>
-              <input 
-                type="date" 
-                name="start_dt"
-                value={formData.start_dt}
-                onChange={handleChange}
-                className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl focus:bg-white focus:border-emerald-500 outline-none transition-all"
-                required
               />
             </div>
           </div>

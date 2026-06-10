@@ -27,6 +27,7 @@ const UserProfileTab = () => {
     email: profile?.email || '정보 없음',
     bizNumber: profile?.bizNumber?.replace(/(\d{3})(\d{2})(\d{5})/, '$1-$2-$3') || '정보 없음',
     bizName: profile?.companyName || '정보 없음',
+    ceoName: profile?.ceoName || '정보 없음', // 👤 실제 대표자명 추가
     address: fullAddress,
     openDate: formattedOpeningDate
   };
@@ -51,7 +52,7 @@ const UserProfileTab = () => {
             <div className="p-2 border-b">{userData.nickname}</div>
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-500 mb-1">이름</label>
+            <label className="block text-xs font-semibold text-gray-500 mb-1">이름 (서비스 실명)</label>
             <div className="p-2 border-b">{userData.name}</div>
           </div>
           <div>
@@ -76,6 +77,10 @@ const UserProfileTab = () => {
         </h3>
         <div className="grid grid-cols-2 gap-x-6 gap-y-6 text-sm">
           <div>
+            <label className="block text-xs font-semibold text-gray-500 mb-1">대표자명 (실명)</label>
+            <div className="p-2 border-b">{userData.ceoName}</div>
+          </div>
+          <div>
             <label className="block text-xs font-semibold text-gray-500 mb-1">사업자 번호</label>
             <div className="p-2 border-b">{userData.bizNumber}</div>
           </div>
@@ -84,12 +89,12 @@ const UserProfileTab = () => {
             <div className="p-2 border-b">{userData.bizName}</div>
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-500 mb-1">가게 주소</label>
-            <div className="p-2 border-b">{userData.address}</div>
-          </div>
-          <div>
             <label className="block text-xs font-semibold text-gray-500 mb-1">오픈일자</label>
             <div className="p-2 border-b">{userData.openDate}</div>
+          </div>
+          <div className="col-span-2">
+            <label className="block text-xs font-semibold text-gray-500 mb-1">가게 주소</label>
+            <div className="p-2 border-b">{userData.address}</div>
           </div>
         </div>
       </div>
