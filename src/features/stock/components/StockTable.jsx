@@ -4,7 +4,7 @@ import React from 'react';
  * @file StockTable.jsx
  * @description 재고 현황을 보여주는 테이블 컴포넌트
  */
-const StockTable = ({ stocks, isLoading, selectedIds, onSelectChange, onSelectAll }) => {
+const StockTable = ({ stocks, isLoading, selectedIds, onSelectChange, onSelectAll, onViewHistory }) => {
   const getStatusStyle = (status) => {
     switch (status) {
       case 'NORMAL':
@@ -88,7 +88,10 @@ const StockTable = ({ stocks, isLoading, selectedIds, onSelectChange, onSelectAl
                     </span>
                   </td>
                   <td className="px-6 py-4 text-center">
-                    <button className="text-[11px] font-bold text-gray-400 hover:text-gray-600 border border-gray-200 px-2 py-1 rounded-md transition-colors">
+                    <button 
+                      onClick={() => onViewHistory(stock)}
+                      className="text-[11px] font-bold text-gray-400 hover:text-gray-600 border border-gray-200 px-2 py-1 rounded-md transition-colors"
+                    >
                       보기
                     </button>
                   </td>

@@ -3,11 +3,12 @@ import { useStock } from './hooks/useStock';
 import StockHeader from './components/StockHeader';
 import StockFilter from './components/StockFilter';
 import StockTable from './components/StockTable';
+import StockHistoryModal from './components/StockHistoryModal';
 
 /**
  * @file StockPage.jsx
  * @description 재고 관리 메인 페이지
- * 와이어프레임(a3, a4) 기반으로 사용자 요청 항목 및 선택 삭제 기능 구현
+ * 와이어프레임(a3, a4, a5) 기반으로 사용자 요청 항목 및 선택 삭제 기능 구현
  */
 const StockPage = () => {
   const {
@@ -17,9 +18,15 @@ const StockPage = () => {
     handleFilterChange,
     handleSearch,
     deleteStocks,
+    getStockHistory,
   } = useStock();
 
   const [selectedIds, setSelectedIds] = useState([]);
+  
+  // 모달 관련 상태
+  const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
+  const [selectedStockForHistory, setSelectedStockForHistory] = useState(null);
+  const [historyData, setHistoryData] = useState([]);
 
   const handleAddStock = () => {
     alert('재고 등록 기능은 준비 중입니다.');
@@ -53,6 +60,13 @@ const StockPage = () => {
       deleteStocks(selectedIds);
       setSelectedIds([]);
     }
+  };
+
+  const handleViewHistory = async (stock) => {
+    setSelectedStockForHistory(stock);
+    const data = await getStockHistory(stock.id);
+    setHistoryData(data);
+    setIsHistoryModalOpen(true);
   };
 
   return (
@@ -97,6 +111,7 @@ const StockPage = () => {
           selectedIds={selectedIds}
           onSelectChange={handleSelectChange}
           onSelectAll={handleSelectAll}
+          onViewHistory={handleViewHistory}
         />
 
         {/* 하단 액션 바 */}
@@ -114,6 +129,14 @@ const StockPage = () => {
           </div>
         </div>
       </div>
+
+      {/* 변동 이력 모달 */}
+      <StockHistoryModal 
+        isOpen={isHistoryModalOpen}
+        onClose={() => setIsHistoryModalOpen(false)}
+        stockName={selectedStockForHistory?.name}
+        historyData={historyData}
+      />
     </div>
   );
 };

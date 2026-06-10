@@ -45,6 +45,18 @@ export const useStock = () => {
     alert(`${ids.length}개의 항목이 삭제되었습니다.`);
   };
 
+  const getStockHistory = async (stockId) => {
+    // 실제 API 연동 시: return await getStockHistoryApi(stockId);
+    
+    // 더미 이력 데이터
+    return [
+      { date: '2024-03-20', time: '14:30:22', type: '입고', changeQuantity: 20, finalStock: 45, reason: '정기 입고', user: '홍길동' },
+      { date: '2024-03-19', time: '10:15:05', type: '출고', changeQuantity: -10, finalStock: 25, reason: '주문 출고 (#ORD-123)', user: '김철수' },
+      { date: '2024-03-18', time: '17:45:10', type: '조정', changeQuantity: -5, finalStock: 35, reason: '파손 폐기', user: '이영희' },
+      { date: '2024-03-15', time: '09:00:00', type: '입고', changeQuantity: 40, finalStock: 40, reason: '초기 재고 등록', user: '홍길동' },
+    ];
+  };
+
   useEffect(() => {
     fetchStocks();
   }, [filters]);
@@ -66,5 +78,6 @@ export const useStock = () => {
     handleSearch,
     fetchStocks,
     deleteStocks,
+    getStockHistory,
   };
 };
