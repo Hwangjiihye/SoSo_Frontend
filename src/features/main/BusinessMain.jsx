@@ -78,26 +78,26 @@ function BusinessMain({ setRole }) {
   const stockChartData = {
     labels: ['소고기', '돼지고기', '닭고기', '양파', '마늘', '식용유'],
     datasets: [{
-        label: '현재 재고',
-        data: [45, 12, 33, 8, 2, 28],
-        backgroundColor: ['rgba(16, 185, 129, 0.6)', 'rgba(239, 68, 68, 0.6)', 'rgba(16, 185, 129, 0.6)', 'rgba(245, 158, 11, 0.6)', 'rgba(239, 68, 68, 0.6)', 'rgba(16, 185, 129, 0.6)'],
-        borderColor: ['rgb(16, 185, 129)', 'rgb(239, 68, 68)', 'rgb(16, 185, 129)', 'rgb(245, 158, 11)', 'rgb(239, 68, 68)', 'rgb(16, 185, 129)'],
-        borderWidth: 1,
-        borderRadius: 8,
+      label: '현재 재고',
+      data: [45, 12, 33, 8, 2, 28],
+      backgroundColor: ['rgba(16, 185, 129, 0.6)', 'rgba(239, 68, 68, 0.6)', 'rgba(16, 185, 129, 0.6)', 'rgba(245, 158, 11, 0.6)', 'rgba(239, 68, 68, 0.6)', 'rgba(16, 185, 129, 0.6)'],
+      borderColor: ['rgb(16, 185, 129)', 'rgb(239, 68, 68)', 'rgb(16, 185, 129)', 'rgb(245, 158, 11)', 'rgb(239, 68, 68)', 'rgb(16, 185, 129)'],
+      borderWidth: 1,
+      borderRadius: 8,
     }]
   };
 
   const salesChartData = {
     labels: ['1월', '2월', '3월', '4월', '5월', '6월'],
     datasets: [{
-        label: '매출액 (만원)',
-        data: [1200, 1900, 1500, 2100, 2400, 1800],
-        borderColor: 'rgb(16, 185, 129)',
-        backgroundColor: 'rgba(16, 185, 129, 0.1)',
-        fill: true,
-        tension: 0.4,
-        pointRadius: 4,
-        pointBackgroundColor: 'rgb(16, 185, 129)',
+      label: '매출액 (만원)',
+      data: [1200, 1900, 1500, 2100, 2400, 1800],
+      borderColor: 'rgb(16, 185, 129)',
+      backgroundColor: 'rgba(16, 185, 129, 0.1)',
+      fill: true,
+      tension: 0.4,
+      pointRadius: 4,
+      pointBackgroundColor: 'rgb(16, 185, 129)',
     }]
   };
 
@@ -126,7 +126,7 @@ function BusinessMain({ setRole }) {
           <img src={logo} alt="SoSo Logo" className="w-12 h-12 object-contain relative top-[5px]" />
           <div className="text-[40px] font-black text-[#1d9e75] tracking-tighter leading-none">SoSo</div>
         </div>
-        
+
         <nav className="hidden md:flex justify-center gap-1 border border-gray-100 rounded-lg p-1 bg-gray-50 w-fit mx-auto">
           <a href="#" className="px-4 py-1.5 text-sm font-semibold bg-white text-gray-900 rounded shadow-sm border border-gray-200">홈</a>
           {['발주 관리', '수금 관리', '공동 발주', '업체 홍보', '통계'].map(m => (
@@ -134,17 +134,15 @@ function BusinessMain({ setRole }) {
 
           ))}
         </nav>
-          
 
-       
         <div className="flex items-center justify-end gap-4">
           <button className="text-gray-400 hover:text-emerald-600 relative">
             <span className="text-xl">🔔</span>
             <span className="absolute -top-1 -right-1 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"></span>
           </button>
-          
+
           <div className="relative">
-            <div 
+            <div
               onClick={() => setIsProfileOpen(!isProfileOpen)}
               className="flex items-center gap-2 border border-gray-200 rounded-full py-1.5 px-3 bg-white hover:bg-emerald-50 cursor-pointer transition-colors"
             >
@@ -165,19 +163,19 @@ function BusinessMain({ setRole }) {
                   <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">나의 매장 목록</span>
                   {isStoresLoading && <span className="text-[10px] text-emerald-500 animate-pulse">로딩 중...</span>}
                 </div>
-                
+
                 <div className="py-2 max-h-60 overflow-y-auto custom-scrollbar">
                   {stores.length > 0 ? (
                     stores.map((store) => (
-                      <button 
+                      <button
                         key={store.storeSeq}
                         onClick={() => handleStoreSwitch(store.storeSeq, store.companyName)}
                         className={`w-full text-left px-4 py-3 rounded-xl mb-1 flex justify-between items-center transition-all ${
                           // 현재 선택된 매장인지 확인하여 스타일 차별화
                           (selectedStoreSeq == store.storeSeq || (!selectedStoreSeq && stores[0].storeSeq === store.storeSeq))
-                            ? 'bg-emerald-50 text-emerald-600 font-bold border border-emerald-100' 
+                            ? 'bg-emerald-50 text-emerald-600 font-bold border border-emerald-100'
                             : 'text-gray-600 hover:bg-gray-50 font-medium'
-                        }`}
+                          }`}
                       >
                         <div className="flex flex-col">
                           <span className="text-sm">{store.companyName}</span>
@@ -196,13 +194,13 @@ function BusinessMain({ setRole }) {
                 </div>
 
                 <div className="border-t border-gray-50 pt-2 mt-2">
-                  <button 
+                  <button
                     onClick={() => { navigate("/business-multiprofile"); setIsProfileOpen(false); }}
                     className="w-full text-center py-2 text-[11px] font-bold text-emerald-500 hover:bg-emerald-50 rounded-lg transition-all mb-1"
                   >
                     + 새 매장 추가하기
                   </button>
-                  <button 
+                  <button
                     onClick={handleProfileClick}
                     className="w-full text-center py-3 text-sm font-black text-gray-700 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all"
                   >
