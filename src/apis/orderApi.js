@@ -35,3 +35,9 @@ export const orderList = async (keyword = '') => {
     });
     return resp.data;
 }
+
+// 웹소켓 사용자 확인
+export const webSocketMe = async () => {
+    const resp = await maxios.get('/order/me');
+    return resp.data;
+}

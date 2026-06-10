@@ -1,9 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import logo from '../../assets/soso로고.png';
 import MainFooter from '../../components/layout/MainFooter';
 import authStore from '../../store/authStore';
 import { useOrder } from './hooks/useOrder';
+
+import SockJS from 'sockjs-client';
+import { Client } from '@stomp/stompjs';
+import { webSocketMe, orderList } from '../../apis/orderApi';
 
 /**
  * @file OrderPage.jsx
@@ -17,6 +21,76 @@ function OrderPage() {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isOrderDropdownOpen, setIsOrderDropdownOpen] = useState(false);
 
+  // 로그인한 사업자 userSeq
+  const [userSeq, setUserSeq] = useState(null);
+  // 웹소켓 연결 객체 저장용
+  const stompClientRef = useRef(null);
+  // 웹소켓으로 받은 최신 발주 상태
+  const [liveOrderStatus, setLiveOrderStatus] = useState(null);
+
+  // userSeq 가져오기
+  useEffect(() => {
+    const fetchWebSocketMe = async () => {
+      try {
+        const data = await webSocketMe();
+
+        console.log("웹소켓 구독용 userSeq : " + data);
+
+        setUserSeq(data);
+      } catch (err) {
+          console.error('웹소켓 사용자 조회 실패:', err);
+      }
+    }
+    fetchWebSocketMe();
+  }, []);
+
+  // userSeq를 가져온 뒤 웹소켓 연결
+  useEffect(() => {
+  if (!userSeq) return;
+
+  const socket = new SockJS('http://localhost/ws');
+
+  const client = new Client({
+    webSocketFactory: () => socket,
+    reconnectDelay: 5000,
+
+    onConnect: () => {
+      console.log('웹소켓 연결 성공');
+      console.log(`구독 주소: /sub/order/${userSeq}`);
+
+      client.subscribe(`/sub/order/${userSeq}`, (message) => {
+        const data = JSON.parse(message.body);
+
+        console.log('발주 상태 변경 알림:', data);
+
+        // 웹소켓으로 받은 상태를 프로세스바에 바로 반영
+        setLiveOrderStatus(data.status);
+
+        // 목록도 다시 조회
+        fetchSearch();
+      });
+    },
+
+    onStompError: (frame) => {
+      console.error('STOMP 에러:', frame);
+    },
+
+    onWebSocketError: (error) => {
+      console.error('웹소켓 연결 에러:', error);
+    },
+  });
+
+  client.activate();
+  stompClientRef.current = client;
+
+  return () => {
+    if (stompClientRef.current) {
+      stompClientRef.current.deactivate();
+    }
+  };
+}, [userSeq]);
+
+
   const handleLogOut = () => {
     logout();
     alert("로그아웃 되었습니다.");
@@ -24,12 +98,62 @@ function OrderPage() {
   };
 
   // 발주 상태별 컬러 매핑
-  const statusColors = {
-    '배송중': 'text-blue-600 bg-blue-50 border-blue-100',
-    '배송완료': 'text-emerald-600 bg-emerald-50 border-emerald-100',
-    '주문취소': 'text-red-500 bg-red-50 border-red-100',
-    '대기중': 'text-orange-500 bg-orange-50 border-orange-100',
+  const statusSteps = [
+    { key: 'REQUESTED', label: '발주신청', icon: '📝' },
+    { key: 'ACCEPTED', label: '접수완료', icon: '📩' },
+    { key: 'PREPARING', label: '상품준비', icon: '📦' },
+    { key: 'SHIPPING', label: '배송중', icon: '🚚' },
+    { key: 'DELIVERED', label: '배송완료', icon: '☑️' },
+  ];
+
+  // 발주 상태별 개수 계산
+  const getOrderStatus = (order) => {
+  const status = String(order.status || order.orderStatus || '').trim();
+
+  const statusMap = {
+    발주신청: 'REQUESTED',
+    접수완료: 'ACCEPTED',
+    상품준비: 'PREPARING',
+    배송중: 'SHIPPING',
+    배송완료: 'DELIVERED',
   };
+
+  return statusMap[status] || status;
+};
+
+const statusCounts = {
+  REQUESTED: orders.filter(order => order.orderStatus === 'REQUESTED').length,
+  ACCEPTED: orders.filter(order => order.orderStatus === 'ACCEPTED').length,
+  PREPARING: orders.filter(order => order.orderStatus === 'PREPARING').length,
+  SHIPPING: orders.filter(order => order.orderStatus === 'SHIPPING').length,
+  DELIVERED: orders.filter(order => order.orderStatus === 'DELIVERED').length,
+};
+
+const listCurrentStepIndex = orders.reduce((maxIndex, order) => {
+  const status = getOrderStatus(order);
+  const index = statusSteps.findIndex((step) => step.key === status);
+
+  return index > maxIndex ? index : maxIndex;
+}, -1);
+
+const liveStepIndex = statusSteps.findIndex((step) => step.key === liveOrderStatus);
+
+const currentStepIndex = liveStepIndex >= 0 ? liveStepIndex : listCurrentStepIndex;
+
+  // 현재 상태가 어디인지 확인
+  const getCurrentStepIndex = (status) => {
+    return statusSteps.findIndex((step) => step.key === status);
+  };
+
+  // 컬러 매핑
+  const statusColors = {
+  REQUESTED: 'bg-blue-100 text-blue-700 border-blue-200',
+  ACCEPTED: 'bg-emerald-100 text-emerald-700 border-emerald-200',
+  PREPARING: 'bg-amber-100 text-amber-700 border-amber-200',
+  SHIPPING: 'bg-purple-100 text-purple-700 border-purple-200',
+  DELIVERED: 'bg-gray-200 text-gray-700 border-gray-300',
+};
+
 
   // 결제 상태별 컬러 매핑
   const paymentColors = {
@@ -127,7 +251,7 @@ function OrderPage() {
         {/* Status Summary - 더 상세한 통계 */}
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-10">
           {[
-            { label: '전체 발주', value: '156', color: 'border-gray-200', text: 'text-gray-900' },
+            { label: '전체 발주', value: orders.length, color: 'border-gray-200', text: 'text-gray-900' },
             { label: '승인 대기', value: '2', color: 'border-orange-200', text: 'text-orange-600'},
             { label: '배송 중', value: '4', color: 'border-blue-200', text: 'text-blue-600'},
             { label: '배송 완료', value: '142', color: 'border-emerald-200', text: 'text-emerald-600' },
@@ -147,24 +271,45 @@ function OrderPage() {
             {/* 연결 선 */}
             <div className="absolute top-8 left-0 w-full h-1 bg-gray-50 -z-0 rounded-full"></div>
 
-            {[
-              { label: '발주신청', icon: '📝', count: 0, active: true },
-              { label: '접수완료', icon: '📩', count: 2, active: true },
-              { label: '상품준비', icon: '📦', count: 1, active: false },
-              { label: '배송중', icon: '🚚', count: 4, active: false },
-              { label: '배송완료', icon: '✅', count: 142, active: false },
-            ].map((step, i) => (
-              <div key={i} className="flex flex-col items-center gap-5 relative z-10 bg-white px-6">
-                <div className={`w-16 h-16 rounded-full flex items-center justify-center text-3xl shadow-sm transition-all ${step.active ? 'bg-emerald-50 text-emerald-600 ring-4 ring-emerald-100' : 'bg-gray-50 text-gray-300 grayscale border border-gray-100'}`}>
-                  {step.icon}
+            {statusSteps.map((step, i) => {
+              const count = statusCounts[step.key] || 0;
+
+              // 현재 상태 이전 단계까지 초록색 활성화
+              const active = currentStepIndex >= i;
+
+          return (
+            <div key={step.key} className="flex flex-col items-center gap-5 relative z-10 bg-white px-6">
+              <div
+                className={`w-16 h-16 rounded-full flex items-center justify-center text-3xl shadow-sm transition-all ${
+                  active
+                  ? 'bg-emerald-100 text-emerald-700 border-emerald-300 ring-4 ring-emerald-100'
+                  : 'bg-gray-50 text-gray-300 grayscale border-gray-100'
+                }`}
+              >
+                {step.icon}
+              </div>
+
+              <div className="text-center">
+                <div
+                  className={`text-base font-black mb-1 ${
+                    active ? 'text-gray-800' : 'text-gray-400'
+                  }`}
+                >
+                  {step.label}
                 </div>
-                <div className="text-center">
-                  <div className={`text-base font-black mb-1 ${step.active ? 'text-gray-800' : 'text-gray-400'}`}>{step.label}</div>
-                  <div className={`text-sm font-bold ${step.active ? 'text-emerald-500' : 'text-gray-300'}`}>{step.count}건</div>
+
+                <div
+                  className={`text-sm font-bold ${
+                    active ? 'text-emerald-500' : 'text-gray-300'
+                  }`}
+                >
+                  {count}건
                 </div>
               </div>
-            ))}
-          </div>
+            </div>
+          );
+        })}
+        </div>
         </div>
 
         {/* Filter Section - 상세 검색 및 기간 설정 */}
@@ -284,22 +429,14 @@ function OrderPage() {
                       {order.totalAmount != null ? `${order.totalAmount.toLocaleString()}원` : '-'}
                     </div>
                   </td>
-                  {/* <td className="px-8 py-6">
-                    <div className="text-sm font-black text-emerald-600 mb-1">{order.totalAmount ? order.totalAmount.toLocaleString() + '원' : '-'}</div>
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-[10px] font-bold text-gray-400">{order.paymentMethod}</span>
-                      <span className={`px-1.5 py-0.5 rounded text-[9px] font-black border ${paymentColors[order.paymentStatus]}`}>{order.paymentStatus}</span>
-                    </div>
-                  </td> */}
                   <td className="px-8 py-6">
-                    <span className={`px-4 py-1.5 rounded-xl text-[10px] font-black border shadow-sm inline-block ${statusColors[order.status]}`}>
+                    <span className={`px-4 py-1.5 rounded-xl text-[10px] font-black border shadow-sm inline-block ${statusColors[order.status] }`}>
                       {order.status}
                     </span>
                   </td>
                   <td className="px-8 py-6 text-center">
                     <div className="flex items-center justify-center gap-3">
                       <button className="p-2 hover:bg-white rounded-lg transition-all border border-transparent hover:border-gray-100 text-gray-400 hover:text-emerald-600 shadow-sm" title="상세보기">📄</button>
-                      <button className="p-2 hover:bg-white rounded-lg transition-all border border-transparent hover:border-gray-100 text-gray-400 hover:text-red-500 shadow-sm" title="발주취소">✕</button>
                     </div>
                   </td>
                 </tr>
