@@ -4,11 +4,12 @@ import StockHeader from './components/StockHeader';
 import StockFilter from './components/StockFilter';
 import StockTable from './components/StockTable';
 import StockHistoryModal from './components/StockHistoryModal';
+import StockRegistrationModal from './components/StockRegistrationModal';
 
 /**
  * @file StockPage.jsx
  * @description 재고 관리 메인 페이지
- * 와이어프레임(a3, a4, a5) 기반으로 사용자 요청 항목 및 선택 삭제 기능 구현
+ * 와이어프레임(a3, a4, a5, a6) 기반으로 사용자 요청 항목 및 기능 구현
  */
 const StockPage = () => {
   const {
@@ -19,17 +20,23 @@ const StockPage = () => {
     handleSearch,
     deleteStocks,
     getStockHistory,
+    registerStock,
   } = useStock();
 
   const [selectedIds, setSelectedIds] = useState([]);
   
   // 모달 관련 상태
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
+  const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
   const [selectedStockForHistory, setSelectedStockForHistory] = useState(null);
   const [historyData, setHistoryData] = useState([]);
 
   const handleAddStock = () => {
-    alert('재고 등록 기능은 준비 중입니다.');
+    setIsRegisterModalOpen(true);
+  };
+
+  const handleRegister = (formData) => {
+    registerStock(formData);
   };
 
   const handleSelectChange = (id) => {
@@ -136,6 +143,13 @@ const StockPage = () => {
         onClose={() => setIsHistoryModalOpen(false)}
         stockName={selectedStockForHistory?.name}
         historyData={historyData}
+      />
+
+      {/* 재고 등록 모달 */}
+      <StockRegistrationModal
+        isOpen={isRegisterModalOpen}
+        onClose={() => setIsRegisterModalOpen(false)}
+        onRegister={handleRegister}
       />
     </div>
   );

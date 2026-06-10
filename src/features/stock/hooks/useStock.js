@@ -45,6 +45,20 @@ export const useStock = () => {
     alert(`${ids.length}개의 항목이 삭제되었습니다.`);
   };
 
+  const registerStock = async (stockData) => {
+    // 실제 API 연동 시: const newStock = await createStock(stockData);
+    const newStock = {
+      id: `S${String(stocks.length + 1).padStart(5, '0')}`,
+      ...stockData,
+      currentStock: 0,
+      status: 'OUT_OF_STOCK',
+      safetyStock: Number(stockData.safetyStock) || 0,
+    };
+    
+    setStocks(prev => [newStock, ...prev]);
+    alert('새 품목이 등록되었습니다.');
+  };
+
   const getStockHistory = async (stockId) => {
     // 실제 API 연동 시: return await getStockHistoryApi(stockId);
     
@@ -79,5 +93,6 @@ export const useStock = () => {
     fetchStocks,
     deleteStocks,
     getStockHistory,
+    registerStock,
   };
 };
