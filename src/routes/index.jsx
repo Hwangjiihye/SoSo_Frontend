@@ -1,6 +1,7 @@
 import { createBrowserRouter } from 'react-router-dom';
 import mainRoutes from './mainRoutes';
 import memberRoutes from './memberRoutes';
+import stockRoutes from './stockRoutes';
 
 /**
  * @file index.jsx (Router)
@@ -10,6 +11,7 @@ import memberRoutes from './memberRoutes';
 const router = createBrowserRouter([
   ...mainRoutes,   // 메인 관련 주소 합치기
   ...memberRoutes, // 회원 관련 주소 합치기
+  ...stockRoutes,  // 재고 관리 관련 주소 합치기
 ]);
 
 export default router;

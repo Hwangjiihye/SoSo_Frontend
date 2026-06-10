@@ -3,6 +3,7 @@ import { createBrowserRouter, RouterProvider, Outlet } from 'react-router-dom';
 import MainPage from '../features/main/MainPage';
 import memberRoutes from './memberRoutes';
 import mypageRoutes from './mypageRoutes';
+import stockRoutes from './stockRoutes';
 
 /**
  * @file AppRoutes.jsx
@@ -21,6 +22,7 @@ const router = createBrowserRouter([
       // 도메인별 라우트 장부 조립
       ...memberRoutes,
       ...mypageRoutes,
+      ...stockRoutes,
     ],
   },
 ]);
