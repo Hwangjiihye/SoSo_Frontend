@@ -42,11 +42,12 @@ const StockTable = ({ stocks, isLoading }) => {
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-gray-50 border-b border-gray-100">
+              <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">품목번호</th>
               <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">품목명</th>
-              <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">규격</th>
+              <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">규격/단위</th>
+              <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-right">매입가</th>
+              <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-right">매출가</th>
               <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-right">현재고</th>
-              <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-right">입고예정</th>
-              <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-right">출고예정</th>
               <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-center">상태</th>
               <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-center">관리</th>
             </tr>
@@ -55,19 +56,24 @@ const StockTable = ({ stocks, isLoading }) => {
             {stocks.length > 0 ? (
               stocks.map((stock) => (
                 <tr key={stock.id} className="hover:bg-gray-50/50 transition-colors">
+                  <td className="px-6 py-4 text-sm font-medium text-gray-500 font-mono">{stock.id}</td>
                   <td className="px-6 py-4">
                     <div className="text-sm font-bold text-gray-900">{stock.name}</div>
-                    <div className="text-[11px] text-gray-400 mt-0.5">#{stock.id.toString().padStart(6, '0')}</div>
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-600">{stock.spec}</td>
+                  <td className="px-6 py-4">
+                    <div className="text-sm text-gray-600">{stock.spec}</div>
+                    <div className="text-[11px] text-gray-400">{stock.unit}</div>
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-600 text-right">
+                    {stock.purchasePrice.toLocaleString()}원
+                  </td>
                   <td className="px-6 py-4 text-sm font-bold text-gray-900 text-right">
-                    {stock.currentStock.toLocaleString()}
+                    {stock.salesPrice.toLocaleString()}원
                   </td>
-                  <td className="px-6 py-4 text-sm text-emerald-600 font-medium text-right">
-                    {stock.incoming > 0 ? `+${stock.incoming.toLocaleString()}` : '-'}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-rose-500 font-medium text-right">
-                    {stock.outgoing > 0 ? `-${stock.outgoing.toLocaleString()}` : '-'}
+                  <td className="px-6 py-4 text-sm font-bold text-gray-900 text-right">
+                    <span className={stock.currentStock <= 5 ? 'text-rose-500' : ''}>
+                      {stock.currentStock.toLocaleString()}
+                    </span>
                   </td>
                   <td className="px-6 py-4 text-center">
                     <span className={`px-2.5 py-1 rounded-full text-[11px] font-bold border ${getStatusStyle(stock.status)}`}>
@@ -75,9 +81,14 @@ const StockTable = ({ stocks, isLoading }) => {
                     </span>
                   </td>
                   <td className="px-6 py-4 text-center">
-                    <button className="text-gray-400 hover:text-emerald-600 text-sm font-bold transition-colors">
-                      수정
-                    </button>
+                    <div className="flex items-center justify-center gap-2">
+                      <button className="text-gray-400 hover:text-emerald-600 text-sm font-bold transition-colors">
+                        수정
+                      </button>
+                      <button className="text-gray-400 hover:text-rose-500 text-sm font-bold transition-colors">
+                        삭제
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))

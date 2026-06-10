@@ -23,12 +23,13 @@ export const useStock = () => {
       // const data = await getStockList(filters);
       // setStocks(data);
       
-      // 더미 데이터 (a3.png 구조 참고)
+      // 더미 데이터 (a4.png 구조 반영: 품목번호, 품목명, 규격, 단위, 매입가, 매출가, 현재고, 상태)
       const dummyData = [
-        { id: 1, name: '냉동 삼겹살', spec: '1kg', currentStock: 45, incoming: 20, outgoing: 10, status: 'NORMAL' },
-        { id: 2, name: '신선 대파', spec: '단', currentStock: 5, incoming: 15, outgoing: 8, status: 'LACK' },
-        { id: 3, name: '참기름', spec: '500ml', currentStock: 0, incoming: 5, outgoing: 0, status: 'OUT_OF_STOCK' },
-        { id: 4, name: '백설탕', spec: '3kg', currentStock: 120, incoming: 0, outgoing: 15, status: 'NORMAL' },
+        { id: 'S00001', name: '냉동 삼겹살', spec: '1kg', unit: '팩', purchasePrice: 12000, salesPrice: 18000, currentStock: 45, status: 'NORMAL' },
+        { id: 'S00002', name: '신선 대파', spec: '단', unit: '개', purchasePrice: 1500, salesPrice: 2500, currentStock: 5, status: 'LACK' },
+        { id: 'S00003', name: '참기름', spec: '500ml', unit: '병', purchasePrice: 8000, salesPrice: 12000, currentStock: 0, status: 'OUT_OF_STOCK' },
+        { id: 'S00004', name: '백설탕', spec: '3kg', unit: '포', purchasePrice: 4500, salesPrice: 6500, currentStock: 120, status: 'NORMAL' },
+        { id: 'S00005', name: '진간장', spec: '1.8L', unit: '통', purchasePrice: 5500, salesPrice: 8000, currentStock: 15, status: 'NORMAL' },
       ];
       setStocks(dummyData);
     } catch (err) {
