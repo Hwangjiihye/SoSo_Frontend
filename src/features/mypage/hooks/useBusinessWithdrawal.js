@@ -4,10 +4,10 @@ import { withdrawMemberApi } from '../../../apis/memberApi';
 import authStore from '../../../store/authStore';
 
 /**
- * @file usePartnerWithdrawal.js
- * @description 회원 탈퇴 로직 처리를 위한 커스텀 훅 (Soft Delete 구현)
+ * @file useBusinessWithdrawal.js
+ * @description 사업자 회원 탈퇴 로직 처리를 위한 커스텀 훅
  */
-export const usePartnerWithdrawal = () => {
+export const useBusinessWithdrawal = () => {
   const navigate = useNavigate();
   const logout = authStore((state) => state.logout);
   
@@ -17,10 +17,10 @@ export const usePartnerWithdrawal = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const reasons = [
-    '서비스 이용이 불편해요',
-    '원하는 기능이 없어요',
-    '정보 보호를 위해 탈퇴하고 싶어요',
-    '거래처 정보가 변경되었어요',
+    '매장을 폐업하게 되었어요',
+    '다른 통합 관리 서비스를 이용하기로 했어요',
+    '사용 방법이 너무 어려워요',
+    '기능이 부족하다고 느껴져요',
     '기타 (직접 입력)'
   ];
 
@@ -52,8 +52,6 @@ export const usePartnerWithdrawal = () => {
         
         if (result.status === 'success' || result) {
           alert('그동안 SoSo를 이용해 주셔서 감사합니다. 회원 탈퇴가 완료되었습니다.');
-          
-          // 전역 상태 로그아웃 및 메인으로 이동
           logout();
           navigate('/');
         }

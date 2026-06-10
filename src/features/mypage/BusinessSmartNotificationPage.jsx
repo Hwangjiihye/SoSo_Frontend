@@ -1,134 +1,152 @@
 /**
- * @file BusinessMyPage.jsx
- * @description 사업자 전용 마이페이지 컴포넌트입니다.
- * '마이페이지 사업자.png' 디자인을 기반으로, 사이드바와 콘텐츠 영역을 구현합니다.
+ * @file BusinessSmartNotificationPage.jsx
+ * @description 사업자 전용 스마트 알림 설정 페이지입니다.
+ * BusinessMyPage의 레이아웃을 기반으로 하며, 파트너 페이지의 알림 설정 로직을 참고하여 구현했습니다.
  */
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MainFooter from '../../components/layout/MainFooter';
 import logo from "../../assets/soso로고.png";
 import authStore from "../../store/authStore";
-import { useBusinessInfo } from './hooks/useBusinessInfo';
+import { useBusinessSmartNotification } from './hooks/useBusinessSmartNotification';
+import { useStores } from '../../hooks/useStores';
 
-// '개인정보 확인' 탭에 대한 상세 콘텐츠
-const UserProfileTab = () => {
-  const { profile, isLoading, error, formattedDate, formattedOpeningDate, fullAddress, storeImg1, storeImg2 } = useBusinessInfo();
+/**
+ * 알림 설정 항목 컴포넌트
+ */
+const NotificationRow = ({ title, desc, isOn, onToggle, disabled }) => (
+  <div className={`flex items-center justify-between py-5 border-b border-gray-50 last:border-0 transition-opacity ${disabled ? 'opacity-40 pointer-events-none' : 'opacity-100'}`}>
+    <div className="flex-1 pr-4">
+      <h4 className="text-sm font-bold text-gray-800">{title}</h4>
+      <p className="text-xs text-gray-400 mt-1 leading-relaxed">{desc}</p>
+    </div>
+    <ToggleSwitch isOn={isOn} onToggle={onToggle} />
+  </div>
+);
 
-  if (isLoading) return <div className="p-8 text-center text-gray-500">정보를 불러오는 중입니다...</div>;
-  if (error) return <div className="p-8 text-center text-red-500">정보를 불러오는데 실패했습니다.</div>;
+/**
+ * 토글 스위치 컴포넌트
+ */
+const ToggleSwitch = ({ isOn, onToggle, theme = "emerald" }) => {
+  const bgColor = theme === "white" 
+    ? (isOn ? "bg-white" : "bg-emerald-700") 
+    : (isOn ? "bg-emerald-500" : "bg-gray-200");
+  
+  const circleColor = theme === "white"
+    ? (isOn ? "bg-emerald-600" : "bg-emerald-200")
+    : "bg-white";
 
-  // 데이터가 없을 경우를 대비한 초기값 설정
-  const userData = {
-    id: profile?.userId || '정보 없음',
-    nickname: profile?.nickname || '정보 없음',
-    name: profile?.name || '정보 없음',
-    joinDate: formattedDate, 
-    phone: profile?.phone || '정보 없음',
-    email: profile?.email || '정보 없음',
-    bizNumber: profile?.bizNumber?.replace(/(\d{3})(\d{2})(\d{5})/, '$1-$2-$3') || '정보 없음',
-    bizName: profile?.companyName || '정보 없음',
-    ceoName: profile?.ceoName || '정보 없음', // 👤 실제 대표자명 추가
-    address: fullAddress,
-    openDate: formattedOpeningDate
-  };
+  return (
+    <div 
+      onClick={onToggle}
+      className={`relative w-12 h-6 rounded-full cursor-pointer transition-colors duration-200 ${bgColor}`}
+    >
+      <div 
+        className={`absolute top-1 left-1 w-4 h-4 rounded-full transition-transform duration-200 shadow-sm ${circleColor} ${
+          isOn ? 'translate-x-6' : 'translate-x-0'
+        }`}
+      />
+    </div>
+  );
+};
+
+const SmartNotificationTab = () => {
+  const { settings, isSubmitting, toggleSetting, handleSave } = useBusinessSmartNotification();
 
   return (
     <div className="bg-white border border-emerald-100 rounded-lg p-8 shadow-sm">
-      <h2 className="text-xl font-bold mb-2">개인정보 확인</h2>
-      <p className="text-sm text-gray-500 mb-8 border-b border-gray-100 pb-4">가입 시 등록한 정보를 확인합니다.</p>
+      <h2 className="text-xl font-bold mb-2">스마트 알림 설정</h2>
+      <p className="text-sm text-gray-500 mb-8 border-b border-gray-100 pb-4">사장님에게 꼭 필요한 소식만 골라서 알려드립니다.</p>
       
-      {/* 기본 계정 정보 */}
-      <div className="mb-10">
-        <h3 className="font-bold text-emerald-700 flex items-center gap-2 mb-4">
-          기본 계정 정보
-        </h3>
-        <div className="grid grid-cols-2 gap-x-6 gap-y-6 text-sm">
+      <div className="space-y-8">
+        {/* 마스터 스위치 */}
+        <div className="bg-emerald-600 rounded-2xl p-6 shadow-lg shadow-emerald-100 flex items-center justify-between text-white">
           <div>
-            <label className="block text-xs font-semibold text-gray-500 mb-1">아이디</label>
-            <div className="p-2 border-b">{userData.id}</div>
+            <h3 className="font-bold text-lg">전체 푸시 알림</h3>
+            <p className="text-emerald-50 text-xs mt-1">앱에서 보내는 모든 스마트 알림을 켜거나 끕니다.</p>
           </div>
-          <div>
-            <label className="block text-xs font-semibold text-gray-500 mb-1">닉네임</label>
-            <div className="p-2 border-b">{userData.nickname}</div>
-          </div>
-          <div>
-            <label className="block text-xs font-semibold text-gray-500 mb-1">이름 (서비스 실명)</label>
-            <div className="p-2 border-b">{userData.name}</div>
-          </div>
-          <div>
-            <label className="block text-xs font-semibold text-gray-500 mb-1">가입 일자</label>
-            <div className="p-2 border-b">{userData.joinDate}</div>
-          </div>
-          <div>
-            <label className="block text-xs font-semibold text-gray-500 mb-1">전화번호</label>
-            <div className="p-2 border-b">{userData.phone}</div>
-          </div>
-          <div>
-            <label className="block text-xs font-semibold text-gray-500 mb-1">이메일</label>
-            <div className="p-2 border-b">{userData.email}</div>
+          <ToggleSwitch 
+            isOn={settings.pushEnabled} 
+            onToggle={() => toggleSetting('pushEnabled')} 
+            theme="white"
+          />
+        </div>
+
+        {/* 세부 설정 섹션 */}
+        <div className="space-y-6">
+          <h3 className="font-bold text-gray-800 flex items-center gap-2 text-base">
+            <span className="w-1.5 h-6 bg-emerald-500 rounded-full inline-block"></span>
+            서비스별 상세 알림
+          </h3>
+          
+          <div className="bg-gray-50/50 rounded-2xl p-6 border border-gray-100">
+            <NotificationRow 
+              title="발주 및 배송 알림" 
+              desc="식자재 발주 확인, 배송 시작 등 물류 상태를 실시간으로 알려드려요." 
+              isOn={settings.orderAlert} 
+              onToggle={() => toggleSetting('orderAlert')}
+              disabled={!settings.pushEnabled}
+            />
+            <NotificationRow 
+              title="거래처 채팅 알림" 
+              desc="납품 업체나 고객과의 새로운 채팅 메시지를 놓치지 않게 알려드려요." 
+              isOn={settings.chatAlert} 
+              onToggle={() => toggleSetting('chatAlert')}
+              disabled={!settings.pushEnabled}
+            />
+            <NotificationRow 
+              title="재고 부족 알림" 
+              desc="설정해둔 안전 재고 수량보다 적어지면 즉시 알려드려요." 
+              isOn={settings.stockAlert} 
+              onToggle={() => toggleSetting('stockAlert')}
+              disabled={!settings.pushEnabled}
+            />
           </div>
         </div>
-      </div>
-      
-      {/* 사업자 정보 */}
-      <div className="mb-10">
-        <h3 className="font-bold text-emerald-700 flex items-center gap-2 mb-4">
-          사업자 정보
-        </h3>
-        <div className="grid grid-cols-2 gap-x-6 gap-y-6 text-sm">
-          <div>
-            <label className="block text-xs font-semibold text-gray-500 mb-1">대표자명 (실명)</label>
-            <div className="p-2 border-b">{userData.ceoName}</div>
-          </div>
-          <div>
-            <label className="block text-xs font-semibold text-gray-500 mb-1">사업자 번호</label>
-            <div className="p-2 border-b">{userData.bizNumber}</div>
-          </div>
-          <div>
-            <label className="block text-xs font-semibold text-gray-500 mb-1">상호명</label>
-            <div className="p-2 border-b">{userData.bizName}</div>
-          </div>
-          <div>
-            <label className="block text-xs font-semibold text-gray-500 mb-1">오픈일자</label>
-            <div className="p-2 border-b">{userData.openDate}</div>
-          </div>
-          <div className="col-span-2">
-            <label className="block text-xs font-semibold text-gray-500 mb-1">가게 주소</label>
-            <div className="p-2 border-b">{userData.address}</div>
+
+        {/* 혜택 및 에티켓 섹션 */}
+        <div className="space-y-6">
+          <h3 className="font-bold text-gray-800 flex items-center gap-2 text-base">
+            <span className="w-1.5 h-6 bg-emerald-500 rounded-full inline-block"></span>
+            혜택 및 에티켓 설정
+          </h3>
+          
+          <div className="bg-gray-50/50 rounded-2xl p-6 border border-gray-100">
+            <NotificationRow 
+              title="이벤트 및 마케팅 알림" 
+              desc="SoSo에서 제공하는 공동 발주 특가, 할인 쿠폰 소식을 알려드려요." 
+              isOn={settings.marketingAlert} 
+              onToggle={() => toggleSetting('marketingAlert')}
+              disabled={!settings.pushEnabled}
+            />
+            <NotificationRow 
+              title="야간 수신 제한 (매너 타임)" 
+              desc="밤 9시부터 다음 날 아침 8시까지는 모든 알림을 소리 없이 보관함에만 저장해요." 
+              isOn={settings.nightAlert} 
+              onToggle={() => toggleSetting('nightAlert')}
+              disabled={!settings.pushEnabled}
+            />
           </div>
         </div>
       </div>
 
-      {/* 가게 사진 정보 */}
-      <div>
-        <h3 className="font-bold text-emerald-700 flex items-center gap-2 mb-4">
-          가게 사진
-        </h3>
-        <div className="grid grid-cols-2 gap-6">
-          <div>
-            <label className="block text-xs font-semibold text-gray-500 mb-2">가게 외관</label>
-            <div className="w-full aspect-video rounded-xl overflow-hidden border border-gray-100 bg-gray-50">
-              <img src={storeImg1} alt="가게 외관" className="w-full h-full object-cover" />
-            </div>
-          </div>
-          <div>
-            <label className="block text-xs font-semibold text-gray-500 mb-2">가게 내관</label>
-            <div className="w-full aspect-video rounded-xl overflow-hidden border border-gray-100 bg-gray-50">
-              <img src={storeImg2} alt="가게 내관" className="w-full h-full object-cover" />
-            </div>
-          </div>
-        </div>
+      <div className="mt-12 pt-8 border-t border-gray-50 flex justify-end">
+        <button 
+          onClick={handleSave}
+          disabled={isSubmitting}
+          className="px-10 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-lg shadow-emerald-100 transition-all active:scale-[0.98] disabled:bg-gray-300"
+        >
+          {isSubmitting ? '설정 저장 중...' : '💾 알림 설정 저장하기'}
+        </button>
       </div>
     </div>
   );
 };
 
-import { useStores } from '../../hooks/useStores';
-
-function BusinessMyPage() {
+function BusinessSmartNotificationPage() {
   const { logout, user_type, user_nickname, bizname, selectedStoreSeq, setSelectedStore } = authStore();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('개인정보 확인');
+  const [activeTab, setActiveTab] = useState('스마트 알림 설정');
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   // 🏪 [멀티 프로필] 사장님의 모든 매장 목록을 가져옵니다.
@@ -152,8 +170,8 @@ function BusinessMyPage() {
    */
   const handleStoreSwitch = (storeSeq, companyName) => {
     setSelectedStore(storeSeq, companyName);
+    navigate('/business-mypage');
     setIsProfileOpen(false);
-    // 현재 페이지가 마이페이지이므로, 훅(useBusinessInfo)이 selectedStoreSeq 변경을 감지하여 데이터를 자동 갱신함
   };
 
   const handleLogout = () => {
@@ -292,8 +310,8 @@ function BusinessMyPage() {
         
         {/* 콘텐츠 영역 */}
         <section className="flex-grow">
-          {activeTab === '개인정보 확인' ? (
-            <UserProfileTab />
+          {activeTab === '스마트 알림 설정' ? (
+            <SmartNotificationTab />
           ) : (
             <div className="bg-white border border-gray-100 rounded-lg p-12 text-center text-gray-400">
               <h2 className="font-bold text-lg mb-2">{activeTab}</h2>
@@ -307,4 +325,4 @@ function BusinessMyPage() {
   );
 }
 
-export default BusinessMyPage;
+export default BusinessSmartNotificationPage;

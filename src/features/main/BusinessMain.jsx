@@ -1,7 +1,7 @@
 /**
  * @file BusinessMain.jsx
  * @description '사업자' 대시보드 메인 페이지입니다.
- * 프로필 클릭 시 다중 매장 선택 및 마이페이지 이동이 가능한 드롭다운이 표시됩니다.
+ * authStore에서 실제 회원 정보를 가져와 프로필 영역에 표시하며, 훅 사용을 최적화했습니다.
  */
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
@@ -35,25 +35,37 @@ ChartJS.register(
   Filler
 );
 
+import { useStores } from '../../hooks/useStores';
+
 function BusinessMain({ setRole }) {
-  const logout = authStore((state) => state.logout);
-  const user_type = authStore((state) => state.user_type);
+  // authStore에서 필요한 상태와 매장 전환 함수를 가져옵니다.
+  const { logout, user_type, user_nickname, bizname, selectedStoreSeq, setSelectedStore } = authStore();
   const navigate = useNavigate();
+
+  // 🏪 [멀티 프로필] 사장님의 모든 매장 목록을 가져옵니다.
+  const { stores, isLoading: isStoresLoading } = useStores();
 
   // 프로필 드롭다운 상태
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   // 마이페이지 이동 핸들러
   const handleProfileClick = () => {
-    // 세션 스토리지 또는 스토어에서 유저 타입 확인
-    const type = sessionStorage.getItem("user_type") || user_type;
-    
-    if (type === 'BUSINESS') {
+    if (user_type === 'BUSINESS') {
       navigate('/business-mypage');
+      setIsProfileOpen(false); // 이동 시 드롭다운 닫기
     } else {
-      // 파트너 등 타 유형일 경우에 대한 처리 (필요시 추가)
       alert("사업자 전용 마이페이지입니다.");
     }
+  };
+
+  /**
+   * 🔄 매장 전환 핸들러
+   * 클릭한 매장으로 프로필을 전환하고 마이페이지로 이동합니다.
+   */
+  const handleStoreSwitch = (storeSeq, companyName) => {
+    setSelectedStore(storeSeq, companyName);
+    navigate('/business-mypage');
+    setIsProfileOpen(false);
   };
 
   const handleLogOut = () => {
@@ -62,40 +74,22 @@ function BusinessMain({ setRole }) {
     navigate("/");
   };
 
-  // --- 차트 데이터: 실시간 재고 현황 (Bar) ---
+  // --- 차트 데이터 영역 (기존과 동일) ---
   const stockChartData = {
     labels: ['소고기', '돼지고기', '닭고기', '양파', '마늘', '식용유'],
-    datasets: [
-      {
+    datasets: [{
         label: '현재 재고',
         data: [45, 12, 33, 8, 2, 28],
-        backgroundColor: [
-          'rgba(16, 185, 129, 0.6)', 
-          'rgba(239, 68, 68, 0.6)',  
-          'rgba(16, 185, 129, 0.6)',
-          'rgba(245, 158, 11, 0.6)', 
-          'rgba(239, 68, 68, 0.6)',  
-          'rgba(16, 185, 129, 0.6)',
-        ],
-        borderColor: [
-          'rgb(16, 185, 129)',
-          'rgb(239, 68, 68)',
-          'rgb(16, 185, 129)',
-          'rgb(245, 158, 11)',
-          'rgb(239, 68, 68)',
-          'rgb(16, 185, 129)',
-        ],
+        backgroundColor: ['rgba(16, 185, 129, 0.6)', 'rgba(239, 68, 68, 0.6)', 'rgba(16, 185, 129, 0.6)', 'rgba(245, 158, 11, 0.6)', 'rgba(239, 68, 68, 0.6)', 'rgba(16, 185, 129, 0.6)'],
+        borderColor: ['rgb(16, 185, 129)', 'rgb(239, 68, 68)', 'rgb(16, 185, 129)', 'rgb(245, 158, 11)', 'rgb(239, 68, 68)', 'rgb(16, 185, 129)'],
         borderWidth: 1,
         borderRadius: 8,
-      },
-    ],
+    }]
   };
 
-  // --- 차트 데이터: 월별 매출 현황 (Line) ---
   const salesChartData = {
     labels: ['1월', '2월', '3월', '4월', '5월', '6월'],
-    datasets: [
-      {
+    datasets: [{
         label: '매출액 (만원)',
         data: [1200, 1900, 1500, 2100, 2400, 1800],
         borderColor: 'rgb(16, 185, 129)',
@@ -104,31 +98,14 @@ function BusinessMain({ setRole }) {
         tension: 0.4,
         pointRadius: 4,
         pointBackgroundColor: 'rgb(16, 185, 129)',
-      },
-    ],
+    }]
   };
 
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        display: false,
-      },
-    },
-    scales: {
-      y: {
-        beginAtZero: true,
-        grid: {
-          color: '#f3f4f6',
-        },
-      },
-      x: {
-        grid: {
-          display: false,
-        },
-      },
-    },
+    plugins: { legend: { display: false } },
+    scales: { y: { beginAtZero: true, grid: { color: '#f3f4f6' } }, x: { grid: { display: false } } }
   };
 
   const notifications = [
@@ -145,74 +122,86 @@ function BusinessMain({ setRole }) {
   return (
     <div className="min-h-screen bg-gray-50 text-gray-800 font-sans">
       <header className="grid grid-cols-3 items-center py-5 px-6 md:px-12 border-b border-gray-200 bg-white sticky top-0 z-50">
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 cursor-pointer" onClick={() => navigate("/")}>
           <img src={logo} alt="SoSo Logo" className="w-12 h-12 object-contain relative top-[5px]" />
           <div className="text-[40px] font-black text-[#1d9e75] tracking-tighter leading-none">SoSo</div>
         </div>
-        <nav className="hidden md:flex justify-center gap-1 border border-gray-100 rounded-xl p-1 bg-gray-50 w-fit mx-auto relative">
-          <Link to="/" className="px-5 py-2 text-sm font-bold text-gray-900 bg-white rounded-lg shadow-sm border border-gray-200 transition-colors whitespace-nowrap">홈</Link>
-          
-          <div 
-            className="relative group"
-          >
-            <div className="px-5 py-2 text-sm font-medium text-gray-500 hover:text-emerald-600 rounded-lg cursor-pointer transition-all whitespace-nowrap group-hover:bg-white group-hover:text-emerald-600 group-hover:border-gray-100">
-              발주 관리
-            </div>
-            
-            <div className="absolute top-full left-0 w-48 pt-2 z-[60] transition-all duration-200 opacity-0 invisible -translate-y-2 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0">
-              <div className="bg-white border border-gray-100 rounded-2xl shadow-xl p-2">
-                <Link to="/orders" className="block w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl transition-colors">
-                  일반 발주 현황
-                </Link>
-                <Link to="/group-orders" className="block w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl transition-colors">
-                  공동 발주 현황
-                </Link>
-                <Link to="/orders/new" className="block w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl transition-colors">
-                  발주 신청
-                </Link>
-              </div>
-            </div>
-          </div>
+        
+        <nav className="hidden md:flex justify-center gap-1 border border-gray-100 rounded-lg p-1 bg-gray-50 w-fit mx-auto">
+          <a href="#" className="px-4 py-1.5 text-sm font-semibold bg-white text-gray-900 rounded shadow-sm border border-gray-200">홈</a>
+          {['발주 관리', '수금 관리', '공동 발주', '업체 홍보', '통계'].map(m => (
+            <a key={m} href="#" className="px-4 py-1.5 text-sm font-medium text-gray-500 hover:text-emerald-600 transition-colors whitespace-nowrap">{m}</a>
 
-          {[{name: '재고 관리', path: '#'}, {name: '공동 구매', path: '#'}, {name: '매출/정산', path: '#'}, {name: '조회/기록', path: '#'}].map(m => (
-            <Link
-              key={m.name} to={m.path} className="px-5 py-2 text-sm font-medium text-gray-500 hover:text-emerald-600 transition-colors whitespace-nowrap">
-            {m.name}
-            </Link>
           ))}
         </nav>
+          
+
+       
         <div className="flex items-center justify-end gap-4">
           <button className="text-gray-400 hover:text-emerald-600 relative">
             <span className="text-xl">🔔</span>
             <span className="absolute -top-1 -right-1 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"></span>
           </button>
           
-          {/* 프로필 및 드롭다운 컨테이너 */}
           <div className="relative">
             <div 
-              onClick={() => setIsProfileOpen(!isProfileOpen)} 
+              onClick={() => setIsProfileOpen(!isProfileOpen)}
               className="flex items-center gap-2 border border-gray-200 rounded-full py-1.5 px-3 bg-white hover:bg-emerald-50 cursor-pointer transition-colors"
             >
-              <div className="w-6 h-6 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-[10px] font-bold">김</div>
-              <span className="text-sm font-semibold whitespace-nowrap text-gray-700">김민준 <span className="text-xs text-gray-400 font-normal">강남 본점</span></span>
+              <div className="w-6 h-6 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-[10px] font-bold">
+                {user_nickname ? user_nickname.substring(0, 1) : 'G'}
+              </div>
+              <span className="text-sm font-semibold whitespace-nowrap text-gray-700">
+                {user_nickname || '회원님'}
+                <span className="text-xs text-gray-400 font-normal ml-1">
+                  {bizname || '상호명 미등록'}
+                </span>
+              </span>
             </div>
 
-            {/* 프로필 드롭다운 메뉴 */}
             {isProfileOpen && (
-              <div className="absolute right-0 mt-2 w-56 bg-white border border-gray-100 rounded-2xl shadow-2xl p-2 z-[60] animate-fade-in-up">
-                <div className="p-3 border-b border-gray-50">
-                  <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">나의 매장</span>
+              <div className="absolute right-0 mt-2 w-64 bg-white border border-gray-100 rounded-2xl shadow-2xl p-2 z-[60] animate-fade-in-up">
+                <div className="p-3 border-b border-gray-50 flex justify-between items-center">
+                  <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">나의 매장 목록</span>
+                  {isStoresLoading && <span className="text-[10px] text-emerald-500 animate-pulse">로딩 중...</span>}
                 </div>
-                <div className="py-2">
-                  <button className="w-full text-left px-4 py-3 text-sm font-bold text-emerald-600 bg-emerald-50 rounded-xl mb-1 flex justify-between items-center">
-                    강남 본점
-                    <span className="text-[10px] bg-emerald-500 text-white px-1.5 py-0.5 rounded uppercase">Main</span>
-                  </button>
-                  <button className="w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl transition-colors">
-                    홍대 2호점
-                  </button>
+                
+                <div className="py-2 max-h-60 overflow-y-auto custom-scrollbar">
+                  {stores.length > 0 ? (
+                    stores.map((store) => (
+                      <button 
+                        key={store.storeSeq}
+                        onClick={() => handleStoreSwitch(store.storeSeq, store.companyName)}
+                        className={`w-full text-left px-4 py-3 rounded-xl mb-1 flex justify-between items-center transition-all ${
+                          // 현재 선택된 매장인지 확인하여 스타일 차별화
+                          (selectedStoreSeq == store.storeSeq || (!selectedStoreSeq && stores[0].storeSeq === store.storeSeq))
+                            ? 'bg-emerald-50 text-emerald-600 font-bold border border-emerald-100' 
+                            : 'text-gray-600 hover:bg-gray-50 font-medium'
+                        }`}
+                      >
+                        <div className="flex flex-col">
+                          <span className="text-sm">{store.companyName}</span>
+                          <span className="text-[10px] text-gray-400 font-normal">{store.bizNumber.replace(/(\d{3})(\d{2})(\d{5})/, '$1-$2-$3')}</span>
+                        </div>
+                        {(selectedStoreSeq == store.storeSeq || (!selectedStoreSeq && stores[0].storeSeq === store.storeSeq)) && (
+                          <span className="text-[10px] bg-emerald-500 text-white px-1.5 py-0.5 rounded uppercase">Active</span>
+                        )}
+                      </button>
+                    ))
+                  ) : (
+                    <div className="px-4 py-6 text-center">
+                      <p className="text-xs text-gray-400">등록된 매장이 없습니다.</p>
+                    </div>
+                  )}
                 </div>
+
                 <div className="border-t border-gray-50 pt-2 mt-2">
+                  <button 
+                    onClick={() => { navigate("/business-multiprofile"); setIsProfileOpen(false); }}
+                    className="w-full text-center py-2 text-[11px] font-bold text-emerald-500 hover:bg-emerald-50 rounded-lg transition-all mb-1"
+                  >
+                    + 새 매장 추가하기
+                  </button>
                   <button 
                     onClick={handleProfileClick}
                     className="w-full text-center py-3 text-sm font-black text-gray-700 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all"
@@ -229,7 +218,6 @@ function BusinessMain({ setRole }) {
       </header>
 
       <main className="max-w-7xl mx-auto px-8 py-8">
-        {/* Statistics Summary Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           {[
             { t: '총 재고', v: '1,284', u: '개 품목', b: '전주 대비 +3.2%', c: 'border-emerald-100' },
@@ -245,7 +233,6 @@ function BusinessMain({ setRole }) {
           ))}
         </div>
 
-        {/* Charts Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
             <div className="flex justify-between items-center mb-6">
@@ -273,7 +260,6 @@ function BusinessMain({ setRole }) {
           </div>
         </div>
 
-        {/* Alerts and Group Orders */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
             <h3 className="font-bold mb-6 text-gray-700">실시간 알림</h3>
