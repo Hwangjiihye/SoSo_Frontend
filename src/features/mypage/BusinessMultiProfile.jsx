@@ -16,14 +16,17 @@ const MultiProfileTab = () => {
   const exteriorInputRef = useRef(null);
   const interiorInputRef = useRef(null);
 
+  // 훅에서 필요한 데이터와 함수들을 가져옵니다.
   const {
     formData,
-    isSubmitting,
-    handleChange,
-    handleFileChange,
-    handleRemovePhoto,
-    handleAddressSearch,
-    handleSubmit
+    isBizVerified,       // 사업자 인증 완료 여부
+    isSubmitting,        // 등록 진행 중 여부
+    handleChange,        // 입력 값 변경 핸들러
+    handleFileChange,    // 파일 선택 핸들러
+    handleRemovePhoto,   // 사진 제거 핸들러
+    handleAddressSearch, // 주소 검색 핸들러
+    handleVerifyBusiness,// 사업자 인증 핸들러
+    handleSubmit         // 폼 제출 핸들러
   } = useBusinessMultiProfile();
 
   return (
@@ -46,9 +49,21 @@ const MultiProfileTab = () => {
               <label className="block text-xs font-semibold text-gray-500 mb-2">상호명</label>
               <input 
                 type="text" 
-                name="bizName"
+                name="b_nm"
                 placeholder="예: 소소마을 강남점"
-                value={formData.bizName}
+                value={formData.b_nm}
+                onChange={handleChange}
+                className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl focus:bg-white focus:border-emerald-500 outline-none transition-all"
+                required
+              />
+            </div>
+            <div className="col-span-2 md:col-span-1">
+              <label className="block text-xs font-semibold text-gray-500 mb-2">대표자명</label>
+              <input 
+                type="text" 
+                name="p_nm"
+                placeholder="실명을 입력하세요"
+                value={formData.p_nm}
                 onChange={handleChange}
                 className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl focus:bg-white focus:border-emerald-500 outline-none transition-all"
                 required
@@ -56,26 +71,40 @@ const MultiProfileTab = () => {
             </div>
             <div className="col-span-2 md:col-span-1">
               <label className="block text-xs font-semibold text-gray-500 mb-2">사업자 번호</label>
-              <input 
-                type="text" 
-                name="bizNumber"
-                placeholder="000-00-00000"
-                value={formData.bizNumber}
-                onChange={handleChange}
-                className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl focus:bg-white focus:border-emerald-500 outline-none transition-all"
-                required
-              />
+              <div className="flex gap-2">
+                <input 
+                  type="text" 
+                  name="b_no"
+                  placeholder="000-00-00000"
+                  value={formData.b_no}
+                  onChange={handleChange}
+                  className="flex-grow p-3 bg-gray-50 border border-gray-100 rounded-xl focus:bg-white focus:border-emerald-500 outline-none transition-all"
+                  required
+                />
+                <button 
+                  type="button" 
+                  onClick={handleVerifyBusiness}
+                  disabled={isBizVerified}
+                  className={`px-4 text-xs font-bold rounded-xl transition-colors whitespace-nowrap ${
+                    isBizVerified 
+                      ? 'bg-emerald-100 text-emerald-600' 
+                      : 'bg-gray-800 text-white hover:bg-black'
+                  }`}
+                >
+                  {isBizVerified ? '인증 완료' : '인증하기'}
+                </button>
+              </div>
             </div>
             <div className="col-span-2">
               <label className="block text-xs font-semibold text-gray-500 mb-2">가게 주소</label>
               <div className="flex gap-2 mb-3">
                 <input 
                   type="text" 
-                  name="address"
-                  placeholder="주소 검색을 이용해 주세요"
-                  value={formData.address}
+                  name="zipcode"
+                  placeholder="우편번호"
+                  value={formData.zipcode}
                   readOnly
-                  className="flex-grow p-3 bg-gray-100 border border-gray-100 rounded-xl text-gray-500 outline-none"
+                  className="w-32 p-3 bg-gray-100 border border-gray-100 rounded-xl text-gray-500 outline-none"
                 />
                 <button 
                   type="button" 
@@ -87,9 +116,17 @@ const MultiProfileTab = () => {
               </div>
               <input 
                 type="text" 
-                name="detailAddress"
+                name="address1"
+                placeholder="주소 검색을 이용해 주세요"
+                value={formData.address1}
+                readOnly
+                className="w-full p-3 bg-gray-100 border border-gray-100 rounded-xl text-gray-500 outline-none mb-3"
+              />
+              <input 
+                type="text" 
+                name="address2"
                 placeholder="상세 주소를 입력하세요"
-                value={formData.detailAddress}
+                value={formData.address2}
                 onChange={handleChange}
                 className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl focus:bg-white focus:border-emerald-500 outline-none transition-all"
               />
@@ -98,8 +135,8 @@ const MultiProfileTab = () => {
               <label className="block text-xs font-semibold text-gray-500 mb-2">오픈일자</label>
               <input 
                 type="date" 
-                name="openDate"
-                value={formData.openDate}
+                name="start_dt"
+                value={formData.start_dt}
                 onChange={handleChange}
                 className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl focus:bg-white focus:border-emerald-500 outline-none transition-all"
                 required
