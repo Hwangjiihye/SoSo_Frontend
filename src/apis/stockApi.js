@@ -34,3 +34,21 @@ export const deleteStock = async (stockId) => {
   const response = await axiosInstance.delete(`/api/stocks/${stockId}`);
   return response.data;
 };
+
+// 재고 입고 등록
+export const createInboundTransaction = async (data) => {
+  const response = await axiosInstance.post('/api/stocks/inbound', data);
+  return response.data;
+};
+
+// 재고 출고 등록
+export const createOutboundTransaction = async (data) => {
+  const response = await axiosInstance.post('/api/stocks/outbound', data);
+  return response.data;
+};
+
+// 재고 조정 등록
+export const createAdjustmentTransaction = async (data) => {
+  const response = await axiosInstance.post('/api/stocks/adjustment', data);
+  return response.data;
+};

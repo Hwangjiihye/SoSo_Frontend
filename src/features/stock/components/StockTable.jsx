@@ -56,7 +56,7 @@ const StockTable = ({ stocks, isLoading, selectedIds, onSelectChange, onSelectAl
               <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">단위</th>
               <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-right">안전재고</th>
               <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-center">재고상태</th>
-              <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-center">입고</th>
+              <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-center">입/출고</th>
               <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-center">이력/상세</th>
               <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-center">관리</th>
             </tr>
@@ -92,7 +92,7 @@ const StockTable = ({ stocks, isLoading, selectedIds, onSelectChange, onSelectAl
                       onClick={() => onIncoming(stock)}
                       className="text-[11px] font-bold text-emerald-600 hover:text-white hover:bg-emerald-600 border border-emerald-200 px-3 py-1 rounded-md transition-all shadow-sm"
                     >
-                      입고
+                      입/출고
                     </button>
                   </td>
                   <td className="px-6 py-4 text-center">

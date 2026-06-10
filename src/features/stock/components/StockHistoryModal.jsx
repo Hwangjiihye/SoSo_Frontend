@@ -33,7 +33,7 @@ const StockHistoryModal = ({ isOpen, onClose, stockName, historyData }) => {
                 <th className="px-6 py-4 text-[11px] font-bold text-gray-400 uppercase text-center">구분</th>
                 <th className="px-6 py-4 text-[11px] font-bold text-gray-400 uppercase text-right">변동수량</th>
                 <th className="px-6 py-4 text-[11px] font-bold text-gray-400 uppercase text-right">최종재고</th>
-                <th className="px-6 py-4 text-[11px] font-bold text-gray-400 uppercase">사유/담당자</th>
+                <th className="px-6 py-4 text-[11px] font-bold text-gray-400 uppercase">비고</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">

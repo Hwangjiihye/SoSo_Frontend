@@ -5,7 +5,7 @@ import StockFilter from './components/StockFilter';
 import StockTable from './components/StockTable';
 import StockHistoryModal from './components/StockHistoryModal';
 import StockRegistrationModal from './components/StockRegistrationModal';
-import StockIncomingModal from './components/StockIncomingModal';
+import StockTransactionModal from './components/StockTransactionModal';
 
 /**
  * @file StockPage.jsx
@@ -19,10 +19,10 @@ const StockPage = () => {
     filters,
     handleFilterChange,
     handleSearch,
+    fetchStocks,
     deleteStocks,
     getStockHistory,
     registerStock,
-    addStockQuantity,
   } = useStock();
 
   const [selectedIds, setSelectedIds] = useState([]);
@@ -30,10 +30,10 @@ const StockPage = () => {
   // 모달 관련 상태
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
-  const [isIncomingModalOpen, setIsIncomingModalOpen] = useState(false);
+  const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
   
   const [selectedStockForHistory, setSelectedStockForHistory] = useState(null);
-  const [selectedStockForIncoming, setSelectedStockForIncoming] = useState(null);
+  const [selectedStockForTransaction, setSelectedStockForTransaction] = useState(null);
   const [historyData, setHistoryData] = useState([]);
 
   const handleAddStock = () => {
@@ -81,13 +81,13 @@ const StockPage = () => {
     setIsHistoryModalOpen(true);
   };
 
-  const handleIncomingClick = (stock) => {
-    setSelectedStockForIncoming(stock);
-    setIsIncomingModalOpen(true);
+  const handleTransactionClick = (stock) => {
+    setSelectedStockForTransaction(stock);
+    setIsTransactionModalOpen(true);
   };
 
-  const handleIncomingSubmit = (stockId, quantity) => {
-    addStockQuantity(stockId, quantity);
+  const handleTransactionSuccess = () => {
+    fetchStocks();
   };
 
   return (
@@ -133,7 +133,7 @@ const StockPage = () => {
           onSelectChange={handleSelectChange}
           onSelectAll={handleSelectAll}
           onViewHistory={handleViewHistory}
-          onIncoming={handleIncomingClick}
+          onIncoming={handleTransactionClick}
         />
 
         {/* 하단 액션 바 */}
@@ -167,12 +167,12 @@ const StockPage = () => {
         onRegister={handleRegister}
       />
 
-      {/* 재고 입고 모달 */}
-      <StockIncomingModal
-        isOpen={isIncomingModalOpen}
-        onClose={() => setIsIncomingModalOpen(false)}
-        stock={selectedStockForIncoming}
-        onIncoming={handleIncomingSubmit}
+      {/* 재고 거래 모달 (입고/출고/조정 통합) */}
+      <StockTransactionModal
+        isOpen={isTransactionModalOpen}
+        onClose={() => setIsTransactionModalOpen(false)}
+        selectedStock={selectedStockForTransaction}
+        onSuccess={handleTransactionSuccess}
       />
     </div>
   );
