@@ -43,11 +43,15 @@ export const webSocketMe = async () => {
 }
 
 /**
- * [거래처 전용] 본인에게 들어온 발주 목록 조회
+ * [거래처 전용] 본인에게 들어온 발주 목록 조회 (검색 및 필터 포함)
  */
-export const fetchPartnerOrders = async (sellerSeq) => {
+export const fetchPartnerOrders = async (sellerSeq, keyword = '', status = '') => {
     const resp = await maxios.get('/api/partner/orders', {
-        params: { sellerSeq }
+        params: { 
+            sellerSeq,
+            keyword,
+            status
+        }
     });
     return resp.data;
 }

@@ -77,14 +77,16 @@ function MainHeader({ activeMenu = '홈' }) {
               <Link to="/group-orders" className="block w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl mb-1">
                 공동 발주 현황
               </Link>
-              <Link to="/orders/new" className="block w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl">
-                발주 신청
-              </Link>
+              {user_type !== 'PARTNER' && user_type !== 'Partner' && (
+                <Link to="/orders/new" className="block w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl">
+                  발주 신청
+                </Link>
+              )}
             </div>
           </div>
         </div>
 
-        {['수금 관리', '커뮤니티', '업체 홍보', '통계'].map(m => (
+        {['수금 관리', '업체 홍보', '통계'].map(m => (
           <Link 
             key={m} 
             to="#" 
@@ -93,6 +95,10 @@ function MainHeader({ activeMenu = '홈' }) {
             {m}
           </Link>
         ))}
+        
+        <Link to="/community" className={getNavStyle('커뮤니티')}>
+          커뮤니티
+        </Link>
       </nav>
 
       {/* Right Section (Notifications & Profile) */}
