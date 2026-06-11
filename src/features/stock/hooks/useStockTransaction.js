@@ -12,7 +12,6 @@ import {
 export const useStockTransaction = (selectedStock, onClose, onSuccess) => {
   const [activeTab, setActiveTab] = useState('INBOUND'); // INBOUND, OUTBOUND, ADJUST
   const [isLoading, setIsLoading] = useState(false);
-
   // 1. 입고 폼 상태 (manager, expirationDate 제거)
   const [inboundForm, setInboundForm] = useState({
     detailStockName: '',
@@ -83,24 +82,25 @@ export const useStockTransaction = (selectedStock, onClose, onSuccess) => {
           throw new Error('필수 입력 항목을 확인해주세요.');
         }
 
-        // 소비기한 자동 계산 적용
-        const expirationDate = calculateExpirationDate(selectedStock.defaultExpiryDays);
-        
+                
         await createIncomingStock({ 
-          stockSeq, 
-          ...inboundForm,
-          expirationDate // 자동 계산된 값 전송
+         stockSeq: stockSeq,
+          detailStockName: inboundForm.detailStockName,
+          quantity: Number(inboundForm.quantity),       // "20" -> 20 숫자로 변경
+          incomingPrice: Number(inboundForm.incomingPrice), // "20000" -> 20000 숫자로 변경
+          memo: inboundForm.memo,
+          expirationDate: null
         });
       } else if (activeTab === 'OUTBOUND') {
         if (!outboundForm.quantity || !outboundForm.reason) {
           throw new Error('필수 입력 항목을 확인해주세요.');
         }
-        await createOutboundStock({ stockSeq, ...outboundForm });
+        await createOutboundStock({ stockSeq: stockSeq, ...outboundForm });
       } else if (activeTab === 'ADJUST') {
         if (!adjustmentForm.quantity || !adjustmentForm.reason) {
           throw new Error('필수 입력 항목을 확인해주세요.');
         }
-        await createAdjustStock({ stockSeq, ...adjustmentForm });
+        await createAdjustStock({ stockSeq: stockSeq, ...adjustmentForm });
       }
 
       alert('거래가 정상적으로 등록되었습니다.');

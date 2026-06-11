@@ -73,8 +73,8 @@ const StockHistoryModal = ({ isOpen, onClose, stock, fetchDetailData }) => {
                       <tr key={idx} className="hover:bg-gray-50/50">
                         <td className="px-6 py-4 text-sm text-gray-600">{batch.incomingDate}</td>
                         <td className="px-6 py-4 text-sm font-bold text-gray-900">{batch.detailStockName}</td>
-                        <td className="px-6 py-4 text-sm font-bold text-emerald-600 text-right">{batch.quantity.toLocaleString()}</td>
-                        <td className="px-6 py-4 text-sm text-gray-600 text-right">{batch.incomingPrice.toLocaleString()}원</td>
+                        <td className="px-6 py-4 text-sm font-bold text-emerald-600 text-right">{batch.quantity}</td>
+                        <td className="px-6 py-4 text-sm text-gray-600 text-right">{batch.incomingPrice}원</td>
                         <td className="px-6 py-4 text-sm font-bold text-rose-500 text-center">{batch.expirationDate}</td>
                         <td className="px-6 py-4 text-xs font-mono text-gray-400 text-center">{batch.lotNumber}</td>
                       </tr>
