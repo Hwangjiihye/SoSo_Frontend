@@ -57,7 +57,7 @@ const StockPage = () => {
     if (selectedIds.length === stocks.length && stocks.length > 0) {
       setSelectedIds([]);
     } else {
-      setSelectedIds(stocks.map(stock => stock.productCode));
+      setSelectedIds(stocks.map(stock => stock.stockSeq));
     }
   };
 
@@ -81,8 +81,8 @@ const StockPage = () => {
   const handleTransactionSuccess = () => fetchStocks();
 
   // 요약 수치 계산 (백엔드 필드 기준)
-  const lowStockCount = stocks.filter(s => s.currentQuantity > 0 && s.currentQuantity <= s.safetyStock).length;
-  const outOfStockCount = stocks.filter(s => s.currentQuantity === 0).length;
+  const lowStockCount = stocks.filter(s => s.currentStock > 0 && s.currentStock <= s.safetyStock).length;
+  const outOfStockCount = stocks.filter(s => s.currentStock === 0).length;
   const expiringSoonCount = stocks.filter(s => s.expirationDays !== null && s.expirationDays >= 0 && s.expirationDays <= 7).length;
 
   return (

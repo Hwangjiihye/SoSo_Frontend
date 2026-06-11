@@ -15,7 +15,7 @@ export const useStockTransaction = (selectedStock, onClose, onSuccess) => {
 
   // 1. 입고 폼 상태
   const [inboundForm, setInboundForm] = useState({
-    detailProductName: '',
+    detailStockName: '',
     quantity: '',
     incomingPrice: '',
     expirationDate: '',
@@ -45,7 +45,7 @@ export const useStockTransaction = (selectedStock, onClose, onSuccess) => {
     if (selectedStock) {
       setInboundForm(prev => ({
         ...prev,
-        detailProductName: selectedStock.productName || ''
+        detailStockName: selectedStock.stockName || ''
       }));
     }
   }, [selectedStock]);
@@ -73,7 +73,7 @@ export const useStockTransaction = (selectedStock, onClose, onSuccess) => {
 
     setIsLoading(true);
     try {
-      const stockSeq = selectedStock.productCode;
+      const stockSeq = selectedStock.stockSeq;
 
       if (activeTab === 'INBOUND') {
         if (!inboundForm.quantity || !inboundForm.incomingPrice || !inboundForm.expirationDate) {

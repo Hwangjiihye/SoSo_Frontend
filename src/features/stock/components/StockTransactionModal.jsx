@@ -79,8 +79,8 @@ const StockTransactionModal = ({ isOpen, onClose, selectedStock, onSuccess }) =>
                   <label className={labelStyle}>상세 품목명 <span className="text-rose-500">*</span></label>
                   <input
                     type="text"
-                    name="detailProductName"
-                    value={inboundForm.detailProductName}
+                    name="detailStockName"
+                    value={inboundForm.detailStockName}
                     onChange={handleInboundChange}
                     placeholder="예: 냉동 삼겹살 A유통 국내산"
                     className={inputStyle}

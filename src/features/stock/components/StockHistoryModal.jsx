@@ -9,11 +9,11 @@ const StockHistoryModal = ({ isOpen, onClose, stock, fetchDetailData }) => {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    if (isOpen && stock?.productCode) {
+    if (isOpen && stock?.stockSeq) {
       const loadData = async () => {
         setIsLoading(true);
         try {
-          const result = await fetchDetailData(stock.productCode);
+          const result = await fetchDetailData(stock.stockSeq);
           setData(result);
         } catch (error) {
           alert('상세 정보를 불러오는 중 오류가 발생했습니다.');
@@ -35,7 +35,7 @@ const StockHistoryModal = ({ isOpen, onClose, stock, fetchDetailData }) => {
           <div>
             <h3 className="text-lg font-bold text-gray-900">재고 상세 및 변동 이력</h3>
             <p className="text-sm text-emerald-600 font-medium mt-0.5">
-              [{stock.productCode}] {stock.productName} ({stock.category})
+              [{stock.stockSeq}] {stock.stockName} ({stock.category})
             </p>
           </div>
           <button 
@@ -72,7 +72,7 @@ const StockHistoryModal = ({ isOpen, onClose, stock, fetchDetailData }) => {
                     data.batches.map((batch, idx) => (
                       <tr key={idx} className="hover:bg-gray-50/50">
                         <td className="px-6 py-4 text-sm text-gray-600">{batch.incomingDate}</td>
-                        <td className="px-6 py-4 text-sm font-bold text-gray-900">{batch.detailProductName}</td>
+                        <td className="px-6 py-4 text-sm font-bold text-gray-900">{batch.detailStockName}</td>
                         <td className="px-6 py-4 text-sm font-bold text-emerald-600 text-right">{batch.quantity.toLocaleString()}</td>
                         <td className="px-6 py-4 text-sm text-gray-600 text-right">{batch.incomingPrice.toLocaleString()}원</td>
                         <td className="px-6 py-4 text-sm font-bold text-rose-500 text-center">{batch.expirationDate}</td>
@@ -123,7 +123,7 @@ const StockHistoryModal = ({ isOpen, onClose, stock, fetchDetailData }) => {
                             {hist.transactionType}
                           </span>
                         </td>
-                        <td className="px-6 py-4 text-sm text-gray-900">{hist.detailProductName || '-'}</td>
+                        <td className="px-6 py-4 text-sm text-gray-900">{hist.detailStockName || '-'}</td>
                         <td className={`px-6 py-4 text-sm font-bold text-right ${
                           hist.transactionType === 'INCOMING' ? 'text-blue-600' : 'text-rose-500'
                         }`}>

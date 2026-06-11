@@ -6,7 +6,7 @@ import React, { useState, useEffect } from 'react';
  */
 const StockIncomingModal = ({ isOpen, onClose, stock, onIncoming, isLoading }) => {
   const [formData, setFormData] = useState({
-    detailProductName: '',
+    detailStockName: '',
     quantity: '',
     incomingPrice: '',
     expirationDate: '',
@@ -18,7 +18,7 @@ const StockIncomingModal = ({ isOpen, onClose, stock, onIncoming, isLoading }) =
     if (isOpen && stock) {
       setFormData(prev => ({
         ...prev,
-        detailProductName: stock.productName || ''
+        detailStockName: stock.stockName || ''
       }));
     }
   }, [isOpen, stock]);
@@ -49,7 +49,7 @@ const StockIncomingModal = ({ isOpen, onClose, stock, onIncoming, isLoading }) =
         <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
           <div>
             <h2 className="text-lg font-black text-gray-900">재고 입고 등록</h2>
-            <p className="text-xs text-gray-500 mt-0.5">{stock.productName} ({stock.category})</p>
+            <p className="text-xs text-gray-500 mt-0.5">{stock.stockName} ({stock.category})</p>
           </div>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
             <span className="text-2xl">&times;</span>
@@ -61,15 +61,15 @@ const StockIncomingModal = ({ isOpen, onClose, stock, onIncoming, isLoading }) =
           <div className="bg-emerald-50 rounded-2xl p-4 flex justify-between items-center border border-emerald-100 mb-2">
             <span className="text-sm font-bold text-emerald-700">현재 총 재고</span>
             <span className="text-lg font-black text-emerald-700">
-              {stock.currentQuantity?.toLocaleString()} {stock.unit || '개'}
+              {stock.currentStock?.toLocaleString()} {stock.unit || '개'}
             </span>
           </div>
 
           <div>
             <label className={labelStyle}>상세 품목명 <span className="text-rose-500">*</span></label>
             <input 
-              name="detailProductName"
-              value={formData.detailProductName}
+              name="detailStockName"
+              value={formData.detailStockName}
               onChange={handleChange}
               placeholder="예: A유통 국내산 냉동 삼겹살"
               className={inputStyle}

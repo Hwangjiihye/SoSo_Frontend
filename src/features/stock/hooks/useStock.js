@@ -41,7 +41,7 @@ export const useStock = () => {
   const registerStock = async (stockData) => {
     setIsLoading(true);
     try {
-      // stockData: { productName, category, unit, safetyStock, defaultExpiryDays }
+      // stockData: { stockName, category, unit, safetyStock, defaultExpiryDays }
       await createStockMaster(stockData);
       alert('새 품목이 등록되었습니다.');
       await fetchStocks();

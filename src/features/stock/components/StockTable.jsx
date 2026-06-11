@@ -7,15 +7,13 @@ import React from 'react';
 const StockTable = ({ stocks, isLoading, selectedIds, onSelectChange, onSelectAll, onViewHistory, onIncoming, onEdit }) => {
   // 소비기한 D-Day 텍스트 반환 및 스타일링 (요구사항 반영)
   const getExpiryDisplay = (days) => {
-    if (days === null || days === undefined) return '-';
-    if (days <= 0) return <span className="text-rose-600 font-black animate-pulse">기간 만료</span>;
-    if (days <= 7) return <span className="text-rose-500 font-bold underline decoration-rose-200 decoration-2 underline-offset-4">D-{days} (임박)</span>;
+
     return <span className="text-gray-600">{days}일</span>;
   };
 
-  const getStatusBadge = (currentQuantity, safetyStock, expirationDays) => {
-    // 1. 품절 (currentQuantity == 0)
-    if (currentQuantity === 0) {
+  const getStatusBadge = (currentStock, safetyStock, expirationDays) => {
+    // 1. 품절 (currentStock == 0)
+    if (currentStock === 0) {
       return (
         <span className="px-2.5 py-1 rounded-full text-[11px] font-bold border bg-red-50 text-red-600 border-red-100">
           품절
@@ -23,8 +21,8 @@ const StockTable = ({ stocks, isLoading, selectedIds, onSelectChange, onSelectAl
       );
     }
 
-    // 2. 재고부족 (0 < currentQuantity <= safetyStock)
-    const isLowStock = currentQuantity > 0 && currentQuantity <= safetyStock;
+    // 2. 재고부족 (0 < currentStock <= safetyStock)
+    const isLowStock = currentStock > 0 && currentStock <= safetyStock;
     // 3. 기한임박 (expirationDays <= 7)
     const isNearExpiry = expirationDays !== null && expirationDays <= 7;
 
@@ -85,33 +83,31 @@ const StockTable = ({ stocks, isLoading, selectedIds, onSelectChange, onSelectAl
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
-            {console.log(stocks)}
             {stocks.length > 0 ? (
               stocks.map((stock) => (
-                
-                <tr key={stock.productCode} className={`hover:bg-gray-50/50 transition-colors ${selectedIds.includes(stock.productCode) ? 'bg-emerald-50/30' : ''}`}>
+                <tr key={stock.stockSeq} className={`hover:bg-gray-50/50 transition-colors ${selectedIds.includes(stock.stockSeq) ? 'bg-emerald-50/30' : ''}`}>
                   <td className="px-6 py-4 text-center">
                     <input 
                       type="checkbox" 
-                      checked={selectedIds.includes(stock.productCode)}
-                      onChange={() => onSelectChange(stock.productCode)}
+                      checked={selectedIds.includes(stock.stockSeq)}
+                      onChange={() => onSelectChange(stock.stockSeq)}
                       className="w-4 h-4 accent-emerald-600 cursor-pointer"
                     />
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-500 font-medium">#{stock.productCode}</td>
+                  <td className="px-6 py-4 text-sm text-gray-500 font-medium">#{stock.stockSeq}</td>
                   <td className="px-6 py-4">
                     <div className="text-sm font-bold text-gray-900">{stock.stockName}</div>
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-600 text-center">{stock.category}</td>
                   <td className="px-6 py-4 text-sm font-bold text-gray-900 text-center">
-                    {stock.currentStock}
+                    {stock.currentStock.toLocaleString()}
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-500 text-center">{stock.safetyStock}</td>
+                  <td className="px-6 py-4 text-sm text-gray-500 text-center">{stock.safetyStock.toLocaleString()}</td>
                   <td className="px-6 py-4 text-center text-sm">
                     {getExpiryDisplay(stock.defaultExpiryDays)}
                   </td>
                   <td className="px-6 py-4 text-center">
-                    {getStatusBadge(stock.currentQuantity, stock.safetyStock, stock.expirationDays)}
+                    {getStatusBadge(stock.currentStock, stock.safetyStock, stock.expirationDays)}
                   </td>
                   <td className="px-6 py-4 text-center">
                     <button 

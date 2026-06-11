@@ -6,7 +6,7 @@ import React, { useState } from 'react';
  */
 const StockRegistrationModal = ({ isOpen, onClose, onRegister }) => {
   const [formData, setFormData] = useState({
-    productName: '',
+    stockName: '',
     category: '',
     unit: '',
     safetyStock: '',
@@ -22,13 +22,13 @@ const StockRegistrationModal = ({ isOpen, onClose, onRegister }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!formData.productName || !formData.category || !formData.unit) {
+    if (!formData.stockName || !formData.category || !formData.unit) {
       alert('필수 항목을 모두 입력해주세요.');
       return;
     }
     onRegister(formData);
     setFormData({
-      productName: '',
+      stockName: '',
       category: '',
       unit: '',
       safetyStock: '',
@@ -60,8 +60,8 @@ const StockRegistrationModal = ({ isOpen, onClose, onRegister }) => {
             <label className={labelStyle}>품목명 <span className="text-rose-500">*</span></label>
             <input
               type="text"
-              name="productName"
-              value={formData.productName}
+              name="stockName"
+              value={formData.stockName}
               onChange={handleChange}
               placeholder="예: 냉동 삼겹살"
               className={inputStyle}
