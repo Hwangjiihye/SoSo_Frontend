@@ -22,17 +22,15 @@ const TransferManagementPage = () => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isSettlementMenuOpen, setIsSettlementMenuOpen] = useState(false);
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
+  const [isAutoTransferModalOpen, setIsAutoTransferModalOpen] = useState(false);
+  const [isAutoTransferEnabled, setIsAutoTransferEnabled] = useState(false);
+  const [transferSearchType, setTransferSearchType] = useState('week');
   const [isEditModalOpen, setIsEditModalOpen] = useState(false); // 수정 모달 상태 추가
   const [editingAccount, setEditingAccount] = useState(null); // 수정 중인 계좌 상태 추가
-  const [isPartnerDropdownOpen, setIsPartnerDropdownOpen] = useState(false); // 거래처 드롭다운 상태 추가
   const [newAccount, setNewAccount] = useState({ 
     bank: '', 
     number: '', 
-    name: '',
-    paymentDate: '',
-    isAutoTransfer: false,
-    partnerName: '',
-    managerName: ''
+    name: ''
   });
 
   // 초기 데이터 연동 및 여러 개의 예시 계좌 설정
@@ -67,6 +65,11 @@ const TransferManagementPage = () => {
   }, [transferData]);
 
   const handleAddAccount = () => {
+    if (accounts.length >= 4) {
+      alert("계좌는 최대 4개까지 등록할 수 있습니다.");
+      setIsRegisterModalOpen(false);
+      return;
+    }
     if (!newAccount.bank) {
       alert("은행을 선택해 주세요.");
       return;
@@ -97,11 +100,7 @@ const TransferManagementPage = () => {
     setNewAccount({
       bank: '', 
       number: '', 
-      name: '',
-      paymentDate: '',
-      isAutoTransfer: false,
-      partnerName: '',
-      managerName: ''
+      name: ''
     });
     alert("새 계좌 등록이 완료되었습니다.");
     // 새로 등록한 계좌로 포커스 이동
@@ -121,6 +120,10 @@ const TransferManagementPage = () => {
     }
     if (!editingAccount.accountNumber) {
       alert("계좌번호를 입력해 주세요.");
+      return;
+    }
+    if (!editingAccount.accountHolder) {
+      alert("예금주명을 입력해 주세요.");
       return;
     }
 
@@ -240,255 +243,402 @@ const TransferManagementPage = () => {
             <h2 className="text-2xl font-black text-gray-900 mb-1">이체 관리</h2>
             <p className="text-sm text-gray-500">계좌 잔액 확인 및 안전한 이체 서비스를 이용하세요.</p>
           </div>
-          <button 
-            onClick={() => setIsRegisterModalOpen(true)}
-            className="px-6 py-3 bg-emerald-600 text-white rounded-2xl text-sm font-black hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-200"
-          >
-            + 새 계좌 등록
-          </button>
+          <div className="flex gap-3">
+            <button 
+              onClick={() => {
+                if (accounts.length >= 4) {
+                  alert("계좌는 최대 4개까지 등록할 수 있습니다.");
+                  return;
+                }
+                setIsRegisterModalOpen(true);
+              }}
+              className={`rounded-2xl px-6 py-3 text-sm font-black transition-all ${
+                accounts.length >= 4
+                  ? 'cursor-not-allowed bg-gray-200 text-gray-400'
+                  : 'bg-emerald-600 text-white shadow-lg shadow-emerald-200 hover:bg-emerald-700'
+              }`}
+            >
+              {accounts.length >= 4 ? '계좌 등록 완료 (4/4)' : `+ 새 계좌 등록 (${accounts.length}/4)`}
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsAutoTransferModalOpen(true)}
+              className="rounded-2xl border border-emerald-200 bg-white px-6 py-3 text-sm font-black text-emerald-600 shadow-sm transition-all hover:bg-emerald-50"
+            >
+              자동이체 설정
+            </button>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-          <div className="lg:col-span-2 space-y-6">
-            {/* 등록된 계좌 리스트 (캐러셀 슬라이더) */}
-            {accounts.length > 0 ? (
-              <div className="relative overflow-hidden rounded-3xl bg-gray-50 py-1">
-                <div 
-                  className="flex transition-transform duration-500 ease-out"
-                  style={{ transform: `translateX(-${activeAccountIndex * 100}%)` }}
-                >
-                  {accounts.map((acc) => (
-                    <div key={acc.id} className="w-full flex-shrink-0 px-12">
-                      <div className="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-3xl p-8 text-white shadow-lg shadow-emerald-200/50 relative overflow-hidden group min-h-[320px] flex flex-col justify-between">
-                        <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform duration-500">
-                          <img src={logo} alt="watermark" className="w-40 h-40 object-contain" />
-                        </div>
-                        <div className="relative z-10 flex flex-col h-full justify-between">
-                          <div className="flex justify-between items-start mb-8">
-                            <div>
-                              <div className="text-emerald-100 text-sm font-bold mb-1 uppercase tracking-widest flex items-center gap-2">
-                                {acc.bankName}
-                                {acc.isMain && <span className="bg-white/20 backdrop-blur-md px-2.5 py-0.5 rounded-full text-[9px] font-bold tracking-tighter uppercase">주계좌</span>}
-                              </div>
-                              <div className="text-xl font-medium tracking-tighter opacity-85">{acc.accountNumber}</div>
-                            </div>
-                            <div className="flex gap-2">
-                              {!acc.isMain && (
-                                <button 
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    const updated = accounts.map(a => ({...a, isMain: a.id === acc.id}));
-                                    setAccounts(updated);
-                                    alert(`${acc.bankName} 계좌가 주계좌로 설정되었습니다.`);
-                                  }}
-                                  className="text-[10px] bg-white/20 hover:bg-white/40 text-white px-2.5 py-1 rounded-lg font-bold transition-all"
-                                >
-                                  대표 설정
-                                </button>
-                              )}
-                              <button 
-                                onClick={(e) => handleOpenEditModal(acc, e)}
-                                className="text-[10px] bg-white/20 hover:bg-white/40 text-white px-2.5 py-1 rounded-lg font-bold transition-all"
-                              >
-                                수정
-                              </button>
-                              <button 
-                                onClick={(e) => handleDeleteAccount(acc, e)}
-                                className="text-[10px] bg-red-500/20 hover:bg-red-500/40 text-white px-2.5 py-1 rounded-lg font-bold transition-all"
-                              >
-                                삭제
-                              </button>
-                            </div>
-                          </div>
-                          <div className="mb-8">
-                            <div className="text-emerald-100 text-xs font-bold mb-2 uppercase">현재 잔액</div>
-                            <div className="text-5xl font-black tracking-tight">{formatCurrency(acc.balance)}</div>
-                          </div>
-                          <div className="flex gap-3">
-                            <button className="flex-grow py-4 bg-white text-emerald-600 rounded-2xl text-sm font-black hover:bg-emerald-50 transition-all shadow-xl shadow-emerald-900/10">이체하기</button>
-                            <button className="flex-grow py-4 bg-emerald-400/30 text-white border border-emerald-300/30 backdrop-blur-sm rounded-2xl text-sm font-black hover:bg-emerald-400/40 transition-all">내역조회</button>
-                          </div>
-                        </div>
-                      </div>
+        <div className="space-y-7">
+          {accounts.length > 0 ? (
+            <section className="rounded-[28px] border border-gray-100 bg-white p-8 text-gray-900 shadow-sm">
+              <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
+                <div className="flex items-center gap-5">
+                  <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-lg font-black text-emerald-700">
+                    {accounts[activeAccountIndex]?.bankName.substring(0, 2)}
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-3">
+                      <h3 className="text-2xl font-black">{accounts[activeAccountIndex]?.bankName}</h3>
+                      {accounts[activeAccountIndex]?.isMain && (
+                        <span className="rounded-lg bg-emerald-50 px-3 py-1 text-xs font-black text-emerald-700">대표</span>
+                      )}
                     </div>
-                  ))}
+                    <p className="mt-2 text-base font-semibold text-gray-400">{accounts[activeAccountIndex]?.accountNumber}</p>
+                  </div>
                 </div>
 
-                {/* 캐러셀 좌우 컨트롤러 */}
-                {accounts.length > 1 && (
-                  <>
-                    <button 
-                      onClick={handlePrevAccount}
-                      className="absolute left-1.5 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white text-emerald-600 hover:bg-emerald-50 flex items-center justify-center shadow-lg transition-all z-20 border border-gray-100 hover:scale-105 active:scale-95"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor" className="w-5 h-5">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-                      </svg>
-                    </button>
-                    <button 
-                      onClick={handleNextAccount}
-                      className="absolute right-1.5 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white text-emerald-600 hover:bg-emerald-50 flex items-center justify-center shadow-lg transition-all z-20 border border-gray-100 hover:scale-105 active:scale-95"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor" className="w-5 h-5">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-                      </svg>
-                    </button>
-                  </>
-                )}
+                <div className="text-left lg:text-right">
+                  <span className="text-sm font-bold text-gray-400">현재 잔액</span>
+                  <div className="mt-1 text-4xl font-black tracking-tight">{formatCurrency(accounts[activeAccountIndex]?.balance || 0)}</div>
+                  <div className="mt-5 flex gap-3 lg:justify-end">
+                    <button className="rounded-xl border border-gray-200 bg-white px-8 py-3 text-sm font-black text-gray-600 transition-colors hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-600">내역조회</button>
+                    <button className="rounded-xl bg-emerald-600 px-8 py-3 text-sm font-black text-white shadow-lg shadow-emerald-200 transition-colors hover:bg-emerald-700">이체하기</button>
+                  </div>
+                </div>
               </div>
-            ) : (
-              <div className="bg-white border-2 border-dashed border-gray-200 rounded-3xl p-12 text-center text-gray-400 font-bold">
-                등록된 결제 계좌가 없습니다. 새 계좌를 추가해 주세요.
-              </div>
-            )}
+            </section>
+          ) : (
+            <div className="rounded-[28px] border border-dashed border-gray-300 bg-white p-12 text-center font-bold text-gray-400">
+              등록된 결제 계좌가 없습니다. 새 계좌를 추가해 주세요.
+            </div>
+          )}
 
-            {/* 인디케이터 도트 */}
-            {accounts.length > 1 && (
-              <div className="flex justify-center gap-2 mt-2">
-                {accounts.map((_, idx) => (
-                  <button 
-                    key={idx}
-                    onClick={() => setActiveAccountIndex(idx)}
-                    className={`w-2 h-2 rounded-full transition-all duration-300 ${idx === activeAccountIndex ? 'bg-emerald-600 w-5' : 'bg-gray-300'}`}
-                  />
+          {accounts.length > 0 && (
+            <section className="rounded-[28px] border border-gray-100 bg-white p-7 text-gray-900 shadow-sm">
+              <div className="mb-6 flex items-center justify-between">
+                <h3 className="text-lg font-black">내 보유 계좌 <span className="font-medium text-gray-400">({accounts.length}개)</span></h3>
+                <span className="text-sm font-bold text-gray-400">
+                  총 잔액 <strong className="text-gray-900">{formatCurrency(accounts.reduce((sum, account) => sum + account.balance, 0))}</strong>
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+                {accounts.map((acc, index) => {
+                  const isActive = index === activeAccountIndex;
+                  let bankColor = 'bg-emerald-50 text-emerald-700';
+                  if (acc.bankName.includes('신한')) bankColor = 'bg-blue-50 text-blue-700';
+                  else if (acc.bankName.includes('국민')) bankColor = 'bg-amber-50 text-amber-700';
+                  else if (acc.bankName.includes('우리')) bankColor = 'bg-indigo-50 text-indigo-700';
+
+                  return (
+                    <article
+                      key={acc.id}
+                      onClick={() => setActiveAccountIndex(index)}
+                      className={`flex min-h-[250px] cursor-pointer flex-col justify-between rounded-2xl border p-5 transition-all ${
+                        isActive ? 'border-emerald-500 bg-emerald-50/40 shadow-sm' : 'border-gray-200 bg-white hover:border-emerald-200 hover:bg-emerald-50/20'
+                      }`}
+                    >
+                      <div>
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex min-w-0 items-center gap-3">
+                            <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-sm font-black ${bankColor}`}>
+                              {acc.bankName.substring(0, 2)}
+                            </div>
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-2">
+                                <h4 className="truncate text-base font-black">{acc.bankName}</h4>
+                                {acc.isMain && <span className="rounded-md bg-emerald-50 px-2 py-1 text-[9px] font-black text-emerald-700">대표</span>}
+                              </div>
+                              <p className="mt-1 text-xs font-semibold text-gray-400">{acc.accountNumber}</p>
+                            </div>
+                          </div>
+                          {isActive && <span className="rounded-xl bg-emerald-50 px-3 py-2 text-[10px] font-black text-emerald-700">선택됨</span>}
+                        </div>
+                        <div className={`mt-6 text-2xl font-black ${isActive ? 'text-emerald-600' : 'text-gray-900'}`}>{formatCurrency(acc.balance)}</div>
+                      </div>
+
+                      <div className="grid grid-cols-3 gap-2">
+                        <button type="button" className="rounded-xl border border-gray-200 py-2.5 text-xs font-black text-gray-600 hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-600">이체</button>
+                        <button type="button" onClick={(e) => handleOpenEditModal(acc, e)} className="rounded-xl border border-gray-200 py-2.5 text-xs font-black text-gray-600 hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-600">수정</button>
+                        <button type="button" onClick={(e) => handleDeleteAccount(acc, e)} className="rounded-xl border border-gray-200 py-2.5 text-xs font-black text-gray-500 hover:border-red-200 hover:bg-red-50 hover:text-red-500">삭제</button>
+                      </div>
+                    </article>
+                  );
+                })}
+                {Array.from({ length: Math.max(0, 4 - accounts.length) }).map((_, index) => (
+                  <button
+                    key={`empty-account-${index}`}
+                    type="button"
+                    onClick={() => setIsRegisterModalOpen(true)}
+                    className="flex min-h-[250px] flex-col items-center justify-center rounded-2xl border-2 border-dashed border-gray-200 bg-gray-50/50 px-5 text-center transition-all hover:border-emerald-300 hover:bg-emerald-50/40"
+                  >
+                    <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white text-2xl font-light text-gray-300 shadow-sm ring-1 ring-gray-100">
+                      +
+                    </span>
+                    <strong className="mt-4 text-sm font-black text-gray-500">계좌 추가</strong>
+                    <span className="mt-1 text-xs font-medium text-gray-400">
+                      등록 가능한 빈 슬롯입니다.
+                    </span>
+                  </button>
                 ))}
               </div>
-            )}
+            </section>
+          )}
 
-            {/* 내 보유 계좌 목록 대시보드 */}
-            {accounts.length > 0 && (
-              <div className="bg-white rounded-3xl border border-gray-100 p-6 shadow-sm mt-4">
-                <div className="flex justify-between items-center mb-4">
-                  <h4 className="text-sm font-black text-gray-800 flex items-center gap-2">
-                    <span className="w-1.5 h-3.5 bg-emerald-500 rounded-full"></span>
-                    내 보유 계좌 목록 ({accounts.length}개)
-                  </h4>
-                  <span className="text-xs text-gray-400 font-bold">
-                    총 잔액: {formatCurrency(accounts.reduce((sum, a) => sum + a.balance, 0))}
-                  </span>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {accounts.map((acc, index) => {
-                    let bankColor = "bg-emerald-100 text-emerald-600";
-                    if (acc.bankName.includes("신한")) bankColor = "bg-blue-100 text-blue-600";
-                    else if (acc.bankName.includes("국민")) bankColor = "bg-amber-100 text-amber-600";
-                    else if (acc.bankName.includes("우리")) bankColor = "bg-sky-100 text-sky-600";
-                    else if (acc.bankName.includes("하나")) bankColor = "bg-emerald-100 text-emerald-600";
-                    
-                    const isActive = index === activeAccountIndex;
+          <section className="overflow-hidden rounded-[28px] border border-gray-100 bg-white text-gray-900 shadow-sm">
+            <div className="border-b border-gray-100 px-7 py-6">
+              <h3 className="text-lg font-black">최근 이체 내역</h3>
+            </div>
+            <div className="flex flex-col gap-3 border-b border-gray-100 bg-gray-50/60 px-7 py-4 xl:flex-row xl:items-center">
+              <div className="flex shrink-0 items-center gap-1 rounded-xl border border-gray-200 bg-white p-1">
+                {[
+                  { value: 'week', label: '이번 주' },
+                  { value: 'month', label: '한 달' },
+                  { value: 'custom', label: '날짜 지정' },
+                ].map((period) => (
+                  <button
+                    key={period.value}
+                    type="button"
+                    onClick={() => setTransferSearchType(period.value)}
+                    className={`rounded-lg px-4 py-2 text-xs font-black transition-all ${
+                      transferSearchType === period.value
+                        ? 'bg-emerald-600 text-white shadow-sm'
+                        : 'text-gray-500 hover:bg-gray-50 hover:text-emerald-600'
+                    }`}
+                  >
+                    {period.label}
+                  </button>
+                ))}
+              </div>
+
+              <div className="flex shrink-0 items-center gap-2">
+                <input
+                  type="date"
+                  aria-label="검색 시작일"
+                  className="rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-xs font-bold text-gray-600 outline-none focus:border-emerald-300 focus:ring-2 focus:ring-emerald-500/10"
+                />
+                <span className="text-xs font-bold text-gray-300">~</span>
+                <input
+                  type="date"
+                  aria-label="검색 종료일"
+                  className="rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-xs font-bold text-gray-600 outline-none focus:border-emerald-300 focus:ring-2 focus:ring-emerald-500/10"
+                />
+              </div>
+
+              <div className="relative min-w-0 flex-1">
+                <svg
+                  className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m21 21-4.35-4.35m1.35-5.65a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <input
+                  type="search"
+                  placeholder="받는 분 또는 이체 내용을 검색하세요"
+                  className="w-full rounded-xl border border-gray-200 bg-white py-2.5 pl-10 pr-4 text-xs font-bold text-gray-700 outline-none transition-all placeholder:font-medium placeholder:text-gray-400 focus:border-emerald-300 focus:ring-2 focus:ring-emerald-500/10"
+                />
+              </div>
+                <button
+                  type="button"
+                  className="shrink-0 rounded-xl bg-emerald-600 px-5 py-2.5 text-xs font-black text-white transition-colors hover:bg-emerald-700"
+                >
+                  검색
+                </button>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[1180px] table-fixed text-left">
+                <colgroup>
+                  <col className="w-[16%]" />
+                  <col className="w-[11%]" />
+                  <col className="w-[18%]" />
+                  <col className="w-[13%]" />
+                  <col className="w-[18%]" />
+                  <col className="w-[14%]" />
+                  <col className="w-[10%]" />
+                </colgroup>
+                <thead className="border-b border-gray-100 bg-gray-50 text-xs font-bold text-gray-400">
+                  <tr>
+                    <th className="px-5 py-4">일시</th>
+                    <th className="px-5 py-4">은행</th>
+                    <th className="px-5 py-4">계좌번호</th>
+                    <th className="px-5 py-4">보낸 사람</th>
+                    <th className="px-5 py-4">받는 사람</th>
+                    <th className="px-5 py-4 text-right">이체 금액</th>
+                    <th className="px-5 py-4 text-center">상태</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {transferData.recentTransfers.map((item, index) => {
+                    const recipientMatch = item.recipient.match(/^(.+?)\s*\((.+)\)$/);
+                    const recipientName = recipientMatch?.[1] || item.recipient;
+                    const recipientLabel = recipientMatch?.[2] || '';
+                    const transferAccounts = [
+                      { bank: '신한은행', number: '110-123-456789', sender: '소소식당' },
+                      { bank: '국민은행', number: '456-789-012345', sender: '소소식당' },
+                      { bank: '우리은행', number: '1002-345-678901', sender: '소소식당' },
+                      { bank: '하나은행', number: '234-567-890123', sender: '소소식당' },
+                    ];
+                    const transferAccount = transferAccounts[index % transferAccounts.length];
+                    const avatarColors = ['bg-emerald-50 text-emerald-700', 'bg-indigo-50 text-indigo-700', 'bg-amber-50 text-amber-700', 'bg-pink-50 text-pink-700', 'bg-blue-50 text-blue-700'];
 
                     return (
-                      <div 
-                        key={acc.id}
-                        onClick={() => setActiveAccountIndex(index)}
-                        className={`flex items-center justify-between p-4 border rounded-2xl cursor-pointer transition-all ${
-                          isActive 
-                            ? 'border-emerald-500 bg-emerald-50/40 ring-1 ring-emerald-500/20 shadow-sm' 
-                            : 'border-gray-100 hover:border-emerald-200 hover:bg-emerald-50/10'
-                        }`}
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className={`w-10 h-10 rounded-full flex items-center justify-center font-black text-xs ${bankColor}`}>
-                            {acc.bankName.substring(0, 2)}
-                          </div>
-                          <div className="text-left">
-                            <div className="text-xs font-black text-gray-800 flex items-center gap-1.5">
-                              {acc.bankName}
-                              {acc.isMain && <span className="bg-emerald-100 text-emerald-700 text-[8px] font-extrabold px-1.5 py-0.5 rounded">대표</span>}
+                      <tr key={item.id} className="transition-colors hover:bg-emerald-50/20">
+                        <td className="whitespace-nowrap px-5 py-5 text-sm font-medium text-gray-400">{item.date}</td>
+                        <td className="whitespace-nowrap px-5 py-5 text-sm font-black text-gray-700">{transferAccount.bank}</td>
+                        <td className="whitespace-nowrap px-5 py-5 text-sm font-semibold text-gray-500">{transferAccount.number}</td>
+                        <td className="whitespace-nowrap px-5 py-5 text-sm font-black text-gray-700">{transferAccount.sender}</td>
+                        <td className="px-5 py-5">
+                          <div className="flex items-center gap-3">
+                            <span className={`flex h-9 w-9 items-center justify-center rounded-full text-xs font-black ${avatarColors[index % avatarColors.length]}`}>
+                              {recipientName.substring(0, 1)}
+                            </span>
+                            <div className="min-w-0">
+                              <div className="truncate text-sm font-black">{recipientName}</div>
+                              <div className="mt-0.5 truncate text-xs font-medium text-gray-400">{recipientLabel}</div>
                             </div>
-                            <div className="text-[10px] text-gray-400 font-bold">{acc.accountNumber}</div>
                           </div>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <div className="text-right mr-1">
-                            <div className="text-xs font-black text-gray-900">{formatCurrency(acc.balance)}</div>
-                            <span className="text-[9px] text-emerald-600 font-extrabold">{isActive ? '선택됨' : '선택'}</span>
-                          </div>
-                          <div className="flex gap-1.5">
-                            <button 
-                              onClick={(e) => handleOpenEditModal(acc, e)}
-                              className="px-2.5 py-1.5 bg-gray-50 text-gray-600 rounded-lg text-[10px] font-bold hover:bg-emerald-50 hover:text-emerald-600 transition-all border border-gray-100"
-                            >
-                              수정
-                            </button>
-                            <button 
-                              onClick={(e) => handleDeleteAccount(acc, e)}
-                              className="px-2.5 py-1.5 bg-red-50 text-red-600 rounded-lg text-[10px] font-bold hover:bg-red-100 hover:text-red-700 transition-all border border-red-100"
-                            >
-                              삭제
-                            </button>
-                          </div>
-                        </div>
-                      </div>
+                        </td>
+                        <td className="px-5 py-5 text-right text-base font-black">{formatCurrency(item.amount)}</td>
+                        <td className="px-5 py-5 text-center">
+                          <span className="rounded-full bg-emerald-50 px-4 py-2 text-xs font-black text-emerald-700">{item.status}</span>
+                        </td>
+                      </tr>
                     );
                   })}
+                </tbody>
+              </table>
+            </div>
+            <div className="flex items-center justify-between border-t border-gray-100 px-7 py-4">
+              <span className="text-xs font-bold text-gray-400">
+                총 {transferData.recentTransfers.length}건 · 5개씩 보기
+              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  aria-label="이전 이체 내역"
+                  disabled
+                  className="flex h-9 w-9 items-center justify-center rounded-xl border border-gray-200 text-gray-300 disabled:cursor-not-allowed disabled:bg-gray-50"
+                >
+                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+                <span className="min-w-14 text-center text-xs font-black text-gray-600">1 / 1</span>
+                <button
+                  type="button"
+                  aria-label="다음 이체 내역"
+                  disabled={transferData.recentTransfers.length <= 5}
+                  className="flex h-9 w-9 items-center justify-center rounded-xl border border-gray-200 text-gray-500 transition-colors hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-600 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-300"
+                >
+                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </section>
+        </div>
+      </main>
+
+      {isAutoTransferModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <button
+            type="button"
+            aria-label="자동이체 설정 닫기"
+            onClick={() => setIsAutoTransferModalOpen(false)}
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+          />
+          <div className="relative w-full max-w-lg rounded-3xl bg-white p-8 shadow-2xl animate-fade-in-up">
+            <div className="mb-7 flex items-start justify-between gap-4">
+              <div>
+                <h3 className="text-xl font-black text-gray-900">자동이체 설정</h3>
+                <p className="mt-1 text-xs font-medium text-gray-400">정기 결제 정보를 등록하고 자동이체를 관리하세요.</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsAutoTransferModalOpen(false)}
+                className="text-2xl text-gray-400 transition-colors hover:text-gray-600"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="space-y-5">
+              <div>
+                <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-widest text-gray-400">거래처</label>
+                <select className="w-full rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-sm font-bold text-gray-700 outline-none transition-all focus:ring-2 focus:ring-emerald-500/20">
+                  <option value="">거래처를 선택해 주세요</option>
+                  <option value="daebak">(주)대박식자재</option>
+                  <option value="daesung">대성농산</option>
+                  <option value="woojin">우진주류</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-widest text-gray-400">출금 계좌</label>
+                <select className="w-full rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-sm font-bold text-gray-700 outline-none transition-all focus:ring-2 focus:ring-emerald-500/20">
+                  <option value="">출금 계좌를 선택해 주세요</option>
+                  {accounts.map((account) => (
+                    <option key={account.id} value={account.id}>
+                      {account.bankName} {account.accountNumber}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-widest text-gray-400">예금주</label>
+                  <input
+                    type="text"
+                    placeholder="예금주명 입력"
+                    className="w-full rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-sm font-bold outline-none transition-all focus:ring-2 focus:ring-emerald-500/20"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-widest text-gray-400">결제일</label>
+                  <select className="w-full rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-sm font-bold text-gray-700 outline-none transition-all focus:ring-2 focus:ring-emerald-500/20">
+                    <option value="">일자 선택</option>
+                    {Array.from({ length: 31 }, (_, index) => index + 1).map((date) => (
+                      <option key={date} value={date}>{date}일</option>
+                    ))}
+                  </select>
                 </div>
               </div>
-            )}
 
-
-          </div>
-
-          <div className="bg-white rounded-3xl border border-gray-100 p-8 shadow-sm h-fit sticky top-24">
-            <h3 className="font-bold text-gray-700 mb-6 flex justify-between items-center">
-              즐겨찾는 계좌
-              <button className="text-[10px] text-emerald-500 font-bold hover:underline">+ 추가</button>
-            </h3>
-            <div className="space-y-4">
-              {[
-                { name: '김철수', label: '식자재', color: 'bg-orange-100 text-orange-600' },
-                { name: '박영희', label: '임대료', color: 'bg-blue-100 text-blue-600' },
-                { name: '최지우', label: '야채', color: 'bg-purple-100 text-purple-600' },
-              ].map((fav, i) => (
-                <div key={i} className="flex items-center justify-between p-3 border border-gray-50 rounded-2xl hover:border-emerald-100 hover:bg-emerald-50/30 transition-all cursor-pointer group">
-                  <div className="flex items-center gap-4">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${fav.color}`}>
-                      {fav.name.substring(0, 1)}
-                    </div>
-                    <div>
-                      <div className="text-sm font-bold text-gray-800">{fav.name}</div>
-                      <div className="text-[10px] text-gray-400 font-bold uppercase">{fav.label}</div>
-                    </div>
-                  </div>
-                  <button className="opacity-0 group-hover:opacity-100 text-emerald-500 font-bold text-xs transition-opacity">송금</button>
+              <div className="flex items-center justify-between rounded-2xl border border-emerald-100 bg-emerald-50/50 px-5 py-4">
+                <div>
+                  <strong className="block text-sm font-black text-gray-800">자동이체 활성화</strong>
+                  <span className="mt-1 block text-xs font-medium text-gray-400">설정한 결제일에 자동으로 이체합니다.</span>
                 </div>
-              ))}
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={isAutoTransferEnabled}
+                  onClick={() => setIsAutoTransferEnabled(!isAutoTransferEnabled)}
+                  className={`relative h-7 w-12 rounded-full transition-colors ${
+                    isAutoTransferEnabled ? 'bg-emerald-500' : 'bg-gray-300'
+                  }`}
+                >
+                  <span className={`absolute left-1 top-1 h-5 w-5 rounded-full bg-white shadow-sm transition-transform ${
+                    isAutoTransferEnabled ? 'translate-x-5' : 'translate-x-0'
+                  }`} />
+                </button>
+              </div>
+            </div>
+
+            <div className="mt-8 flex gap-3">
+              <button
+                type="button"
+                onClick={() => setIsAutoTransferModalOpen(false)}
+                className="flex-1 rounded-2xl bg-gray-100 py-4 text-sm font-black text-gray-600 transition-colors hover:bg-gray-200"
+              >
+                취소
+              </button>
+              <button
+                type="button"
+                className="flex-1 rounded-2xl bg-emerald-600 py-4 text-sm font-black text-white shadow-lg shadow-emerald-200 transition-colors hover:bg-emerald-700"
+              >
+                설정 완료
+              </button>
             </div>
           </div>
         </div>
-
-        <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
-          <div className="p-8 border-b border-gray-50 flex justify-between items-center">
-            <h3 className="font-bold text-gray-700">최근 이체 상세 내역</h3>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-left">
-              <thead className="bg-gray-50/50 text-[10px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-50">
-                <tr>
-                  <th className="px-8 py-4">일시</th>
-                  <th className="px-8 py-4">받는 분 / 내용</th>
-                  <th className="px-8 py-4 text-right">이체 금액</th>
-                  <th className="px-8 py-4 text-center">상태</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-50">
-                {transferData.recentTransfers.map((item) => (
-                  <tr key={item.id} className="hover:bg-emerald-50/20 transition-colors">
-                    <td className="px-8 py-6 text-sm text-gray-400 font-medium">{item.date}</td>
-                    <td className="px-8 py-6 text-sm font-bold text-gray-800">{item.recipient}</td>
-                    <td className="px-8 py-6 text-sm font-black text-right text-gray-900">{formatCurrency(item.amount)}</td>
-                    <td className="px-8 py-6 text-center">
-                      <span className="px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full text-[10px] font-black">
-                        {item.status}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </main>
+      )}
 
       {isRegisterModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 overflow-y-auto">
@@ -499,7 +649,7 @@ const TransferManagementPage = () => {
               <button onClick={() => setIsRegisterModalOpen(false)} className="text-gray-400 hover:text-gray-600 text-2xl">×</button>
             </div>
             
-            <div className="space-y-8 max-h-[70vh] overflow-y-auto px-1 custom-scrollbar">
+            <div className="px-1">
               {/* 계좌 관리 섹션 */}
               <section>
                 <h4 className="text-sm font-black text-emerald-600 mb-4 flex items-center gap-2">
@@ -546,88 +696,6 @@ const TransferManagementPage = () => {
                 </div>
               </section>
 
-              {/* 결제일 설정 섹션 */}
-              <section>
-                <h4 className="text-sm font-black text-emerald-600 mb-4 flex items-center gap-2">
-                  <span className="w-1 h-4 bg-emerald-500 rounded-full"></span>
-                  결제일 설정
-                </h4>
-                <div className="grid grid-cols-2 gap-4 items-end">
-                  <div>
-                    <label className="block text-[10px] font-bold text-gray-400 mb-1.5 uppercase tracking-widest">결제일</label>
-                    <select 
-                      className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all"
-                      value={newAccount.paymentDate}
-                      onChange={(e) => setNewAccount({...newAccount, paymentDate: e.target.value})}
-                    >
-                      <option value="">일자 선택</option>
-                      {[...Array(31)].map((_, i) => (
-                        <option key={i+1} value={i+1}>{i+1}일</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="flex items-center gap-3 px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl">
-                    <input 
-                      type="checkbox" 
-                      id="autoTransfer"
-                      className="w-4 h-4 accent-emerald-500"
-                      checked={newAccount.isAutoTransfer}
-                      onChange={(e) => setNewAccount({...newAccount, isAutoTransfer: e.target.checked})}
-                    />
-                    <label htmlFor="autoTransfer" className="text-sm font-bold text-gray-600 cursor-pointer">자동이체 활성화</label>
-                  </div>
-                </div>
-              </section>
-
-              {/* 거래처 선택 섹션 */}
-              <section>
-                <h4 className="text-sm font-black text-emerald-600 mb-4 flex items-center gap-2">
-                  <span className="w-1 h-4 bg-emerald-500 rounded-full"></span>
-                  거래처 선택
-                </h4>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="relative">
-                    <label className="block text-[10px] font-bold text-gray-400 mb-1.5 uppercase tracking-widest">거래처명</label>
-                    <input 
-                      type="text" 
-                      placeholder="거래처 검색"
-                      className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all"
-                      value={newAccount.partnerName}
-                      onChange={(e) => setNewAccount({...newAccount, partnerName: e.target.value})}
-                      onFocus={() => setIsPartnerDropdownOpen(true)}
-                      onBlur={() => setTimeout(() => setIsPartnerDropdownOpen(false), 200)}
-                    />
-                    
-                    {/* 거래처명 아래로 내려오는 스크롤 창 UI */}
-                    {isPartnerDropdownOpen && (
-                      <div className="absolute top-full left-0 w-full mt-2 bg-white border border-gray-100 rounded-xl shadow-xl z-50 max-h-40 overflow-y-auto custom-scrollbar animate-fade-in">
-                        {['(주)대박식자재', '대성농산', '우진주류', '농협하나로마트', '정성유통', '동보수산', '대원축산'].map((partner, idx) => (
-                          <div 
-                            key={idx}
-                            onClick={() => {
-                              setNewAccount({...newAccount, partnerName: partner});
-                              setIsPartnerDropdownOpen(false);
-                            }}
-                            className="px-4 py-2.5 text-xs font-bold text-gray-600 hover:bg-emerald-50 hover:text-emerald-600 transition-colors cursor-pointer border-b border-gray-50 last:border-b-0"
-                          >
-                            {partner}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-bold text-gray-400 mb-1.5 uppercase tracking-widest">담당자</label>
-                    <input 
-                      type="text" 
-                      placeholder="담당자명"
-                      className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all"
-                      value={newAccount.managerName}
-                      onChange={(e) => setNewAccount({...newAccount, managerName: e.target.value})}
-                    />
-                  </div>
-                </div>
-              </section>
             </div>
 
             <button 
@@ -677,12 +745,13 @@ const TransferManagementPage = () => {
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold text-gray-400 mb-1.5 uppercase tracking-widest">잔액 (원)</label>
+                <label className="block text-[10px] font-bold text-gray-400 mb-1.5 uppercase tracking-widest">예금주명</label>
                 <input 
-                  type="number" 
+                  type="text"
+                  placeholder="예금주명 입력"
                   className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all"
-                  value={editingAccount.balance}
-                  onChange={(e) => setEditingAccount({...editingAccount, balance: Number(e.target.value)})}
+                  value={editingAccount.accountHolder || ''}
+                  onChange={(e) => setEditingAccount({...editingAccount, accountHolder: e.target.value})}
                 />
               </div>
             </div>
