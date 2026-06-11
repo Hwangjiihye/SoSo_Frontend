@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { 
-  createInboundTransaction, 
-  createOutboundTransaction, 
-  createAdjustmentTransaction 
+  createIncomingStock, 
+  createOutboundStock, 
+  createAdjustStock 
 } from '../../../apis/stockApi';
 
 /**
@@ -10,83 +10,94 @@ import {
  * @description 재고 거래(입고/출고/조정) 비즈니스 로직 처리 커스텀 훅
  */
 export const useStockTransaction = (selectedStock, onClose, onSuccess) => {
-  const [activeTab, setActiveTab] = useState('INBOUND'); // INBOUND, OUTBOUND, ADJUSTMENT
+  const [activeTab, setActiveTab] = useState('INBOUND'); // INBOUND, OUTBOUND, ADJUST
   const [isLoading, setIsLoading] = useState(false);
 
-  // 입고 폼 상태
+  // 1. 입고 폼 상태
   const [inboundForm, setInboundForm] = useState({
-    productName: '',
+    detailProductName: '',
     quantity: '',
-    unitPrice: '',
+    incomingPrice: '',
+    expirationDate: '',
+    manager: '',
     memo: '',
   });
 
-  // 출고 폼 상태
+  // 2. 출고 폼 상태
   const [outboundForm, setOutboundForm] = useState({
     quantity: '',
+    reason: '주방 소진',
+    manager: '',
     memo: '',
   });
 
-  // 조정 폼 상태
+  // 3. 조정 폼 상태
   const [adjustmentForm, setAdjustmentForm] = useState({
+    batchSeq: '', // 선택 사항
     quantity: '',
     reason: '파손/분실',
+    manager: '',
     memo: '',
   });
 
-  // 초기 데이터 설정 및 자동 완성 로직
+  // 초기 데이터 설정
   useEffect(() => {
-    if (selectedStock && activeTab === 'INBOUND') {
-      setInboundForm((prev) => ({
+    if (selectedStock) {
+      setInboundForm(prev => ({
         ...prev,
-        productName: selectedStock.name || '',
+        detailProductName: selectedStock.productName || ''
       }));
     }
-  }, [selectedStock, activeTab]);
+  }, [selectedStock]);
 
-  // 탭 변경 시 폼 초기화
-  const handleTabChange = (tab) => {
-    setActiveTab(tab);
-    // 선택된 탭 외의 폼들은 초기화하거나 필요 시 유지 (여기서는 요구사항에 따라 깔끔하게 전환)
-  };
+  const handleTabChange = (tab) => setActiveTab(tab);
 
   const handleInboundChange = (e) => {
     const { name, value } = e.target;
-    setInboundForm((prev) => ({ ...prev, [name]: value }));
+    setInboundForm(prev => ({ ...prev, [name]: value }));
   };
 
   const handleOutboundChange = (e) => {
     const { name, value } = e.target;
-    setOutboundForm((prev) => ({ ...prev, [name]: value }));
+    setOutboundForm(prev => ({ ...prev, [name]: value }));
   };
 
   const handleAdjustmentChange = (e) => {
     const { name, value } = e.target;
-    setAdjustmentForm((prev) => ({ ...prev, [name]: value }));
+    setAdjustmentForm(prev => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!selectedStock) return;
+
     setIsLoading(true);
     try {
-      let result;
-      const commonData = { stockId: selectedStock.id };
+      const stockSeq = selectedStock.productCode;
 
       if (activeTab === 'INBOUND') {
-        result = await createInboundTransaction({ ...commonData, ...inboundForm });
+        if (!inboundForm.quantity || !inboundForm.incomingPrice || !inboundForm.expirationDate) {
+          throw new Error('필수 입력 항목을 확인해주세요.');
+        }
+        await createIncomingStock({ stockSeq, ...inboundForm });
       } else if (activeTab === 'OUTBOUND') {
-        result = await createOutboundTransaction({ ...commonData, ...outboundForm });
-      } else if (activeTab === 'ADJUSTMENT') {
-        result = await createAdjustmentTransaction({ ...commonData, ...adjustmentForm });
+        if (!outboundForm.quantity || !outboundForm.reason) {
+          throw new Error('필수 입력 항목을 확인해주세요.');
+        }
+        await createOutboundStock({ stockSeq, ...outboundForm });
+      } else if (activeTab === 'ADJUST') {
+        if (!adjustmentForm.quantity || !adjustmentForm.reason) {
+          throw new Error('필수 입력 항목을 확인해주세요.');
+        }
+        await createAdjustStock({ stockSeq, ...adjustmentForm });
       }
 
-      console.log('Transaction Success:', result);
       alert('거래가 정상적으로 등록되었습니다.');
       if (onSuccess) onSuccess();
       onClose();
     } catch (error) {
-      console.error('Transaction Failed:', error);
-      alert('거래 등록 중 오류가 발생했습니다.');
+      console.error('Transaction Error:', error);
+      alert(error.message || '거래 등록 중 오류가 발생했습니다.');
     } finally {
       setIsLoading(false);
     }

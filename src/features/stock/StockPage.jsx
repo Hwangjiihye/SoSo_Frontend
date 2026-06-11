@@ -22,7 +22,7 @@ const StockPage = () => {
     handleSearch,
     fetchStocks,
     deleteStocks,
-    getStockHistory,
+    getStockDetailData,
     registerStock,
     editStock,
   } = useStock();
@@ -38,7 +38,6 @@ const StockPage = () => {
   const [selectedStockForHistory, setSelectedStockForHistory] = useState(null);
   const [selectedStockForTransaction, setSelectedStockForTransaction] = useState(null);
   const [selectedStockForEdit, setSelectedStockForEdit] = useState(null);
-  const [historyData, setHistoryData] = useState([]);
 
   const handleAddStock = () => setIsRegisterModalOpen(true);
   const handleRegister = (formData) => registerStock(formData);
@@ -48,9 +47,9 @@ const StockPage = () => {
     setIsEditModalOpen(true);
   };
 
-  const handleSelectChange = (id) => {
+  const handleSelectChange = (code) => {
     setSelectedIds(prev => 
-      prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
+      prev.includes(code) ? prev.filter(item => item !== code) : [...prev, code]
     );
   };
 
@@ -58,22 +57,19 @@ const StockPage = () => {
     if (selectedIds.length === stocks.length && stocks.length > 0) {
       setSelectedIds([]);
     } else {
-      setSelectedIds(stocks.map(stock => stock.id));
+      setSelectedIds(stocks.map(stock => stock.productCode));
     }
   };
 
   const handleDeleteSelected = () => {
     if (selectedIds.length === 0) return;
-    if (window.confirm(`정말로 선택한 ${selectedIds.length}개의 항목을 삭제하시겠습니까?`)) {
-      deleteStocks(selectedIds);
-      setSelectedIds([]);
-    }
+    deleteStocks(selectedIds).then(success => {
+      if (success) setSelectedIds([]);
+    });
   };
 
-  const handleViewHistory = async (stock) => {
+  const handleViewHistory = (stock) => {
     setSelectedStockForHistory(stock);
-    const data = await getStockHistory(stock.id);
-    setHistoryData(data);
     setIsHistoryModalOpen(true);
   };
 
@@ -84,19 +80,10 @@ const StockPage = () => {
 
   const handleTransactionSuccess = () => fetchStocks();
 
-  // 유통기한 7일 이내 만료 재고 계산
-  const getExpiringSoonCount = () => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    return stocks.filter(stock => {
-      if (!stock.expiryDate || stock.expiryDate === '-') return false;
-      const target = new Date(stock.expiryDate);
-      target.setHours(0, 0, 0, 0);
-      const diffDays = Math.ceil((target - today) / (1000 * 60 * 60 * 24));
-      return diffDays >= 0 && diffDays <= 7;
-    }).length;
-  };
+  // 요약 수치 계산 (백엔드 필드 기준)
+  const lowStockCount = stocks.filter(s => s.currentQuantity > 0 && s.currentQuantity <= s.safetyStock).length;
+  const outOfStockCount = stocks.filter(s => s.currentQuantity === 0).length;
+  const expiringSoonCount = stocks.filter(s => s.expirationDays !== null && s.expirationDays >= 0 && s.expirationDays <= 7).length;
 
   return (
     <div className="min-h-screen bg-gray-50 pb-12">
@@ -110,19 +97,15 @@ const StockPage = () => {
           </div>
           <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm">
             <div className="text-[11px] font-bold text-amber-500 uppercase mb-1">재고 부족</div>
-            <div className="text-xl font-black text-amber-500">
-              {stocks.filter(s => s.status === 'LACK').length}건
-            </div>
+            <div className="text-xl font-black text-amber-500">{lowStockCount}건</div>
           </div>
           <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm">
             <div className="text-[11px] font-bold text-rose-500 uppercase mb-1">품절</div>
-            <div className="text-xl font-black text-rose-500">
-              {stocks.filter(s => s.status === 'OUT_OF_STOCK').length}건
-            </div>
+            <div className="text-xl font-black text-rose-500">{outOfStockCount}건</div>
           </div>
           <div className="bg-white p-4 rounded-2xl border border-red-200 shadow-sm ring-1 ring-red-100">
             <div className="text-[11px] font-bold text-red-500 uppercase mb-1">유통기한 임박</div>
-            <div className="text-xl font-black text-red-600">{getExpiringSoonCount()}건</div>
+            <div className="text-xl font-black text-red-600">{expiringSoonCount}건</div>
           </div>
         </div>
 
@@ -148,8 +131,8 @@ const StockPage = () => {
       <StockHistoryModal 
         isOpen={isHistoryModalOpen}
         onClose={() => setIsHistoryModalOpen(false)}
-        stockName={selectedStockForHistory?.name}
-        historyData={historyData}
+        stock={selectedStockForHistory}
+        fetchDetailData={getStockDetailData}
       />
       <StockRegistrationModal
         isOpen={isRegisterModalOpen}

@@ -1,87 +1,162 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 /**
  * @file StockIncomingModal.jsx
- * @description 재고 입고 수량을 입력받는 모달 컴포넌트
+ * @description 상세 입고 정보를 입력받는 모달 컴포넌트 (b2.png 반영)
  */
-const StockIncomingModal = ({ isOpen, onClose, stock, onIncoming }) => {
-  const [quantity, setQuantity] = useState('');
+const StockIncomingModal = ({ isOpen, onClose, stock, onIncoming, isLoading }) => {
+  const [formData, setFormData] = useState({
+    detailProductName: '',
+    quantity: '',
+    incomingPrice: '',
+    expirationDate: '',
+    manager: '',
+    memo: ''
+  });
+
+  useEffect(() => {
+    if (isOpen && stock) {
+      setFormData(prev => ({
+        ...prev,
+        detailProductName: stock.productName || ''
+      }));
+    }
+  }, [isOpen, stock]);
 
   if (!isOpen || !stock) return null;
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!quantity || isNaN(quantity) || Number(quantity) <= 0) {
-      alert('올바른 입고 수량을 입력해주세요.');
-      return;
-    }
-    onIncoming(stock.id, quantity);
-    setQuantity('');
-    onClose();
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center px-4">
-      {/* Backdrop */}
-      <div 
-        className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity"
-        onClick={onClose}
-      ></div>
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!formData.quantity || !formData.incomingPrice || !formData.expirationDate) {
+      alert('필수 입력 항목(수량, 단가, 유통기한)을 확인해주세요.');
+      return;
+    }
+    onIncoming(formData);
+  };
 
-      {/* Modal Content */}
-      <div className="relative bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
-        <div className="p-6">
-          <div className="flex justify-between items-center mb-6">
-            <div>
-              <h2 className="text-xl font-black text-gray-900">재고 입고</h2>
-              <p className="text-sm text-gray-500 mt-1">{stock.name} 품목의 재고를 추가합니다.</p>
-            </div>
-            <button 
-              onClick={onClose}
-              className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
-            >
-              <span className="text-2xl text-gray-400">&times;</span>
-            </button>
+  const labelStyle = "block text-xs font-bold text-gray-400 uppercase mb-1.5 ml-1";
+  const inputStyle = "w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-gray-900 font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all text-sm";
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
+      <div className="bg-white w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden animate-scale-up flex flex-col max-h-[90vh]">
+        {/* 헤더 */}
+        <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+          <div>
+            <h2 className="text-lg font-black text-gray-900">재고 입고 등록</h2>
+            <p className="text-xs text-gray-500 mt-0.5">{stock.productName} ({stock.category})</p>
+          </div>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
+            <span className="text-2xl">&times;</span>
+          </button>
+        </div>
+
+        {/* 폼 */}
+        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-4 scrollbar-hide">
+          <div className="bg-emerald-50 rounded-2xl p-4 flex justify-between items-center border border-emerald-100 mb-2">
+            <span className="text-sm font-bold text-emerald-700">현재 총 재고</span>
+            <span className="text-lg font-black text-emerald-700">
+              {stock.currentQuantity?.toLocaleString()} {stock.unit || '개'}
+            </span>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="bg-emerald-50 rounded-2xl p-4 flex justify-between items-center border border-emerald-100">
-              <span className="text-sm font-bold text-emerald-700">현재 재고</span>
-              <span className="text-lg font-black text-emerald-700">
-                {stock.currentStock.toLocaleString()} {stock.unit}
-              </span>
-            </div>
+          <div>
+            <label className={labelStyle}>상세 품목명 <span className="text-rose-500">*</span></label>
+            <input 
+              name="detailProductName"
+              value={formData.detailProductName}
+              onChange={handleChange}
+              placeholder="예: A유통 국내산 냉동 삼겹살"
+              className={inputStyle}
+              required
+            />
+          </div>
 
+          <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-bold text-gray-400 uppercase mb-2 ml-1">
-                입고 수량 ({stock.unit})
-              </label>
+              <label className={labelStyle}>입고 수량 <span className="text-rose-500">*</span></label>
               <input 
                 type="number"
-                value={quantity}
-                onChange={(e) => setQuantity(e.target.value)}
+                name="quantity"
+                value={formData.quantity}
+                onChange={handleChange}
                 placeholder="0"
-                autoFocus
-                className="w-full px-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl text-gray-900 font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all text-xl"
+                className={inputStyle}
+                required
               />
             </div>
-
-            <div className="flex gap-3 pt-2">
-              <button
-                type="button"
-                onClick={onClose}
-                className="flex-1 px-6 py-4 bg-gray-100 text-gray-500 rounded-2xl font-bold hover:bg-gray-200 transition-all"
-              >
-                취소
-              </button>
-              <button
-                type="submit"
-                className="flex-[2] px-6 py-4 bg-emerald-600 text-white rounded-2xl font-bold hover:bg-emerald-700 shadow-lg shadow-emerald-200 transition-all"
-              >
-                입고 처리 완료
-              </button>
+            <div>
+              <label className={labelStyle}>입고 단가 (원) <span className="text-rose-500">*</span></label>
+              <input 
+                type="number"
+                name="incomingPrice"
+                value={formData.incomingPrice}
+                onChange={handleChange}
+                placeholder="0"
+                className={inputStyle}
+                required
+              />
             </div>
-          </form>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className={labelStyle}>유통기한 <span className="text-rose-500">*</span></label>
+              <input 
+                type="date"
+                name="expirationDate"
+                value={formData.expirationDate}
+                onChange={handleChange}
+                className={inputStyle}
+                required
+              />
+            </div>
+            <div>
+              <label className={labelStyle}>담당자</label>
+              <input 
+                name="manager"
+                value={formData.manager}
+                onChange={handleChange}
+                placeholder="이름 입력"
+                className={inputStyle}
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className={labelStyle}>메모</label>
+            <textarea 
+              name="memo"
+              value={formData.memo}
+              onChange={handleChange}
+              placeholder="추가 전달 사항 입력"
+              rows="2"
+              className={`${inputStyle} resize-none`}
+            />
+          </div>
+        </form>
+
+        {/* 푸터 버튼 */}
+        <div className="px-6 py-5 bg-gray-50 border-t border-gray-100 flex gap-3">
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex-1 px-6 py-3 bg-white border border-gray-200 text-gray-500 rounded-2xl font-bold hover:bg-gray-100 transition-all text-sm"
+          >
+            취소
+          </button>
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="flex-[2] px-6 py-3 bg-emerald-600 text-white rounded-2xl font-bold hover:bg-emerald-700 shadow-lg shadow-emerald-600/20 transition-all text-sm disabled:opacity-50"
+          >
+            {isLoading ? '처리 중...' : '입고 등록 완료'}
+          </button>
         </div>
       </div>
     </div>

@@ -6,11 +6,11 @@ import React, { useState } from 'react';
  */
 const StockRegistrationModal = ({ isOpen, onClose, onRegister }) => {
   const [formData, setFormData] = useState({
-    name: '',
+    productName: '',
     category: '',
     unit: '',
     safetyStock: '',
-    expirationDays: '',
+    defaultExpiryDays: '',
   });
 
   if (!isOpen) return null;
@@ -22,17 +22,17 @@ const StockRegistrationModal = ({ isOpen, onClose, onRegister }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!formData.name || !formData.category || !formData.unit) {
+    if (!formData.productName || !formData.category || !formData.unit) {
       alert('필수 항목을 모두 입력해주세요.');
       return;
     }
     onRegister(formData);
     setFormData({
-      name: '',
+      productName: '',
       category: '',
       unit: '',
       safetyStock: '',
-      expirationDays: '',
+      defaultExpiryDays: '',
     });
     onClose();
   };
@@ -60,8 +60,8 @@ const StockRegistrationModal = ({ isOpen, onClose, onRegister }) => {
             <label className={labelStyle}>품목명 <span className="text-rose-500">*</span></label>
             <input
               type="text"
-              name="name"
-              value={formData.name}
+              name="productName"
+              value={formData.productName}
               onChange={handleChange}
               placeholder="예: 냉동 삼겹살"
               className={inputStyle}
@@ -118,8 +118,8 @@ const StockRegistrationModal = ({ isOpen, onClose, onRegister }) => {
               <div className="relative">
                 <input
                   type="number"
-                  name="expirationDays"
-                  value={formData.expirationDays}
+                  name="defaultExpiryDays"
+                  value={formData.defaultExpiryDays}
                   onChange={handleChange}
                   placeholder="0"
                   className={`${inputStyle} pr-10`}

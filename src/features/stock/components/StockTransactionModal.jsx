@@ -61,9 +61,9 @@ const StockTransactionModal = ({ isOpen, onClose, selectedStock, onSuccess }) =>
             출고
           </button>
           <button
-            onClick={() => handleTabChange('ADJUSTMENT')}
+            onClick={() => handleTabChange('ADJUST')}
             className={`flex-1 py-2.5 text-sm font-bold rounded-xl transition-all ${
-              activeTab === 'ADJUSTMENT' ? 'bg-white text-emerald-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+              activeTab === 'ADJUST' ? 'bg-white text-emerald-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'
             }`}
           >
             재고 조정
@@ -76,11 +76,11 @@ const StockTransactionModal = ({ isOpen, onClose, selectedStock, onSuccess }) =>
             <div className="animate-fade-in">
               <div className="space-y-4">
                 <div>
-                  <label className={labelStyle}>상세 품목명</label>
+                  <label className={labelStyle}>상세 품목명 <span className="text-rose-500">*</span></label>
                   <input
                     type="text"
-                    name="productName"
-                    value={inboundForm.productName}
+                    name="detailProductName"
+                    value={inboundForm.detailProductName}
                     onChange={handleInboundChange}
                     placeholder="예: 냉동 삼겹살 A유통 국내산"
                     className={inputStyle}
@@ -89,7 +89,7 @@ const StockTransactionModal = ({ isOpen, onClose, selectedStock, onSuccess }) =>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className={labelStyle}>입고 수량 ({selectedStock.unit})</label>
+                    <label className={labelStyle}>입고 수량 ({selectedStock.unit}) <span className="text-rose-500">*</span></label>
                     <input
                       type="number"
                       name="quantity"
@@ -101,15 +101,39 @@ const StockTransactionModal = ({ isOpen, onClose, selectedStock, onSuccess }) =>
                     />
                   </div>
                   <div>
-                    <label className={labelStyle}>입고 단가 (원)</label>
+                    <label className={labelStyle}>입고 단가 (원) <span className="text-rose-500">*</span></label>
                     <input
                       type="number"
-                      name="unitPrice"
-                      value={inboundForm.unitPrice}
+                      name="incomingPrice"
+                      value={inboundForm.incomingPrice}
                       onChange={handleInboundChange}
                       placeholder="0"
                       className={inputStyle}
                       required
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className={labelStyle}>유통기한 <span className="text-rose-500">*</span></label>
+                    <input
+                      type="date"
+                      name="expirationDate"
+                      value={inboundForm.expirationDate}
+                      onChange={handleInboundChange}
+                      className={inputStyle}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className={labelStyle}>담당자</label>
+                    <input
+                      type="text"
+                      name="manager"
+                      value={inboundForm.manager}
+                      onChange={handleInboundChange}
+                      placeholder="이름 입력"
+                      className={inputStyle}
                     />
                   </div>
                 </div>
@@ -120,7 +144,7 @@ const StockTransactionModal = ({ isOpen, onClose, selectedStock, onSuccess }) =>
                     name="memo"
                     value={inboundForm.memo}
                     onChange={handleInboundChange}
-                    placeholder="예: 정기 입고"
+                    placeholder="입고 관련 특이사항"
                     className={inputStyle}
                   />
                 </div>
@@ -131,17 +155,50 @@ const StockTransactionModal = ({ isOpen, onClose, selectedStock, onSuccess }) =>
           {activeTab === 'OUTBOUND' && (
             <div className="animate-fade-in">
               <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className={labelStyle}>출고 수량 ({selectedStock.unit}) <span className="text-rose-500">*</span></label>
+                    <input
+                      type="number"
+                      name="quantity"
+                      value={outboundForm.quantity}
+                      onChange={handleOutboundChange}
+                      placeholder="0"
+                      className={inputStyle}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className={labelStyle}>담당자</label>
+                    <input
+                      type="text"
+                      name="manager"
+                      value={outboundForm.manager}
+                      onChange={handleOutboundChange}
+                      placeholder="이름 입력"
+                      className={inputStyle}
+                    />
+                  </div>
+                </div>
                 <div>
-                  <label className={labelStyle}>출고 수량 ({selectedStock.unit})</label>
-                  <input
-                    type="number"
-                    name="quantity"
-                    value={outboundForm.quantity}
-                    onChange={handleOutboundChange}
-                    placeholder="0"
-                    className={inputStyle}
-                    required
-                  />
+                  <label className={labelStyle}>출고 사유 <span className="text-rose-500">*</span></label>
+                  <div className="relative">
+                    <select
+                      name="reason"
+                      value={outboundForm.reason}
+                      onChange={handleOutboundChange}
+                      className={selectStyle}
+                      required
+                    >
+                      <option value="주방 소진">주방 소진</option>
+                      <option value="밀키트 제작용">밀키트 제작용</option>
+                      <option value="매장 간 이동">매장 간 이동</option>
+                      <option value="기타">기타</option>
+                    </select>
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
+                      ▼
+                    </div>
+                  </div>
                 </div>
                 <div>
                   <label className={labelStyle}>메모</label>
@@ -150,7 +207,7 @@ const StockTransactionModal = ({ isOpen, onClose, selectedStock, onSuccess }) =>
                     name="memo"
                     value={outboundForm.memo}
                     onChange={handleOutboundChange}
-                    placeholder="예: 주방 소진, 밀키트 제작용"
+                    placeholder="상세 내역 입력"
                     className={inputStyle}
                   />
                 </div>
@@ -158,23 +215,36 @@ const StockTransactionModal = ({ isOpen, onClose, selectedStock, onSuccess }) =>
             </div>
           )}
 
-          {activeTab === 'ADJUSTMENT' && (
+          {activeTab === 'ADJUST' && (
             <div className="animate-fade-in">
               <div className="space-y-4">
-                <div>
-                  <label className={labelStyle}>조정 수량 (증가 +, 감소 -)</label>
-                  <input
-                    type="number"
-                    name="quantity"
-                    value={adjustmentForm.quantity}
-                    onChange={handleAdjustmentChange}
-                    placeholder="0"
-                    className={inputStyle}
-                    required
-                  />
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className={labelStyle}>조정 수량 (+/-) <span className="text-rose-500">*</span></label>
+                    <input
+                      type="number"
+                      name="quantity"
+                      value={adjustmentForm.quantity}
+                      onChange={handleAdjustmentChange}
+                      placeholder="예: -5, +2"
+                      className={inputStyle}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className={labelStyle}>담당자</label>
+                    <input
+                      type="text"
+                      name="manager"
+                      value={adjustmentForm.manager}
+                      onChange={handleAdjustmentChange}
+                      placeholder="이름 입력"
+                      className={inputStyle}
+                    />
+                  </div>
                 </div>
                 <div>
-                  <label className={labelStyle}>조정 사유</label>
+                  <label className={labelStyle}>조정 사유 <span className="text-rose-500">*</span></label>
                   <div className="relative">
                     <select
                       name="reason"
@@ -186,6 +256,7 @@ const StockTransactionModal = ({ isOpen, onClose, selectedStock, onSuccess }) =>
                       <option value="파손/분실">파손/분실</option>
                       <option value="유통기한 만료/부패">유통기한 만료/부패</option>
                       <option value="재고 실사 후 수정">재고 실사 후 수정</option>
+                      <option value="입력 착오 보정">입력 착오 보정</option>
                       <option value="기타">기타</option>
                     </select>
                     <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
@@ -200,7 +271,7 @@ const StockTransactionModal = ({ isOpen, onClose, selectedStock, onSuccess }) =>
                     name="memo"
                     value={adjustmentForm.memo}
                     onChange={handleAdjustmentChange}
-                    placeholder="상세 사유 입력"
+                    placeholder="조정 상세 사유 입력"
                     className={inputStyle}
                   />
                 </div>

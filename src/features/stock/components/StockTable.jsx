@@ -5,43 +5,48 @@ import React from 'react';
  * @description 재고 현황을 보여주는 테이블 컴포넌트
  */
 const StockTable = ({ stocks, isLoading, selectedIds, onSelectChange, onSelectAll, onViewHistory, onIncoming, onEdit }) => {
-  // 날짜 차이 계산 함수 (D-Day 형식)
-  const getRemainingDays = (expiryDate) => {
-    if (!expiryDate || expiryDate === '-') return '-';
-    
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const target = new Date(expiryDate);
-    target.setHours(0, 0, 0, 0);
-    
-    const diffTime = target - today;
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
-    if (diffDays < 0) return `만료 (${Math.abs(diffDays)}일 경과)`;
-    if (diffDays === 0) return '오늘 만료';
-    return `${diffDays}일`;
+  // 소비기한 D-Day 텍스트 반환 및 스타일링 (요구사항 반영)
+  const getExpiryDisplay = (days) => {
+    if (days === null || days === undefined) return '-';
+    if (days <= 0) return <span className="text-rose-600 font-black animate-pulse">기간 만료</span>;
+    if (days <= 7) return <span className="text-rose-500 font-bold underline decoration-rose-200 decoration-2 underline-offset-4">D-{days} (임박)</span>;
+    return <span className="text-gray-600">{days}일</span>;
   };
 
-  const getStatusStyle = (status) => {
-    switch (status) {
-      case 'NORMAL':
-        return 'bg-emerald-50 text-emerald-600 border-emerald-100';
-      case 'LACK':
-        return 'bg-amber-50 text-amber-600 border-amber-100';
-      case 'OUT_OF_STOCK':
-        return 'bg-red-50 text-red-600 border-red-100';
-      default:
-        return 'bg-gray-50 text-gray-600 border-gray-100';
+  const getStatusBadge = (currentQuantity, safetyStock, expirationDays) => {
+    // 1. 품절 (currentQuantity == 0)
+    if (currentQuantity === 0) {
+      return (
+        <span className="px-2.5 py-1 rounded-full text-[11px] font-bold border bg-red-50 text-red-600 border-red-100">
+          품절
+        </span>
+      );
     }
-  };
 
-  const getStatusLabel = (status) => {
-    switch (status) {
-      case 'NORMAL': return '정상';
-      case 'LACK': return '재고부족';
-      case 'OUT_OF_STOCK': return '품절';
-      default: return '미상';
-    }
+    // 2. 재고부족 (0 < currentQuantity <= safetyStock)
+    const isLowStock = currentQuantity > 0 && currentQuantity <= safetyStock;
+    // 3. 기한임박 (expirationDays <= 7)
+    const isNearExpiry = expirationDays !== null && expirationDays <= 7;
+
+    return (
+      <div className="flex flex-wrap gap-1 justify-center">
+        {isLowStock && (
+          <span className="px-2.5 py-1 rounded-full text-[11px] font-bold border bg-amber-50 text-amber-600 border-amber-100">
+            재고부족
+          </span>
+        )}
+        {isNearExpiry && (
+          <span className="px-2.5 py-1 rounded-full text-[11px] font-bold border bg-rose-50 text-rose-600 border-rose-100">
+            기한임박
+          </span>
+        )}
+        {!isLowStock && !isNearExpiry && (
+          <span className="px-2.5 py-1 rounded-full text-[11px] font-bold border bg-emerald-50 text-emerald-600 border-emerald-100">
+            정상
+          </span>
+        )}
+      </div>
+    );
   };
 
   if (isLoading) {
@@ -67,54 +72,46 @@ const StockTable = ({ stocks, isLoading, selectedIds, onSelectChange, onSelectAl
                   className="w-4 h-4 accent-emerald-600 cursor-pointer"
                 />
               </th>
+              <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">품목번호</th>
               <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">품목명</th>
               <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-center">카테고리</th>
               <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-center">현재 수량</th>
-              <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-center">단위</th>
               <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-center">안전재고</th>
               <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-center">소비기한</th>
-              <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-center">재고상태</th>
+              <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-center">상태</th>
               <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-center">입/출고</th>
               <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-center">이력/상세</th>
               <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-center">관리</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
+            {console.log(stocks)}
             {stocks.length > 0 ? (
               stocks.map((stock) => (
-                <tr key={stock.id} className={`hover:bg-gray-50/50 transition-colors ${selectedIds.includes(stock.id) ? 'bg-emerald-50/30' : ''}`}>
+                
+                <tr key={stock.productCode} className={`hover:bg-gray-50/50 transition-colors ${selectedIds.includes(stock.productCode) ? 'bg-emerald-50/30' : ''}`}>
                   <td className="px-6 py-4 text-center">
                     <input 
                       type="checkbox" 
-                      checked={selectedIds.includes(stock.id)}
-                      onChange={() => onSelectChange(stock.id)}
+                      checked={selectedIds.includes(stock.productCode)}
+                      onChange={() => onSelectChange(stock.productCode)}
                       className="w-4 h-4 accent-emerald-600 cursor-pointer"
                     />
                   </td>
+                  <td className="px-6 py-4 text-sm text-gray-500 font-medium">#{stock.productCode}</td>
                   <td className="px-6 py-4">
-                    <div className="text-sm font-bold text-gray-900">{stock.name}</div>
+                    <div className="text-sm font-bold text-gray-900">{stock.stockName}</div>
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-600 text-center">{stock.category}</td>
                   <td className="px-6 py-4 text-sm font-bold text-gray-900 text-center">
-                    {stock.currentStock.toLocaleString()}
+                    {stock.currentStock}
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-600 text-center">{stock.unit}</td>
-                  <td className="px-6 py-4 text-sm text-gray-500 text-center">{stock.safetyStock.toLocaleString()}</td>
-                  <td className="px-6 py-4 text-center">
-                    <span className={`text-sm font-bold ${
-                      getRemainingDays(stock.expiryDate).includes('만료') 
-                      ? 'text-rose-600 animate-pulse' 
-                      : getRemainingDays(stock.expiryDate).includes('오늘')
-                      ? 'text-amber-600'
-                      : 'text-gray-600'
-                    }`}>
-                      {getRemainingDays(stock.expiryDate)}
-                    </span>
+                  <td className="px-6 py-4 text-sm text-gray-500 text-center">{stock.safetyStock}</td>
+                  <td className="px-6 py-4 text-center text-sm">
+                    {getExpiryDisplay(stock.defaultExpiryDays)}
                   </td>
                   <td className="px-6 py-4 text-center">
-                    <span className={`px-2.5 py-1 rounded-full text-[11px] font-bold border ${getStatusStyle(stock.status)}`}>
-                      {getStatusLabel(stock.status)}
-                    </span>
+                    {getStatusBadge(stock.currentQuantity, stock.safetyStock, stock.expirationDays)}
                   </td>
                   <td className="px-6 py-4 text-center">
                     <button 
@@ -145,7 +142,7 @@ const StockTable = ({ stocks, isLoading, selectedIds, onSelectChange, onSelectAl
               ))
             ) : (
               <tr>
-                <td colSpan="10" className="px-6 py-20 text-center">
+                <td colSpan="11" className="px-6 py-20 text-center">
                   <div className="text-4xl mb-4">📦</div>
                   <p className="text-gray-500 font-medium">등록된 재고가 없습니다.</p>
                 </td>
