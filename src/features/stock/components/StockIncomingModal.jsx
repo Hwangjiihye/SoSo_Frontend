@@ -2,15 +2,13 @@ import React, { useState, useEffect } from 'react';
 
 /**
  * @file StockIncomingModal.jsx
- * @description 상세 입고 정보를 입력받는 모달 컴포넌트 (b2.png 반영)
+ * @description 상세 입고 정보를 입력받는 모달 컴포넌트 (유통기한/담당자 필드 제거)
  */
 const StockIncomingModal = ({ isOpen, onClose, stock, onIncoming, isLoading }) => {
   const [formData, setFormData] = useState({
     detailStockName: '',
     quantity: '',
     incomingPrice: '',
-    expirationDate: '',
-    manager: '',
     memo: ''
   });
 
@@ -32,8 +30,8 @@ const StockIncomingModal = ({ isOpen, onClose, stock, onIncoming, isLoading }) =
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!formData.quantity || !formData.incomingPrice || !formData.expirationDate) {
-      alert('필수 입력 항목(수량, 단가, 유통기한)을 확인해주세요.');
+    if (!formData.quantity || !formData.incomingPrice) {
+      alert('필수 입력 항목(수량, 단가)을 확인해주세요.');
       return;
     }
     onIncoming(formData);
@@ -104,30 +102,6 @@ const StockIncomingModal = ({ isOpen, onClose, stock, onIncoming, isLoading }) =
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className={labelStyle}>유통기한 <span className="text-rose-500">*</span></label>
-              <input 
-                type="date"
-                name="expirationDate"
-                value={formData.expirationDate}
-                onChange={handleChange}
-                className={inputStyle}
-                required
-              />
-            </div>
-            <div>
-              <label className={labelStyle}>담당자</label>
-              <input 
-                name="manager"
-                value={formData.manager}
-                onChange={handleChange}
-                placeholder="이름 입력"
-                className={inputStyle}
-              />
-            </div>
-          </div>
-
           <div>
             <label className={labelStyle}>메모</label>
             <textarea 
@@ -135,7 +109,7 @@ const StockIncomingModal = ({ isOpen, onClose, stock, onIncoming, isLoading }) =
               value={formData.memo}
               onChange={handleChange}
               placeholder="추가 전달 사항 입력"
-              rows="2"
+              rows="3"
               className={`${inputStyle} resize-none`}
             />
           </div>

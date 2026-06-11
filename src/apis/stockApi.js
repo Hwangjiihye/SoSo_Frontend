@@ -9,13 +9,13 @@ import axiosInstance from './axiosConfig';
 // GET /api/stocks
 export const getStockList = async (params) => {
   const response = await axiosInstance.get('/api/stocks', { params });
-  return response.data; // Expected: [{ stockSeq, stockName, category, safetyStock, currentStock, expirationDays }, ...]
+  return response.data; // Expected: [{ productCode, productName, category, safetyStock, currentQuantity, expirationDays }, ...]
 };
 
 // 2. 품목 마스터 등록 (수량 제외)
 // POST /api/stocks
 export const createStockMaster = async (stockData) => {
-  // stockData: { stockName, category, unit, safetyStock, defaultExpiryDays }
+  // stockData: { productName, category, unit, safetyStock, defaultExpiryDays }
   const response = await axiosInstance.post('/api/stocks', stockData);
   return response.data;
 };
@@ -24,20 +24,20 @@ export const createStockMaster = async (stockData) => {
 // GET /api/stocks/{stockSeq}/batches
 export const getStockBatches = async (stockSeq) => {
   const response = await axiosInstance.get(`/api/stocks/${stockSeq}/batches`);
-  return response.data; // Expected: [{ incomingDate, detailStockName, quantity, incomingPrice, expirationDate, lotNumber }, ...]
+  return response.data; // Expected: [{ incomingDate, detailProductName, quantity, incomingPrice, expirationDate, lotNumber }, ...]
 };
 
 // 4. 재고 상세 - 변동 이력(타임라인) 조회
 // GET /api/stocks/{stockSeq}/histories
 export const getStockHistories = async (stockSeq) => {
   const response = await axiosInstance.get(`/api/stocks/${stockSeq}/histories`);
-  return response.data; // Expected: [{ createdAt, transactionType, changeQuantity, currentTotalStock, detailStockName, price, expirationDate, reason }, ...]
+  return response.data; // Expected: [{ createdAt, transactionType, changeQuantity, currentTotalStock, detailProductName, price, expirationDate, reason }, ...]
 };
 
 // 5. 입고 등록
 // POST /api/stocks/incoming
 export const createIncomingStock = async (data) => {
-  // data: { stockSeq, detailStockName, quantity, incomingPrice, expirationDate, manager, memo }
+  // data: { stockSeq, detailProductName, quantity, incomingPrice, expirationDate, manager, memo }
   const response = await axiosInstance.post('/api/stocks/incoming', data);
   return response.data;
 };

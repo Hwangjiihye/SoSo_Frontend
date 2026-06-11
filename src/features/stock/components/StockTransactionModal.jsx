@@ -3,7 +3,7 @@ import { useStockTransaction } from '../hooks/useStockTransaction';
 
 /**
  * @file StockTransactionModal.jsx
- * @description 재고 입고, 출고, 조정을 통합 처리하는 모달 컴포넌트
+ * @description 재고 입고, 출고, 조정을 통합 처리하는 모달 컴포넌트 (필드 간소화 버전)
  */
 const StockTransactionModal = ({ isOpen, onClose, selectedStock, onSuccess }) => {
   const {
@@ -32,7 +32,7 @@ const StockTransactionModal = ({ isOpen, onClose, selectedStock, onSuccess }) =>
         <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
           <div>
             <span className="text-xs font-bold text-emerald-600 mb-1 block">재고 거래 관리</span>
-            <h3 className="text-lg font-bold text-gray-900">{selectedStock.name}</h3>
+            <h3 className="text-lg font-bold text-gray-900">{selectedStock.stockName}</h3>
           </div>
           <button 
             onClick={onClose}
@@ -113,30 +113,6 @@ const StockTransactionModal = ({ isOpen, onClose, selectedStock, onSuccess }) =>
                     />
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className={labelStyle}>유통기한 <span className="text-rose-500">*</span></label>
-                    <input
-                      type="date"
-                      name="expirationDate"
-                      value={inboundForm.expirationDate}
-                      onChange={handleInboundChange}
-                      className={inputStyle}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className={labelStyle}>담당자</label>
-                    <input
-                      type="text"
-                      name="manager"
-                      value={inboundForm.manager}
-                      onChange={handleInboundChange}
-                      placeholder="이름 입력"
-                      className={inputStyle}
-                    />
-                  </div>
-                </div>
                 <div>
                   <label className={labelStyle}>메모</label>
                   <input
@@ -155,30 +131,17 @@ const StockTransactionModal = ({ isOpen, onClose, selectedStock, onSuccess }) =>
           {activeTab === 'OUTBOUND' && (
             <div className="animate-fade-in">
               <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className={labelStyle}>출고 수량 ({selectedStock.unit}) <span className="text-rose-500">*</span></label>
-                    <input
-                      type="number"
-                      name="quantity"
-                      value={outboundForm.quantity}
-                      onChange={handleOutboundChange}
-                      placeholder="0"
-                      className={inputStyle}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className={labelStyle}>담당자</label>
-                    <input
-                      type="text"
-                      name="manager"
-                      value={outboundForm.manager}
-                      onChange={handleOutboundChange}
-                      placeholder="이름 입력"
-                      className={inputStyle}
-                    />
-                  </div>
+                <div>
+                  <label className={labelStyle}>출고 수량 ({selectedStock.unit}) <span className="text-rose-500">*</span></label>
+                  <input
+                    type="number"
+                    name="quantity"
+                    value={outboundForm.quantity}
+                    onChange={handleOutboundChange}
+                    placeholder="0"
+                    className={inputStyle}
+                    required
+                  />
                 </div>
                 <div>
                   <label className={labelStyle}>출고 사유 <span className="text-rose-500">*</span></label>
@@ -218,30 +181,17 @@ const StockTransactionModal = ({ isOpen, onClose, selectedStock, onSuccess }) =>
           {activeTab === 'ADJUST' && (
             <div className="animate-fade-in">
               <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className={labelStyle}>조정 수량 (+/-) <span className="text-rose-500">*</span></label>
-                    <input
-                      type="number"
-                      name="quantity"
-                      value={adjustmentForm.quantity}
-                      onChange={handleAdjustmentChange}
-                      placeholder="예: -5, +2"
-                      className={inputStyle}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className={labelStyle}>담당자</label>
-                    <input
-                      type="text"
-                      name="manager"
-                      value={adjustmentForm.manager}
-                      onChange={handleAdjustmentChange}
-                      placeholder="이름 입력"
-                      className={inputStyle}
-                    />
-                  </div>
+                <div>
+                  <label className={labelStyle}>조정 수량 (+/-) <span className="text-rose-500">*</span></label>
+                  <input
+                    type="number"
+                    name="quantity"
+                    value={adjustmentForm.quantity}
+                    onChange={handleAdjustmentChange}
+                    placeholder="예: -5, +2"
+                    className={inputStyle}
+                    required
+                  />
                 </div>
                 <div>
                   <label className={labelStyle}>조정 사유 <span className="text-rose-500">*</span></label>

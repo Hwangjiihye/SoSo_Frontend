@@ -13,30 +13,26 @@ export const useStockTransaction = (selectedStock, onClose, onSuccess) => {
   const [activeTab, setActiveTab] = useState('INBOUND'); // INBOUND, OUTBOUND, ADJUST
   const [isLoading, setIsLoading] = useState(false);
 
-  // 1. 입고 폼 상태
+  // 1. 입고 폼 상태 (manager, expirationDate 제거)
   const [inboundForm, setInboundForm] = useState({
     detailStockName: '',
     quantity: '',
     incomingPrice: '',
-    expirationDate: '',
-    manager: '',
     memo: '',
   });
 
-  // 2. 출고 폼 상태
+  // 2. 출고 폼 상태 (manager 제거)
   const [outboundForm, setOutboundForm] = useState({
     quantity: '',
     reason: '주방 소진',
-    manager: '',
     memo: '',
   });
 
-  // 3. 조정 폼 상태
+  // 3. 조정 폼 상태 (manager 제거)
   const [adjustmentForm, setAdjustmentForm] = useState({
     batchSeq: '', // 선택 사항
     quantity: '',
     reason: '파손/분실',
-    manager: '',
     memo: '',
   });
 
@@ -67,6 +63,13 @@ export const useStockTransaction = (selectedStock, onClose, onSuccess) => {
     setAdjustmentForm(prev => ({ ...prev, [name]: value }));
   };
 
+  // 소비기한(expirationDate) 자동 계산 로직
+  const calculateExpirationDate = (defaultDays) => {
+    const date = new Date();
+    date.setDate(date.getDate() + Number(defaultDays || 0));
+    return date.toISOString().split('T')[0]; // YYYY-MM-DD
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!selectedStock) return;
@@ -76,10 +79,18 @@ export const useStockTransaction = (selectedStock, onClose, onSuccess) => {
       const stockSeq = selectedStock.stockSeq;
 
       if (activeTab === 'INBOUND') {
-        if (!inboundForm.quantity || !inboundForm.incomingPrice || !inboundForm.expirationDate) {
+        if (!inboundForm.quantity || !inboundForm.incomingPrice) {
           throw new Error('필수 입력 항목을 확인해주세요.');
         }
-        await createIncomingStock({ stockSeq, ...inboundForm });
+
+        // 소비기한 자동 계산 적용
+        const expirationDate = calculateExpirationDate(selectedStock.defaultExpiryDays);
+        
+        await createIncomingStock({ 
+          stockSeq, 
+          ...inboundForm,
+          expirationDate // 자동 계산된 값 전송
+        });
       } else if (activeTab === 'OUTBOUND') {
         if (!outboundForm.quantity || !outboundForm.reason) {
           throw new Error('필수 입력 항목을 확인해주세요.');
