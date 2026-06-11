@@ -7,14 +7,13 @@ import StockHistoryModal from './components/StockHistoryModal';
 import StockRegistrationModal from './components/StockRegistrationModal';
 import StockTransactionModal from './components/StockTransactionModal';
 import StockActionBar from './components/StockActionBar';
+import StockEditModal from './components/StockEditModal';
 
 /**
  * @file StockPage.jsx
  * @description 재고 관리 메인 페이지
- * 와이어프레임(a3, a4, a5, a6, a7) 기반으로 사용자 요청 항목 및 기능 구현
  */
 const StockPage = () => {
-
   const {
     stocks,
     isLoading,
@@ -25,25 +24,28 @@ const StockPage = () => {
     deleteStocks,
     getStockHistory,
     registerStock,
+    editStock,
   } = useStock();
 
   const [selectedIds, setSelectedIds] = useState([]);
-  
+
   // 모달 관련 상태
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
   const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
-  
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
   const [selectedStockForHistory, setSelectedStockForHistory] = useState(null);
   const [selectedStockForTransaction, setSelectedStockForTransaction] = useState(null);
+  const [selectedStockForEdit, setSelectedStockForEdit] = useState(null);
   const [historyData, setHistoryData] = useState([]);
 
-  const handleAddStock = () => {
-    setIsRegisterModalOpen(true);
-  };
-
-  const handleRegister = (formData) => {
-    registerStock(formData);
+  const handleAddStock = () => setIsRegisterModalOpen(true);
+  const handleRegister = (formData) => registerStock(formData);
+  const handleEdit = (stockId, formData) => editStock(stockId, formData);
+  const handleEditClick = (stock) => {
+    setSelectedStockForEdit(stock);
+    setIsEditModalOpen(true);
   };
 
   const handleSelectChange = (id) => {
@@ -53,7 +55,7 @@ const StockPage = () => {
   };
 
   const handleSelectAll = () => {
-    if (selectedIds.length === stocks.length) {
+    if (selectedIds.length === stocks.length && stocks.length > 0) {
       setSelectedIds([]);
     } else {
       setSelectedIds(stocks.map(stock => stock.id));
@@ -61,16 +63,8 @@ const StockPage = () => {
   };
 
   const handleDeleteSelected = () => {
-    if (selectedIds.length === 0) {
-      alert('삭제할 항목을 선택해주세요.');
-      return;
-    }
-
-    const confirmDelete = window.confirm(
-      `정말로 선택한 ${selectedIds.length}개의 항목을 삭제하시겠습니까?\n삭제된 데이터는 복구할 수 없습니다.`
-    );
-
-    if (confirmDelete) {
+    if (selectedIds.length === 0) return;
+    if (window.confirm(`정말로 선택한 ${selectedIds.length}개의 항목을 삭제하시겠습니까?`)) {
       deleteStocks(selectedIds);
       setSelectedIds([]);
     }
@@ -88,17 +82,27 @@ const StockPage = () => {
     setIsTransactionModalOpen(true);
   };
 
-  const handleTransactionSuccess = () => {
-    fetchStocks();
+  const handleTransactionSuccess = () => fetchStocks();
+
+  // 유통기한 7일 이내 만료 재고 계산
+  const getExpiringSoonCount = () => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    return stocks.filter(stock => {
+      if (!stock.expiryDate || stock.expiryDate === '-') return false;
+      const target = new Date(stock.expiryDate);
+      target.setHours(0, 0, 0, 0);
+      const diffDays = Math.ceil((target - today) / (1000 * 60 * 60 * 24));
+      return diffDays >= 0 && diffDays <= 7;
+    }).length;
   };
 
   return (
     <div className="min-h-screen bg-gray-50 pb-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        
         <StockHeader onAddClick={handleAddStock} />
 
-        {/* 요약 카드 섹션 */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm">
             <div className="text-[11px] font-bold text-gray-400 uppercase mb-1">전체 품목</div>
@@ -116,36 +120,30 @@ const StockPage = () => {
               {stocks.filter(s => s.status === 'OUT_OF_STOCK').length}건
             </div>
           </div>
-          <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm">
-            <div className="text-[11px] font-bold text-emerald-500 uppercase mb-1">선택된 항목</div>
-            <div className="text-xl font-black text-emerald-600">{selectedIds.length}건</div>
+          <div className="bg-white p-4 rounded-2xl border border-red-200 shadow-sm ring-1 ring-red-100">
+            <div className="text-[11px] font-bold text-red-500 uppercase mb-1">유통기한 임박</div>
+            <div className="text-xl font-black text-red-600">{getExpiringSoonCount()}건</div>
           </div>
         </div>
 
-        <StockFilter 
-          filters={filters} 
-          onFilterChange={handleFilterChange} 
-          onSearch={handleSearch} 
+        <StockFilter filters={filters} onFilterChange={handleFilterChange} onSearch={handleSearch} />
+        <StockTable 
+          stocks={stocks} 
+          isLoading={isLoading} 
+          selectedIds={selectedIds}
+          onSelectChange={handleSelectChange}
+          onSelectAll={handleSelectAll}
+          onViewHistory={handleViewHistory}
+          onIncoming={handleTransactionClick}
+          onEdit={handleEditClick}
         />
-<StockTable 
-  stocks={stocks} 
-  isLoading={isLoading} 
-  selectedIds={selectedIds}
-  onSelectChange={handleSelectChange}
-  onSelectAll={handleSelectAll}
-  onViewHistory={handleViewHistory}
-  onIncoming={handleTransactionClick}
-/>
-</div>
+      </div>
 
-{/* 하단 플로팅 액션 바 - 리팩토링 및 고도화 적용 */}
-<StockActionBar 
-selectedCount={selectedIds.length}
-onCancel={() => setSelectedIds([])}
-onDelete={handleDeleteSelected}
-/>
-
-{/* 변동 이력 모달 */}
+      <StockActionBar 
+        selectedCount={selectedIds.length}
+        onCancel={() => setSelectedIds([])}
+        onDelete={handleDeleteSelected}
+      />
 
       <StockHistoryModal 
         isOpen={isHistoryModalOpen}
@@ -153,20 +151,22 @@ onDelete={handleDeleteSelected}
         stockName={selectedStockForHistory?.name}
         historyData={historyData}
       />
-
-      {/* 재고 등록 모달 */}
       <StockRegistrationModal
         isOpen={isRegisterModalOpen}
         onClose={() => setIsRegisterModalOpen(false)}
         onRegister={handleRegister}
       />
-
-      {/* 재고 거래 모달 (입고/출고/조정 통합) */}
       <StockTransactionModal
         isOpen={isTransactionModalOpen}
         onClose={() => setIsTransactionModalOpen(false)}
         selectedStock={selectedStockForTransaction}
         onSuccess={handleTransactionSuccess}
+      />
+      <StockEditModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        stock={selectedStockForEdit}
+        onEdit={handleEdit}
       />
     </div>
   );

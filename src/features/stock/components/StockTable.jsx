@@ -4,7 +4,7 @@ import React from 'react';
  * @file StockTable.jsx
  * @description 재고 현황을 보여주는 테이블 컴포넌트
  */
-const StockTable = ({ stocks, isLoading, selectedIds, onSelectChange, onSelectAll, onViewHistory, onIncoming }) => {
+const StockTable = ({ stocks, isLoading, selectedIds, onSelectChange, onSelectAll, onViewHistory, onIncoming, onEdit }) => {
   // 날짜 차이 계산 함수 (D-Day 형식)
   const getRemainingDays = (expiryDate) => {
     if (!expiryDate || expiryDate === '-') return '-';
@@ -134,7 +134,10 @@ const StockTable = ({ stocks, isLoading, selectedIds, onSelectChange, onSelectAl
                     </button>
                   </td>
                   <td className="px-6 py-4 text-center">
-                    <button className="text-gray-400 hover:text-emerald-600 text-sm font-bold transition-colors">
+                    <button 
+                      onClick={() => onEdit(stock)}
+                      className="text-[11px] font-bold text-gray-500 hover:text-emerald-600 border border-gray-200 hover:border-emerald-200 px-3 py-1 rounded-md transition-all"
+                    >
                       수정
                     </button>
                   </td>

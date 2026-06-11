@@ -60,6 +60,14 @@ export const useStock = () => {
     alert('새 품목이 등록되었습니다.');
   };
 
+  const editStock = async (stockId, stockData) => {
+    // 실제 API 연동 시: await updateStock(stockId, stockData);
+    setStocks(prev => prev.map(stock => 
+      stock.id === stockId ? { ...stock, ...stockData } : stock
+    ));
+    alert('품목 정보가 수정되었습니다.');
+  };
+
   const getStockHistory = async (stockId) => {
     // 실제 API 연동 시: return await getStockHistoryApi(stockId);
     
@@ -155,6 +163,7 @@ export const useStock = () => {
     deleteStocks,
     getStockHistory,
     registerStock,
+    editStock,
     addStockQuantity,
   };
 };
