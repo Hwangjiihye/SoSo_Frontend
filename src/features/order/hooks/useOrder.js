@@ -65,6 +65,7 @@ export const useOrder = () => {
 
   return {
     orders: filteredOrders,
+    setOrders,
     filterStatus,
     dateRange,
     handleFilterChange,
