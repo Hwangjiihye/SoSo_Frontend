@@ -73,7 +73,7 @@ const ExpenseCategoryPage = () => {
       ],
     },
     3: {
-      orderType: 'general',
+      orderType: 'personal',
       supplier: '하나 식자재 마트',
       items: [
         { name: '간장', quantity: '12개', amount: 180000 },
@@ -206,13 +206,16 @@ const ExpenseCategoryPage = () => {
         data: localCategories.map(c => c.amount),
         backgroundColor: localCategories.map(c => getChartColors(c.color)),
         borderWidth: 0,
-        hoverOffset: 10
+        hoverOffset: 0
       }
     ]
   };
 
   const chartOptions = {
     cutout: '70%',
+    layout: {
+      padding: 8,
+    },
     plugins: {
       legend: {
         display: false
@@ -320,8 +323,10 @@ const ExpenseCategoryPage = () => {
 
         {/* 지출 분포 요약 차트 섹션 추가 */}
         <div className="bg-white rounded-3xl border border-gray-100 p-8 shadow-sm mb-8 flex flex-col lg:flex-row items-center gap-12">
-          <div className="w-64 h-64 relative">
-            <Doughnut data={chartData} options={chartOptions} />
+          <div className="relative flex h-64 w-64 shrink-0 items-center justify-center p-3">
+            <div className="relative h-full w-full">
+              <Doughnut data={chartData} options={chartOptions} />
+            </div>
             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
               <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">총 지출액</span>
               <span className="text-xl font-black text-gray-900">{formatCurrency(totalExpense)}</span>
@@ -351,11 +356,6 @@ const ExpenseCategoryPage = () => {
                 <div className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${getColorClass(cat.color)}`}>
                   {cat.name}
                 </div>
-                <button className="text-gray-300 hover:text-emerald-500 transition-colors">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
-                  </svg>
-                </button>
               </div>
               <div className="mb-6">
                 <div className="text-3xl font-black text-gray-900 group-hover:text-emerald-600 transition-colors">{formatCurrency(cat.amount)}</div>
@@ -896,10 +896,11 @@ const ExpenseCategoryPage = () => {
               </div>
 
               {selectedCategory.name === '식자재비' && (
-                <div className="mt-4 grid grid-cols-2 rounded-2xl bg-gray-100 p-1.5">
+                <div className="mt-4 grid grid-cols-3 rounded-2xl bg-gray-100 p-1.5">
                   {[
                     { value: 'general', label: '일반 발주' },
                     { value: 'group', label: '공동 발주' },
+                    { value: 'personal', label: '개인 구매' },
                   ].map((orderType) => {
                     const matchingExpenses = expenses.filter(
                       exp => exp.categoryId === selectedCategory.id
@@ -982,9 +983,34 @@ const ExpenseCategoryPage = () => {
                               </p>
                             </div>
                           </div>
-                          <strong className="shrink-0 text-lg font-black text-emerald-600 sm:text-xl">
-                            {formatCurrency(item.amount)}
-                          </strong>
+                          <div className="flex shrink-0 items-center justify-between gap-3 sm:flex-col sm:items-end">
+                            <div className="flex items-center rounded-xl border border-gray-100 bg-gray-50 p-1">
+                              <button
+                                type="button"
+                                title="지출 내역 수정"
+                                className="inline-flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-[11px] font-black text-gray-500 transition-all hover:bg-white hover:text-emerald-600 hover:shadow-sm"
+                              >
+                                <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7m-1.5-10.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+                                </svg>
+                                수정
+                              </button>
+                              <span className="h-4 w-px bg-gray-200" />
+                              <button
+                                type="button"
+                                title="지출 내역 삭제"
+                                className="inline-flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-[11px] font-black text-gray-400 transition-all hover:bg-white hover:text-red-500 hover:shadow-sm"
+                              >
+                                <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3m-7 0h8" />
+                                </svg>
+                                삭제
+                              </button>
+                            </div>
+                            <strong className="text-lg font-black text-emerald-600 sm:text-xl">
+                              {formatCurrency(item.amount)}
+                            </strong>
+                          </div>
                         </div>
 
                         {selectedCategory.name === '식자재비' && ingredientTransactionDetails[item.id] && (
@@ -1009,7 +1035,7 @@ const ExpenseCategoryPage = () => {
                                 <span className="text-center">구매 수량</span>
                                 <span className="text-right">금액</span>
                               </div>
-                              <div className="divide-y divide-gray-100">
+                              <div className="max-h-40 divide-y divide-gray-100 overflow-y-auto pr-1">
                                 {ingredientTransactionDetails[item.id].items.map((transactionItem) => (
                                   <div
                                     key={transactionItem.name}
