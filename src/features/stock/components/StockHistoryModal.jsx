@@ -34,7 +34,7 @@ const StockHistoryModal = ({ isOpen, onClose, stockName, historyData }) => {
                 <th className="w-[20%] px-6 py-4 text-xs font-bold text-gray-400 uppercase text-center tracking-wider">상세 품목명</th>
                 <th className="w-[10%] px-6 py-4 text-xs font-bold text-gray-400 uppercase text-right tracking-wider">변동수량</th>
                 <th className="w-[10%] px-6 py-4 text-xs font-bold text-gray-400 uppercase text-right tracking-wider">단가</th>
-                <th className="w-[12%] px-6 py-4 text-xs font-bold text-gray-400 uppercase text-center tracking-wider">소비기한</th>
+                <th className="w-[12%] px-6 py-4 text-xs font-bold text-gray-400 uppercase text-center tracking-wider">유통기한</th>
                 <th className="w-[10%] px-6 py-4 text-xs font-bold text-gray-400 uppercase text-right tracking-wider">최종재고</th>
                 <th className="w-[18%] px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">비고</th>
               </tr>

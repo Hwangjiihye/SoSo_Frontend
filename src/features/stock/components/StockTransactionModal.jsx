@@ -114,17 +114,6 @@ const StockTransactionModal = ({ isOpen, onClose, selectedStock, onSuccess }) =>
                   </div>
                 </div>
                 <div>
-                  <label className={labelStyle}>유통기한</label>
-                  <input
-                    type="date"
-                    name="expiryDate"
-                    value={inboundForm.expiryDate}
-                    onChange={handleInboundChange}
-                    className={inputStyle}
-                    required
-                  />
-                </div>
-                <div>
                   <label className={labelStyle}>메모</label>
                   <input
                     type="text"

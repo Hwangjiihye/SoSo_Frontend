@@ -18,7 +18,6 @@ export const useStockTransaction = (selectedStock, onClose, onSuccess) => {
     productName: '',
     quantity: '',
     unitPrice: '',
-    expiryDate: '',
     memo: '',
   });
 
@@ -38,16 +37,9 @@ export const useStockTransaction = (selectedStock, onClose, onSuccess) => {
   // 초기 데이터 설정 및 자동 완성 로직
   useEffect(() => {
     if (selectedStock && activeTab === 'INBOUND') {
-      const today = new Date();
-      // 기본 소비기한 일수를 180일로 가정 (요구사항에 따라 유연하게 변경 가능)
-      const expiryDays = 180;
-      const calculatedDate = new Date(today.setDate(today.getDate() + expiryDays));
-      const formattedDate = calculatedDate.toISOString().split('T')[0];
-
       setInboundForm((prev) => ({
         ...prev,
         productName: selectedStock.name || '',
-        expiryDate: formattedDate,
       }));
     }
   }, [selectedStock, activeTab]);
