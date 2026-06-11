@@ -1,4 +1,4 @@
-import OrderPage from '../features/order/OrderPage';
+import OrderRouteWrapper from '../features/order/OrderRouteWrapper';
 import GroupOrderList from '../features/order/GroupOrderList';
 import OrderApplyPage from '../features/order/OrderApplyPage';
 
@@ -9,7 +9,7 @@ import OrderApplyPage from '../features/order/OrderApplyPage';
 const orderRoutes = [
   {
     path: '/orders', // 일반 발주 현황
-    element: <OrderPage />,
+    element: <OrderRouteWrapper />,
   },
   {
     path: '/orders/new', // 신규 발주 신청

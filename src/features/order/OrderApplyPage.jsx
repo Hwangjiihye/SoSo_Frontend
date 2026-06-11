@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import logo from '../../assets/soso로고.png';
 import MainFooter from '../../components/layout/MainFooter';
-import authStore from '../../store/authStore';
+import MainHeader from '../../components/layout/MainHeader';
 import { useOrderApply } from './hooks/useOrderApply';
 import {check} from '../../apis/orderApi';
 
@@ -13,12 +12,7 @@ import {check} from '../../apis/orderApi';
  */
 function OrderApplyPage() {
   const navigate = useNavigate();
-  const logout = authStore((state) => state.logout);
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const [isOrderDropdownOpen, setIsOrderDropdownOpen] = useState(false);
-
   const [recommendedStocks, setRecommendedStocks] = useState([]);
-  const [recommendList, setRecommendList] = useState([]);
   const [selectedSupplierItem, setSelectedSupplierItem] = useState(null);
   const [openModal, setOpenModal] = useState(false);
 
@@ -31,7 +25,6 @@ function OrderApplyPage() {
     filteredSupplierItems,
     handleInfoChange,
     handleItemChange,
-    addItem,
     addSelectedItem,
     removeItem,
     handleSubmit
@@ -42,33 +35,17 @@ const supplierRealName = suppliers.find(
   (supplier) => String(supplier.userSeq) === String(orderInfo.supplier)
 );
 
-  const handleLogOut = () => {
-    logout();
-    alert("로그아웃 되었습니다.");
-    navigate("/");
-  };
-
   // 재고랑 발주랑 맞는지 확인 후 선택
   const handleSelectSupplierItem = async (item) => {
   console.log('선택한 품목:', item);
   
   try {
     const result = await check(item.itemName);
-
     console.log('재고 추천 응답:', result);
-
-    // 예: 추천 결과 state에 저장
     setRecommendedStocks(result);
-
-    // 기존 발주 품목 목록에 추가
     addSelectedItem(item);
-
-    // 어떤 거래처 품목을 눌렀는지 저장
     setSelectedSupplierItem(item);
-
-    // 모달 Open은 데이터 저장 후에
     setOpenModal(true);
-
   } catch (error) {
     console.error('재고 추천 조회 실패:', error);
     alert('재고 추천 조회에 실패했습니다.');
@@ -82,58 +59,7 @@ const handleCloseModal = () => {
 
   return (
     <div className="min-h-screen bg-[#F8F9FA] text-gray-800 font-sans">
-      {/* Header */}
-      <header className="grid grid-cols-3 items-center py-4 px-6 md:px-12 border-b border-gray-200 bg-white sticky top-0 z-50 shadow-sm">
-        <div className="flex items-center gap-1 cursor-pointer" onClick={() => navigate('/')}>
-          <img src={logo} alt="SoSo Logo" className="w-10 h-10 object-contain" />
-          <div className="text-[32px] font-black text-[#1d9e75] tracking-tighter leading-none">SoSo</div>
-        </div>
-        <nav className="hidden md:flex justify-center gap-1 border border-gray-100 rounded-xl p-1 bg-gray-50 w-fit mx-auto relative">
-          <Link to="/" className="px-5 py-2 text-sm font-medium text-gray-500 hover:text-emerald-600 transition-colors whitespace-nowrap">홈</Link>
-          
-          <div 
-            className="relative"
-            onMouseEnter={() => setIsOrderDropdownOpen(true)}
-            onMouseLeave={() => setIsOrderDropdownOpen(false)}
-          >
-            <div className={`px-5 py-2 text-sm font-medium rounded-lg cursor-pointer transition-all whitespace-nowrap ${isOrderDropdownOpen ? 'bg-white text-emerald-600 border-gray-100' : 'text-gray-500 hover:text-emerald-600'}`}>
-              발주 관리
-            </div>
-            
-            <div className={`absolute top-full left-0 w-48 pt-2 z-[60] transition-all duration-200 ${isOrderDropdownOpen ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-2'}`}>
-              <div className="bg-white border border-gray-100 rounded-2xl shadow-xl p-2">
-                <Link to="/orders" className="block w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl transition-colors">
-                  일반 발주 현황
-                </Link>
-                <Link to="/group-orders" className="block w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl transition-colors">
-                  공동 발주 현황
-                </Link>
-              </div>
-            </div>
-          </div>
-
-          <Link to="/orders/new" className="px-5 py-2 text-sm font-bold text-emerald-600 bg-white rounded-lg shadow-sm border border-gray-100 whitespace-nowrap cursor-pointer">
-            발주 신청
-          </Link>
-        </nav>
-        <div className="flex items-center justify-end gap-5">
-          <div className="relative">
-            <div 
-              onClick={() => setIsProfileOpen(!isProfileOpen)} 
-              className="flex items-center gap-2 border border-gray-200 rounded-full py-1.5 px-3 bg-white hover:border-emerald-200 cursor-pointer transition-all"
-            >
-              <div className="w-7 h-7 bg-emerald-500 text-white rounded-full flex items-center justify-center text-xs font-bold">김</div>
-              <span className="text-sm font-bold text-gray-700">김민준</span>
-            </div>
-            {isProfileOpen && (
-              <div className="absolute right-0 mt-3 w-48 bg-white border border-gray-100 rounded-2xl shadow-xl p-2 z-[60]">
-                <button className="w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl transition-colors">마이페이지</button>
-                <button onClick={handleLogOut} className="w-full text-left px-4 py-3 text-sm font-medium text-red-500 hover:bg-red-50 rounded-xl transition-colors">로그아웃</button>
-              </div>
-            )}
-          </div>
-        </div>
-      </header>
+      <MainHeader activeMenu="발주 관리" />
 
       <main className="max-w-7xl mx-auto px-6 py-10">
         <div className="flex justify-between items-end mb-8">
@@ -202,7 +128,7 @@ const handleCloseModal = () => {
               </div>
             </section>
 
-            {/* 신규 섹션: 공급업체 등록 물품 (공급업체 선택 시 표시) */}
+            {/* 신규 섹션: 공급업체 등록 물품 */}
             {orderInfo.supplier && (
               <section className="bg-white rounded-[32px] border border-gray-100 shadow-sm overflow-hidden transition-all duration-500 animate-in fade-in slide-in-from-top-4">
                 <div className="p-8 border-b border-gray-50 flex justify-between items-center bg-white">
@@ -235,7 +161,7 @@ const handleCloseModal = () => {
                       ) : (filteredSupplierItems.map((item) => (
                         <tr key={item.itemSeq} className="group hover:bg-emerald-50/40 transition-all cursor-default">
                           <td className="px-3 py-4 text-center text-[12px] align-middle">
-                            이미지{/* <img src={item.image} alt={item.name} className="w-14 h-14 rounded-lg object-cover mx-auto border border-gray-100 bg-white shadow-sm group-hover:border-emerald-200 transition-all" /> */}
+                            이미지
                           </td>
                           <td className="px-3 py-4 text-center align-middle text-sm font-bold text-gray-500 font-mono truncate whitespace-nowrap">{item.itemCode}</td>
                           <td className="px-3 py-4 text-center align-middle text-sm font-black text-gray-800 truncate whitespace-nowrap">{item.itemName}</td>
@@ -365,15 +291,12 @@ const handleCloseModal = () => {
                 <span className="w-1.5 h-6 bg-emerald-500 rounded-full"></span>
                 내 재고 추천
               </h3>
-
               <p className="text-base text-gray-500 font-semibold mb-5">
                 선택한 거래처 품목: 
                 <span className="text-emerald-600 font-black ml-2">
                   {selectedSupplierItem?.itemName}
                 </span>
               </p>
-
-              
 
               {recommendedStocks.length === 0 ? (
                 <>
@@ -406,7 +329,6 @@ const handleCloseModal = () => {
                           현재 수량: {stock.quantity} / 안전재고: {stock.safety_stock}
                         </p>
                       </div>
-
             <button className="px-4 py-2 bg-emerald-600 text-white text-xs font-black rounded-xl hover:bg-emerald-700 transition-all" onClick={handleCloseModal}>
               이 재고로 연결
             </button>
@@ -417,12 +339,6 @@ const handleCloseModal = () => {
   </section>
   </div>
 )}
-
-
-
-
-
-
 
           {/* Right Column: 결제 및 배송 조건 */}
           <div className="space-y-8">
