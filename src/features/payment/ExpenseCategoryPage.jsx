@@ -33,9 +33,9 @@ const ExpenseCategoryPage = () => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isSettlementMenuOpen, setIsSettlementMenuOpen] = useState(false);
   const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false); // 비용 등록 모달 상태
-  const [isAddCategoryModalOpen, setIsAddCategoryModalOpen] = useState(false); // 카테고리 추가 모달 상태
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false); // 지출 상세 모달 상태 추가
   const [selectedCategory, setSelectedCategory] = useState(null); // 선택된 카테고리 상태 추가
+  const [ingredientOrderType, setIngredientOrderType] = useState('general');
 
   // 지출 내역 예시 데이터 상태
   const [expenses, setExpenses] = useState([
@@ -52,6 +52,37 @@ const ExpenseCategoryPage = () => {
     { id: 11, categoryId: 6, date: '2026-06-08', title: '매장 청소 세제 및 화장지 위생 비품 구입', amount: 150000, memo: '이마트 트레이더스' },
     { id: 12, categoryId: 6, date: '2026-06-03', title: '정수기 및 식기세척기 렌탈 관리비 납부', amount: 300000, memo: '코웨이 렌탈 지출' },
   ]);
+
+  const ingredientTransactionDetails = {
+    1: {
+      orderType: 'general',
+      supplier: '신선 청과물 시장',
+      items: [
+        { name: '양파', quantity: '20kg', amount: 45000 },
+        { name: '대파', quantity: '10단', amount: 30000 },
+        { name: '감자', quantity: '15kg', amount: 45000 },
+      ],
+    },
+    2: {
+      orderType: 'group',
+      supplier: '동원 유통 정육',
+      items: [
+        { name: '냉동 삼겹살', quantity: '50kg', amount: 1750000 },
+        { name: '돼지 목살', quantity: '20kg', amount: 650000 },
+        { name: '소고기 우둔살', quantity: '10kg', amount: 800000 },
+      ],
+    },
+    3: {
+      orderType: 'general',
+      supplier: '하나 식자재 마트',
+      items: [
+        { name: '간장', quantity: '12개', amount: 180000 },
+        { name: '고추장', quantity: '8개', amount: 240000 },
+        { name: '식용유', quantity: '10개', amount: 360000 },
+        { name: '기본 조미료 세트', quantity: '10세트', amount: 400000 },
+      ],
+    },
+  };
   
   // 비용 등록 폼 상태
   const [expenseForm, setExpenseForm] = useState({
@@ -61,12 +92,12 @@ const ExpenseCategoryPage = () => {
     title: '',
     memo: ''
   });
-
-  // 카테고리 추가 폼 상태
-  const [newCategoryForm, setNewCategoryForm] = useState({
-    name: '',
-    color: 'emerald'
-  });
+  const [selectedSupplier, setSelectedSupplier] = useState('');
+  const [selectedPurchaseOrder, setSelectedPurchaseOrder] = useState('');
+  const [selectedGroupPurchase, setSelectedGroupPurchase] = useState('');
+  const [selectedGroupPurchaseOrder, setSelectedGroupPurchaseOrder] = useState('');
+  const [selectedDirectPurchaseItems, setSelectedDirectPurchaseItems] = useState([]);
+  const [ingredientExpenseType, setIngredientExpenseType] = useState('general');
 
   // 초기 데이터 연동
   useEffect(() => {
@@ -162,33 +193,9 @@ const ExpenseCategoryPage = () => {
     alert("지출 비용이 성공적으로 등록되었습니다!");
   };
 
-  // 새 카테고리 추가 핸들러
-  const handleAddCategory = (e) => {
-    e.preventDefault();
-    if (!newCategoryForm.name) {
-      alert("카테고리 이름을 입력해 주세요.");
-      return;
-    }
-
-    const colors = ['emerald', 'blue', 'orange', 'purple', 'pink', 'gray'];
-    const randomColor = colors[localCategories.length % colors.length];
-
-    const newCat = {
-      id: localCategories.length + 1,
-      name: newCategoryForm.name,
-      count: 0,
-      amount: 0,
-      color: newCategoryForm.color || randomColor
-    };
-
-    setLocalCategories([...localCategories, newCat]);
-    setIsAddCategoryModalOpen(false);
-    setNewCategoryForm({ name: '', color: 'emerald' });
-    alert("새 카테고리가 추가되었습니다.");
-  };
-
   const handleOpenDetails = (cat) => {
     setSelectedCategory(cat);
+    setIngredientOrderType('general');
     setIsDetailsModalOpen(true);
   };
 
@@ -303,20 +310,12 @@ const ExpenseCategoryPage = () => {
             <h2 className="text-2xl font-black text-gray-900 mb-1">비용 카테고리 관리</h2>
             <p className="text-sm text-gray-500">매장의 지출 항목을 체계적으로 분류하고 관리하세요.</p>
           </div>
-          <div className="flex gap-3">
-            <button 
-              onClick={() => setIsExpenseModalOpen(true)}
-              className="px-6 py-3 bg-emerald-600 text-white rounded-2xl text-sm font-black hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-200"
-            >
-              + 지출 비용 등록
-            </button>
-            <button 
-              onClick={() => setIsAddCategoryModalOpen(true)}
-              className="px-6 py-3 bg-white text-emerald-600 border border-emerald-200 rounded-2xl text-sm font-black hover:bg-emerald-50 transition-all shadow-sm"
-            >
-              + 새 카테고리 추가
-            </button>
-          </div>
+          <button 
+            onClick={() => setIsExpenseModalOpen(true)}
+            className="px-6 py-3 bg-emerald-600 text-white rounded-2xl text-sm font-black hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-200"
+          >
+            + 지출 비용 등록
+          </button>
         </div>
 
         {/* 지출 분포 요약 차트 섹션 추가 */}
@@ -396,7 +395,11 @@ const ExpenseCategoryPage = () => {
       {isExpenseModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 overflow-y-auto">
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setIsExpenseModalOpen(false)}></div>
-          <div className="relative bg-white w-full max-w-lg rounded-3xl shadow-2xl p-8 animate-fade-in-up my-8">
+          <div className={`relative bg-white w-full rounded-3xl shadow-2xl p-8 animate-fade-in-up my-8 ${
+            localCategories.find(cat => cat.id === Number(expenseForm.categoryId))?.name === '식자재비'
+              ? 'max-w-3xl'
+              : 'max-w-lg'
+          }`}>
             <div className="flex justify-between items-center mb-6">
               <div>
                 <h3 className="text-xl font-black text-gray-900">지출 비용 등록</h3>
@@ -422,7 +425,15 @@ const ExpenseCategoryPage = () => {
                 <select 
                   className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all"
                   value={expenseForm.categoryId}
-                  onChange={(e) => setExpenseForm({...expenseForm, categoryId: e.target.value})}
+                  onChange={(e) => {
+                    setExpenseForm({...expenseForm, categoryId: e.target.value});
+                    setSelectedSupplier('');
+                    setSelectedPurchaseOrder('');
+                    setSelectedGroupPurchase('');
+                    setSelectedGroupPurchaseOrder('');
+                    setSelectedDirectPurchaseItems([]);
+                    setIngredientExpenseType('general');
+                  }}
                   required
                 >
                   <option value="">카테고리를 선택하세요</option>
@@ -432,18 +443,357 @@ const ExpenseCategoryPage = () => {
                 </select>
               </div>
 
-              <div>
-                <label className="block text-[10px] font-bold text-gray-400 mb-1.5 uppercase tracking-widest">지출 금액 (원)</label>
-                <input 
-                  type="number" 
-                  placeholder="금액 입력"
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all"
-                  value={expenseForm.amount}
-                  onChange={(e) => setExpenseForm({...expenseForm, amount: e.target.value})}
-                  min="0"
-                  required
-                />
-              </div>
+              {localCategories.find(cat => cat.id === Number(expenseForm.categoryId))?.name === '식자재비' && (
+                <div className="space-y-4 rounded-2xl border border-emerald-100 bg-emerald-50/40 p-5">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <h4 className="text-sm font-black text-gray-900">식자재 구매 유형</h4>
+                      <p className="mt-1 text-xs font-medium text-gray-500">
+                        비용을 등록할 식자재 구매 유형을 선택하세요.
+                      </p>
+                    </div>
+                    <span className="shrink-0 rounded-full bg-white px-2.5 py-1 text-[10px] font-black text-emerald-600 ring-1 ring-emerald-100">
+                      식자재비 전용
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2 rounded-xl bg-emerald-100/60 p-1.5">
+                    {[
+                      { value: 'general', label: '일반 발주', description: '거래처 발주서' },
+                      { value: 'group', label: '공동 발주', description: '공동구매 내역' },
+                      { value: 'direct', label: '직접 구매', description: '현장 직접 구매' },
+                    ].map((type) => {
+                      const isSelected = ingredientExpenseType === type.value;
+
+                      return (
+                        <button
+                          key={type.value}
+                          type="button"
+                          onClick={() => {
+                            setIngredientExpenseType(type.value);
+                            setSelectedSupplier('');
+                            setSelectedPurchaseOrder('');
+                            setSelectedGroupPurchase('');
+                            setSelectedGroupPurchaseOrder('');
+                            setSelectedDirectPurchaseItems([]);
+                          }}
+                          className={`rounded-lg px-2 py-3 text-center transition-all ${
+                            isSelected
+                              ? 'bg-white text-emerald-700 shadow-sm ring-1 ring-emerald-100'
+                              : 'text-emerald-700/50 hover:bg-white/50 hover:text-emerald-700'
+                          }`}
+                        >
+                          <span className="block text-xs font-black sm:text-sm">{type.label}</span>
+                          <span className={`mt-1 hidden text-[9px] font-bold sm:block ${
+                            isSelected ? 'text-gray-400' : 'text-emerald-700/40'
+                          }`}>
+                            {type.description}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {ingredientExpenseType === 'general' ? (
+                    <div className="h-[400px] space-y-4 overflow-hidden rounded-xl border border-emerald-100 bg-white/60 p-4">
+                      <div>
+                        <h5 className="text-xs font-black text-gray-800">일반 발주 내역 연결</h5>
+                        <p className="mt-1 text-[11px] font-medium text-gray-400">
+                          거래처를 선택한 뒤 비용과 연결할 발주서를 확인하세요.
+                        </p>
+                      </div>
+
+                      <div>
+                        <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-widest text-gray-400">
+                          거래처명
+                        </label>
+                        <div className="relative">
+                          <select
+                            value={selectedSupplier}
+                            onChange={(e) => {
+                              setSelectedSupplier(e.target.value);
+                              setSelectedPurchaseOrder('');
+                            }}
+                            className="w-full appearance-none rounded-xl border border-gray-200 bg-white px-4 py-3 pr-10 text-sm font-bold text-gray-700 outline-none transition-all focus:border-emerald-300 focus:ring-2 focus:ring-emerald-500/10"
+                          >
+                            <option value="">거래처를 선택하세요</option>
+                            <option value="fresh-market">신선 청과물 시장</option>
+                            <option value="dongwon-meat">동원 유통 정육</option>
+                            <option value="hana-food">하나 식자재 마트</option>
+                          </select>
+                          <svg className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </div>
+                      </div>
+
+                      {selectedSupplier ? (
+                        <div>
+                          <div className="mb-2 flex items-center justify-between">
+                            <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
+                              발주서 목록
+                            </label>
+                            <span className="text-[10px] font-bold text-gray-400">최근 발주 3건</span>
+                          </div>
+
+                          <div className="max-h-48 space-y-2 overflow-y-auto">
+                            {[
+                              { id: 'PO-20260610-03', date: '2026.06.10', item: '양파 외 4개 품목', amount: '1,240,000원', status: '입고 완료' },
+                              { id: 'PO-20260608-02', date: '2026.06.08', item: '냉동 삼겹살 외 2개 품목', amount: '3,200,000원', status: '검수 완료' },
+                              { id: 'PO-20260605-01', date: '2026.06.05', item: '소스 외 7개 품목', amount: '1,180,000원', status: '정산 대기' },
+                            ].map((order) => {
+                              const isSelected = selectedPurchaseOrder === order.id;
+
+                              return (
+                                <button
+                                  key={order.id}
+                                  type="button"
+                                  onClick={() => setSelectedPurchaseOrder(order.id)}
+                                  className={`w-full rounded-xl border p-4 text-left transition-all ${
+                                    isSelected
+                                      ? 'border-emerald-400 bg-white ring-2 ring-emerald-500/10'
+                                      : 'border-gray-100 bg-white/80 hover:border-emerald-200 hover:bg-white'
+                                  }`}
+                                >
+                                  <div className="flex items-start gap-3">
+                                    <span className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${
+                                      isSelected ? 'border-emerald-500 bg-emerald-500' : 'border-gray-300 bg-white'
+                                    }`}>
+                                      {isSelected && <span className="h-2 w-2 rounded-full bg-white" />}
+                                    </span>
+                                    <div className="min-w-0 flex-1">
+                                      <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                                        <div className="flex items-center gap-2">
+                                          <span className="text-xs font-black text-gray-800">{order.id}</span>
+                                          <span className="rounded-md bg-gray-100 px-2 py-0.5 text-[9px] font-bold text-gray-500">
+                                            {order.status}
+                                          </span>
+                                        </div>
+                                        <strong className="text-sm font-black text-emerald-600">{order.amount}</strong>
+                                      </div>
+                                      <div className="mt-1 flex items-center gap-2 text-xs font-medium text-gray-500">
+                                        <span>{order.date}</span>
+                                        <span className="h-1 w-1 rounded-full bg-gray-300" />
+                                        <span className="truncate">{order.item}</span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex h-24 items-center justify-center rounded-xl border border-dashed border-emerald-200 bg-white/60 px-4 text-center">
+                          <p className="text-xs font-bold text-gray-400">
+                            거래처를 선택하면 발주서 목록이 표시됩니다.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  ) : ingredientExpenseType === 'group' ? (
+                    <div className="h-[400px] space-y-4 overflow-hidden rounded-xl border border-emerald-100 bg-white/60 p-4">
+                      <div>
+                        <h5 className="text-xs font-black text-gray-800">공동 발주 내역 연결</h5>
+                        <p className="mt-1 text-[11px] font-medium text-gray-400">
+                          공동 구매 그룹을 선택한 뒤 비용과 연결할 구매 내역을 확인하세요.
+                        </p>
+                      </div>
+
+                      <div>
+                        <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-widest text-gray-400">
+                          공동 구매 그룹명
+                        </label>
+                        <div className="relative">
+                          <select
+                            value={selectedGroupPurchase}
+                            onChange={(e) => {
+                              setSelectedGroupPurchase(e.target.value);
+                              setSelectedGroupPurchaseOrder('');
+                            }}
+                            className="w-full appearance-none rounded-xl border border-gray-200 bg-white px-4 py-3 pr-10 text-sm font-bold text-gray-700 outline-none transition-all focus:border-emerald-300 focus:ring-2 focus:ring-emerald-500/10"
+                          >
+                            <option value="">공동 구매 그룹을 선택하세요</option>
+                            <option value="seoul-restaurant">서울 서부 외식업 공동구매</option>
+                            <option value="fresh-food">우리동네 신선식품 구매모임</option>
+                            <option value="small-business">소상공인 식자재 공동구매 3기</option>
+                          </select>
+                          <svg className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </div>
+                      </div>
+
+                      {selectedGroupPurchase ? (
+                        <div>
+                          <div className="mb-2 flex items-center justify-between">
+                            <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
+                              공동구매 품목 목록
+                            </label>
+                            <span className="text-[10px] font-bold text-gray-400">최근 공동구매 3건</span>
+                          </div>
+
+                          <div className="max-h-48 space-y-2 overflow-y-auto">
+                            {[
+                              { id: 'GO-20260611-01', date: '2026.06.11', item: '국내산 양파 20kg 외 2개 품목', amount: '890,000원', status: '분배 완료', members: '8개 매장' },
+                              { id: 'GO-20260607-04', date: '2026.06.07', item: '냉동 삼겹살 50kg 외 1개 품목', amount: '2,450,000원', status: '수령 완료', members: '5개 매장' },
+                              { id: 'GO-20260602-02', date: '2026.06.02', item: '대용량 식용유 외 5개 품목', amount: '1,360,000원', status: '정산 대기', members: '10개 매장' },
+                            ].map((groupOrder) => {
+                              const isSelected = selectedGroupPurchaseOrder === groupOrder.id;
+
+                              return (
+                                <button
+                                  key={groupOrder.id}
+                                  type="button"
+                                  onClick={() => setSelectedGroupPurchaseOrder(groupOrder.id)}
+                                  className={`w-full rounded-xl border p-4 text-left transition-all ${
+                                    isSelected
+                                      ? 'border-emerald-400 bg-white ring-2 ring-emerald-500/10'
+                                      : 'border-gray-100 bg-white/80 hover:border-emerald-200 hover:bg-white'
+                                  }`}
+                                >
+                                  <div className="flex items-start gap-3">
+                                    <span className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${
+                                      isSelected ? 'border-emerald-500 bg-emerald-500' : 'border-gray-300 bg-white'
+                                    }`}>
+                                      {isSelected && <span className="h-2 w-2 rounded-full bg-white" />}
+                                    </span>
+                                    <div className="min-w-0 flex-1">
+                                      <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                                        <div className="flex flex-wrap items-center gap-2">
+                                          <span className="text-xs font-black text-gray-800">{groupOrder.id}</span>
+                                          <span className="rounded-md bg-emerald-50 px-2 py-0.5 text-[9px] font-bold text-emerald-600">
+                                            {groupOrder.status}
+                                          </span>
+                                          <span className="rounded-md bg-gray-100 px-2 py-0.5 text-[9px] font-bold text-gray-500">
+                                            {groupOrder.members}
+                                          </span>
+                                        </div>
+                                        <strong className="text-sm font-black text-emerald-600">{groupOrder.amount}</strong>
+                                      </div>
+                                      <div className="mt-1 flex items-center gap-2 text-xs font-medium text-gray-500">
+                                        <span>{groupOrder.date}</span>
+                                        <span className="h-1 w-1 rounded-full bg-gray-300" />
+                                        <span className="truncate">{groupOrder.item}</span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex h-24 items-center justify-center rounded-xl border border-dashed border-emerald-200 bg-white/60 px-4 text-center">
+                          <p className="text-xs font-bold text-gray-400">
+                            공동 구매 그룹을 선택하면 구매 품목 목록이 표시됩니다.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="flex h-[440px] flex-col gap-4 overflow-hidden rounded-xl border border-emerald-100 bg-white/60 p-4">
+                      <div className="flex items-start justify-between gap-4">
+                        <div>
+                          <h5 className="text-xs font-black text-gray-800">직접 구매</h5>
+                          <p className="mt-1 text-[11px] font-medium text-gray-400">
+                            재고관리 품목 목록에서 직접 구매한 품목을 선택하세요.
+                          </p>
+                        </div>
+                        <span className="shrink-0 rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-black text-emerald-600">
+                          {selectedDirectPurchaseItems.length}개 선택
+                        </span>
+                      </div>
+
+                      <div className="flex min-h-0 flex-1 flex-col">
+                        <div className="mb-2 flex items-center justify-between">
+                          <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
+                            재고관리 품목 목록
+                          </label>
+                          <span className="text-[10px] font-bold text-gray-400">총 6개 품목</span>
+                        </div>
+
+                        <div className="min-h-0 flex-1 overflow-y-auto rounded-xl border border-gray-100 bg-white">
+                          {[
+                            { id: 'INV-001', name: '양파', category: '채소류', unit: 'kg', stock: '12kg', price: 3200 },
+                            { id: 'INV-002', name: '대파', category: '채소류', unit: '단', stock: '6단', price: 2800 },
+                            { id: 'INV-003', name: '감자', category: '채소류', unit: 'kg', stock: '8kg', price: 4500 },
+                            { id: 'INV-004', name: '냉동 삼겹살', category: '육류', unit: 'kg', stock: '15kg', price: 17500 },
+                            { id: 'INV-005', name: '식용유', category: '조미료', unit: '개', stock: '4개', price: 12800 },
+                            { id: 'INV-006', name: '고추장', category: '조미료', unit: '개', stock: '3개', price: 9600 },
+                          ].map((inventoryItem, index, inventoryItems) => {
+                            const isSelected = selectedDirectPurchaseItems.includes(inventoryItem.id);
+
+                            return (
+                              <button
+                                key={inventoryItem.id}
+                                type="button"
+                                onClick={() => {
+                                  setSelectedDirectPurchaseItems((currentItems) => (
+                                    isSelected
+                                      ? currentItems.filter(itemId => itemId !== inventoryItem.id)
+                                      : [...currentItems, inventoryItem.id]
+                                  ));
+                                }}
+                                className={`flex w-full items-center gap-3 px-4 py-2 text-left transition-colors ${
+                                  index < inventoryItems.length - 1 ? 'border-b border-gray-100' : ''
+                                } ${isSelected ? 'bg-emerald-50/70' : 'hover:bg-gray-50'}`}
+                              >
+                                <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md border transition-colors ${
+                                  isSelected
+                                    ? 'border-emerald-500 bg-emerald-500 text-white'
+                                    : 'border-gray-300 bg-white text-transparent'
+                                }`}>
+                                  <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
+                                  </svg>
+                                </span>
+
+                                <div className="min-w-0 flex-1">
+                                  <div className="flex items-center gap-2">
+                                    <strong className="truncate text-sm font-black text-gray-800">
+                                      {inventoryItem.name}
+                                    </strong>
+                                    <span className="rounded-md bg-gray-100 px-2 py-0.5 text-[9px] font-bold text-gray-500">
+                                      {inventoryItem.category}
+                                    </span>
+                                  </div>
+                                  <span className="mt-0.5 block text-[10px] font-medium text-gray-400">
+                                    현재 재고 {inventoryItem.stock}
+                                  </span>
+                                </div>
+
+                                <div className="shrink-0 text-right">
+                                  <span className="block text-[9px] font-bold text-gray-400">가격</span>
+                                  <strong className="mt-0.5 block text-sm font-black text-emerald-600">
+                                    {formatCurrency(inventoryItem.price)}
+                                  </strong>
+                                </div>
+
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {localCategories.find(cat => cat.id === Number(expenseForm.categoryId))?.name !== '식자재비' && (
+                <div>
+                  <label className="block text-[10px] font-bold text-gray-400 mb-1.5 uppercase tracking-widest">지출 금액 (원)</label>
+                  <input 
+                    type="number" 
+                    placeholder="금액 입력"
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-black focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all"
+                    value={expenseForm.amount}
+                    onChange={(e) => setExpenseForm({...expenseForm, amount: e.target.value})}
+                    min="0"
+                    required
+                  />
+                </div>
+              )}
 
               <div>
                 <label className="block text-[10px] font-bold text-gray-400 mb-1.5 uppercase tracking-widest">지출 내역</label>
@@ -481,73 +831,6 @@ const ExpenseCategoryPage = () => {
                   className="flex-grow py-4 bg-emerald-600 text-white rounded-2xl font-black text-sm hover:bg-emerald-700 transition-all shadow-xl shadow-emerald-200"
                 >
                   등록 완료
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* 새 카테고리 추가 모달 */}
-      {isAddCategoryModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 overflow-y-auto">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setIsAddCategoryModalOpen(false)}></div>
-          <div className="relative bg-white w-full max-w-lg rounded-3xl shadow-2xl p-8 animate-fade-in-up my-8">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xl font-black text-gray-900">새 카테고리 추가</h3>
-              <button onClick={() => setIsAddCategoryModalOpen(false)} className="text-gray-400 hover:text-gray-600 text-2xl">×</button>
-            </div>
-            
-            <form onSubmit={handleAddCategory} className="space-y-5">
-              <div>
-                <label className="block text-[10px] font-bold text-gray-400 mb-1.5 uppercase tracking-widest">카테고리 이름</label>
-                <input 
-                  type="text" 
-                  placeholder="예: 마케팅비, 차량유지비"
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all"
-                  value={newCategoryForm.name}
-                  onChange={(e) => setNewCategoryForm({...newCategoryForm, name: e.target.value})}
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-[10px] font-bold text-gray-400 mb-1.5 uppercase tracking-widest">대표 색상</label>
-                <div className="grid grid-cols-6 gap-2">
-                  {['emerald', 'blue', 'orange', 'purple', 'pink', 'gray'].map((col) => {
-                    let colBg = 'bg-gray-500';
-                    if (col === 'emerald') colBg = 'bg-emerald-500';
-                    else if (col === 'blue') colBg = 'bg-blue-500';
-                    else if (col === 'orange') colBg = 'bg-orange-500';
-                    else if (col === 'purple') colBg = 'bg-purple-500';
-                    else if (col === 'pink') colBg = 'bg-pink-500';
-                    
-                    const isSelected = newCategoryForm.color === col;
-                    return (
-                      <button
-                        key={col}
-                        type="button"
-                        onClick={() => setNewCategoryForm({...newCategoryForm, color: col})}
-                        className={`w-10 h-10 rounded-full ${colBg} flex items-center justify-center transition-all ${isSelected ? 'ring-4 ring-offset-2 ring-emerald-500 scale-105' : 'hover:scale-105'}`}
-                      />
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div className="flex gap-3 pt-4">
-                <button 
-                  type="button"
-                  onClick={() => setIsAddCategoryModalOpen(false)}
-                  className="flex-grow py-4 bg-gray-100 text-gray-600 rounded-2xl font-black text-sm hover:bg-gray-200 transition-all"
-                >
-                  취소
-                </button>
-                <button 
-                  type="submit"
-                  className="flex-grow py-4 bg-emerald-600 text-white rounded-2xl font-black text-sm hover:bg-emerald-700 transition-all shadow-xl shadow-emerald-200"
-                >
-                  추가 완료
                 </button>
               </div>
             </form>
@@ -611,13 +894,68 @@ const ExpenseCategoryPage = () => {
                   </strong>
                 </div>
               </div>
+
+              {selectedCategory.name === '식자재비' && (
+                <div className="mt-4 grid grid-cols-2 rounded-2xl bg-gray-100 p-1.5">
+                  {[
+                    { value: 'general', label: '일반 발주' },
+                    { value: 'group', label: '공동 발주' },
+                  ].map((orderType) => {
+                    const matchingExpenses = expenses.filter(
+                      exp => exp.categoryId === selectedCategory.id
+                        && ingredientTransactionDetails[exp.id]?.orderType === orderType.value
+                    );
+                    const matchingAmount = matchingExpenses.reduce((total, exp) => total + exp.amount, 0);
+                    const isActive = ingredientOrderType === orderType.value;
+
+                    return (
+                      <button
+                        key={orderType.value}
+                        type="button"
+                        onClick={() => setIngredientOrderType(orderType.value)}
+                        className={`rounded-xl px-3 py-3 text-left transition-all ${
+                          isActive
+                            ? 'bg-white text-gray-900 shadow-sm'
+                            : 'text-gray-400 hover:text-gray-600'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-sm font-black">{orderType.label}</span>
+                          <span className={`rounded-full px-2 py-0.5 text-[10px] font-black ${
+                            isActive ? 'bg-emerald-50 text-emerald-600' : 'bg-gray-200/70 text-gray-500'
+                          }`}>
+                            {matchingExpenses.length}건
+                          </span>
+                        </div>
+                        <span className={`mt-1 block text-xs font-bold ${
+                          isActive ? 'text-emerald-600' : 'text-gray-400'
+                        }`}>
+                          {formatCurrency(matchingAmount)}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
             </header>
 
             <div className="flex-1 overflow-y-auto bg-gray-50/70 px-4 py-4 sm:px-8 sm:py-6">
-              {expenses.filter(exp => exp.categoryId === selectedCategory.id).length > 0 ? (
+              {expenses.filter(
+                exp => exp.categoryId === selectedCategory.id
+                  && (
+                    selectedCategory.name !== '식자재비'
+                    || ingredientTransactionDetails[exp.id]?.orderType === ingredientOrderType
+                  )
+              ).length > 0 ? (
                 <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white">
                   {expenses
-                    .filter(exp => exp.categoryId === selectedCategory.id)
+                    .filter(
+                      exp => exp.categoryId === selectedCategory.id
+                        && (
+                          selectedCategory.name !== '식자재비'
+                          || ingredientTransactionDetails[exp.id]?.orderType === ingredientOrderType
+                        )
+                    )
                     .map((item, index, filteredItems) => (
                       <article
                         key={item.id}
@@ -648,6 +986,50 @@ const ExpenseCategoryPage = () => {
                             {formatCurrency(item.amount)}
                           </strong>
                         </div>
+
+                        {selectedCategory.name === '식자재비' && ingredientTransactionDetails[item.id] && (
+                          <div className="mt-4 grid gap-3 rounded-xl border border-emerald-100 bg-emerald-50/50 p-4 sm:grid-cols-[180px_1fr]">
+                            <div>
+                              <span className="block text-[10px] font-bold text-emerald-600/70">거래처명</span>
+                              <div className="mt-2 flex items-center gap-2">
+                                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white text-emerald-600 shadow-sm ring-1 ring-emerald-100">
+                                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 21h18M5 21V7l7-4 7 4v14M9 9h1m4 0h1m-6 4h1m4 0h1m-6 4h6" />
+                                  </svg>
+                                </span>
+                                <strong className="text-sm font-black text-gray-800">
+                                  {ingredientTransactionDetails[item.id].supplier}
+                                </strong>
+                              </div>
+                            </div>
+
+                            <div className="border-t border-emerald-100 pt-3 sm:border-l sm:border-t-0 sm:pl-4 sm:pt-0">
+                              <div className="grid grid-cols-[1fr_72px_96px] gap-2 border-b border-emerald-100 pb-2 text-[10px] font-bold text-emerald-600/70">
+                                <span>거래 품목</span>
+                                <span className="text-center">구매 수량</span>
+                                <span className="text-right">금액</span>
+                              </div>
+                              <div className="divide-y divide-gray-100">
+                                {ingredientTransactionDetails[item.id].items.map((transactionItem) => (
+                                  <div
+                                    key={transactionItem.name}
+                                    className="grid grid-cols-[1fr_72px_96px] items-center gap-2 py-2.5 text-xs"
+                                  >
+                                    <span className="min-w-0 truncate font-bold text-gray-700">
+                                      {transactionItem.name}
+                                    </span>
+                                    <span className="rounded-md bg-white px-2 py-1 text-center font-bold text-gray-500 ring-1 ring-gray-100">
+                                      {transactionItem.quantity}
+                                    </span>
+                                    <strong className="text-right font-black text-gray-800">
+                                      {formatCurrency(transactionItem.amount)}
+                                    </strong>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        )}
 
                         <div className="mt-4 rounded-xl bg-gray-50 px-4 py-3">
                           <span className="mb-1 block text-[10px] font-bold text-gray-400">메모</span>

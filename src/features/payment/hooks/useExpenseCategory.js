@@ -11,7 +11,7 @@ export const useExpenseCategory = () => {
     { id: 2, name: '임대료', count: 1, amount: 2500000, color: 'blue' },
     { id: 3, name: '인건비', count: 12, amount: 8400000, color: 'orange' },
     { id: 4, name: '공과금', count: 5, amount: 850000, color: 'purple' },
-    { id: 5, name: '마케팅비', count: 8, amount: 1200000, color: 'pink' },
+    { id: 5, name: '소모품비', count: 8, amount: 1200000, color: 'pink' },
     { id: 6, name: '기타운영비', count: 15, amount: 450000, color: 'gray' },
   ]);
 
