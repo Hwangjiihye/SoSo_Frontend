@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import logo from '../../assets/soso로고.png';
 import MainFooter from '../../components/layout/MainFooter';
@@ -17,9 +17,14 @@ const TransferManagementPage = () => {
   const { stores, isLoading: isStoresLoading } = useStores();
   const { transferData, isLoading, formatCurrency } = useTransfer();
 
+  const [accounts, setAccounts] = useState([]);
+  const [activeAccountIndex, setActiveAccountIndex] = useState(0);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isSettlementMenuOpen, setIsSettlementMenuOpen] = useState(false);
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false); // 수정 모달 상태 추가
+  const [editingAccount, setEditingAccount] = useState(null); // 수정 중인 계좌 상태 추가
+  const [isPartnerDropdownOpen, setIsPartnerDropdownOpen] = useState(false); // 거래처 드롭다운 상태 추가
   const [newAccount, setNewAccount] = useState({ 
     bank: '', 
     number: '', 
@@ -29,6 +34,123 @@ const TransferManagementPage = () => {
     partnerName: '',
     managerName: ''
   });
+
+  // 초기 데이터 연동 및 여러 개의 예시 계좌 설정
+  useEffect(() => {
+    if (transferData && transferData.accounts) {
+      const mockAccounts = [
+        ...transferData.accounts,
+        {
+          id: 2,
+          bankName: '국민은행',
+          accountNumber: '456-789-012345',
+          balance: 12500000,
+          isMain: false,
+        },
+        {
+          id: 3,
+          bankName: '우리은행',
+          accountNumber: '1002-345-678901',
+          balance: 870000,
+          isMain: false,
+        },
+        {
+          id: 4,
+          bankName: '하나은행',
+          accountNumber: '234-567-890123',
+          balance: 3210000,
+          isMain: false,
+        }
+      ];
+      setAccounts(mockAccounts);
+    }
+  }, [transferData]);
+
+  const handleAddAccount = () => {
+    if (!newAccount.bank) {
+      alert("은행을 선택해 주세요.");
+      return;
+    }
+    if (!newAccount.number) {
+      alert("계좌번호를 입력해 주세요.");
+      return;
+    }
+    if (!newAccount.name) {
+      alert("예금주를 입력해 주세요.");
+      return;
+    }
+
+    const nextId = accounts.length > 0 ? Math.max(...accounts.map(a => a.id)) + 1 : 1;
+    const addedAccount = {
+      id: nextId,
+      bankName: newAccount.bank,
+      accountNumber: newAccount.number,
+      balance: Math.floor(Math.random() * 800 + 100) * 10000, // 100만 ~ 900만원 랜덤 설정
+      isMain: accounts.length === 0,
+    };
+
+    const updatedAccounts = [...accounts, addedAccount];
+    setAccounts(updatedAccounts);
+    setIsRegisterModalOpen(false);
+    
+    // 모달 필드 초기화
+    setNewAccount({
+      bank: '', 
+      number: '', 
+      name: '',
+      paymentDate: '',
+      isAutoTransfer: false,
+      partnerName: '',
+      managerName: ''
+    });
+    alert("새 계좌 등록이 완료되었습니다.");
+    // 새로 등록한 계좌로 포커스 이동
+    setActiveAccountIndex(updatedAccounts.length - 1);
+  };
+
+  const handleOpenEditModal = (acc, e) => {
+    e.stopPropagation();
+    setEditingAccount({ ...acc });
+    setIsEditModalOpen(true);
+  };
+
+  const handleUpdateAccount = () => {
+    if (!editingAccount.bankName) {
+      alert("은행을 선택해 주세요.");
+      return;
+    }
+    if (!editingAccount.accountNumber) {
+      alert("계좌번호를 입력해 주세요.");
+      return;
+    }
+
+    setAccounts(accounts.map(a => a.id === editingAccount.id ? editingAccount : a));
+    setIsEditModalOpen(false);
+    alert("계좌 정보가 수정되었습니다.");
+  };
+
+  const handleDeleteAccount = (acc, e) => {
+    e.stopPropagation();
+    if (confirm(`정말 ${acc.bankName} (${acc.accountNumber}) 계좌를 삭제하시겠습니까?`)) {
+      const updated = accounts.filter(a => a.id !== acc.id);
+      if (acc.isMain && updated.length > 0) {
+        const nextMain = { ...updated[0], isMain: true };
+        setAccounts([nextMain, ...updated.slice(1)]);
+      } else {
+        setAccounts(updated);
+      }
+      setActiveAccountIndex(0);
+      alert("계좌가 삭제되었습니다.");
+    }
+  };
+
+  const handlePrevAccount = () => {
+    setActiveAccountIndex((prev) => (prev === 0 ? accounts.length - 1 : prev - 1));
+  };
+
+  const handleNextAccount = () => {
+    setActiveAccountIndex((prev) => (prev === accounts.length - 1 ? 0 : prev + 1));
+  };
 
   const handleLogOut = () => {
     logout();
@@ -128,39 +250,183 @@ const TransferManagementPage = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
           <div className="lg:col-span-2 space-y-6">
-            {/* 등록된 계좌 리스트 */}
-            {transferData.accounts.map((acc) => (
-              <div key={acc.id} className="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-3xl p-8 text-white shadow-lg shadow-emerald-200/50 relative overflow-hidden group">
-                <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform duration-500">
-                  <img src={logo} alt="watermark" className="w-40 h-40 object-contain" />
-                </div>
-                <div className="relative z-10">
-                  <div className="flex justify-between items-start mb-12">
-                    <div>
-                      <div className="text-emerald-100 text-sm font-bold mb-1 uppercase tracking-widest">{acc.bankName}</div>
-                      <div className="text-xl font-medium tracking-tighter opacity-80">{acc.accountNumber}</div>
+            {/* 등록된 계좌 리스트 (캐러셀 슬라이더) */}
+            {accounts.length > 0 ? (
+              <div className="relative overflow-hidden rounded-3xl bg-gray-50 py-1">
+                <div 
+                  className="flex transition-transform duration-500 ease-out"
+                  style={{ transform: `translateX(-${activeAccountIndex * 100}%)` }}
+                >
+                  {accounts.map((acc) => (
+                    <div key={acc.id} className="w-full flex-shrink-0 px-12">
+                      <div className="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-3xl p-8 text-white shadow-lg shadow-emerald-200/50 relative overflow-hidden group min-h-[320px] flex flex-col justify-between">
+                        <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform duration-500">
+                          <img src={logo} alt="watermark" className="w-40 h-40 object-contain" />
+                        </div>
+                        <div className="relative z-10 flex flex-col h-full justify-between">
+                          <div className="flex justify-between items-start mb-8">
+                            <div>
+                              <div className="text-emerald-100 text-sm font-bold mb-1 uppercase tracking-widest flex items-center gap-2">
+                                {acc.bankName}
+                                {acc.isMain && <span className="bg-white/20 backdrop-blur-md px-2.5 py-0.5 rounded-full text-[9px] font-bold tracking-tighter uppercase">주계좌</span>}
+                              </div>
+                              <div className="text-xl font-medium tracking-tighter opacity-85">{acc.accountNumber}</div>
+                            </div>
+                            <div className="flex gap-2">
+                              {!acc.isMain && (
+                                <button 
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    const updated = accounts.map(a => ({...a, isMain: a.id === acc.id}));
+                                    setAccounts(updated);
+                                    alert(`${acc.bankName} 계좌가 주계좌로 설정되었습니다.`);
+                                  }}
+                                  className="text-[10px] bg-white/20 hover:bg-white/40 text-white px-2.5 py-1 rounded-lg font-bold transition-all"
+                                >
+                                  대표 설정
+                                </button>
+                              )}
+                              <button 
+                                onClick={(e) => handleOpenEditModal(acc, e)}
+                                className="text-[10px] bg-white/20 hover:bg-white/40 text-white px-2.5 py-1 rounded-lg font-bold transition-all"
+                              >
+                                수정
+                              </button>
+                              <button 
+                                onClick={(e) => handleDeleteAccount(acc, e)}
+                                className="text-[10px] bg-red-500/20 hover:bg-red-500/40 text-white px-2.5 py-1 rounded-lg font-bold transition-all"
+                              >
+                                삭제
+                              </button>
+                            </div>
+                          </div>
+                          <div className="mb-8">
+                            <div className="text-emerald-100 text-xs font-bold mb-2 uppercase">현재 잔액</div>
+                            <div className="text-5xl font-black tracking-tight">{formatCurrency(acc.balance)}</div>
+                          </div>
+                          <div className="flex gap-3">
+                            <button className="flex-grow py-4 bg-white text-emerald-600 rounded-2xl text-sm font-black hover:bg-emerald-50 transition-all shadow-xl shadow-emerald-900/10">이체하기</button>
+                            <button className="flex-grow py-4 bg-emerald-400/30 text-white border border-emerald-300/30 backdrop-blur-sm rounded-2xl text-sm font-black hover:bg-emerald-400/40 transition-all">내역조회</button>
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                    {acc.isMain && <div className="bg-white/20 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-bold tracking-tighter uppercase">주계좌</div>}
-                  </div>
-                  <div className="mb-8">
-                    <div className="text-emerald-100 text-xs font-bold mb-2 uppercase">현재 잔액</div>
-                    <div className="text-5xl font-black tracking-tight">{formatCurrency(acc.balance)}</div>
-                  </div>
-                  <div className="flex gap-3">
-                    <button className="flex-grow py-4 bg-white text-emerald-600 rounded-2xl text-sm font-black hover:bg-emerald-50 transition-all shadow-xl shadow-emerald-900/10">이체하기</button>
-                    <button className="flex-grow py-4 bg-emerald-400/30 text-white border border-emerald-300/30 backdrop-blur-sm rounded-2xl text-sm font-black hover:bg-emerald-400/40 transition-all">내역조회</button>
-                  </div>
+                  ))}
+                </div>
+
+                {/* 캐러셀 좌우 컨트롤러 */}
+                {accounts.length > 1 && (
+                  <>
+                    <button 
+                      onClick={handlePrevAccount}
+                      className="absolute left-1.5 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white text-emerald-600 hover:bg-emerald-50 flex items-center justify-center shadow-lg transition-all z-20 border border-gray-100 hover:scale-105 active:scale-95"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor" className="w-5 h-5">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                      </svg>
+                    </button>
+                    <button 
+                      onClick={handleNextAccount}
+                      className="absolute right-1.5 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white text-emerald-600 hover:bg-emerald-50 flex items-center justify-center shadow-lg transition-all z-20 border border-gray-100 hover:scale-105 active:scale-95"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor" className="w-5 h-5">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                      </svg>
+                    </button>
+                  </>
+                )}
+              </div>
+            ) : (
+              <div className="bg-white border-2 border-dashed border-gray-200 rounded-3xl p-12 text-center text-gray-400 font-bold">
+                등록된 결제 계좌가 없습니다. 새 계좌를 추가해 주세요.
+              </div>
+            )}
+
+            {/* 인디케이터 도트 */}
+            {accounts.length > 1 && (
+              <div className="flex justify-center gap-2 mt-2">
+                {accounts.map((_, idx) => (
+                  <button 
+                    key={idx}
+                    onClick={() => setActiveAccountIndex(idx)}
+                    className={`w-2 h-2 rounded-full transition-all duration-300 ${idx === activeAccountIndex ? 'bg-emerald-600 w-5' : 'bg-gray-300'}`}
+                  />
+                ))}
+              </div>
+            )}
+
+            {/* 내 보유 계좌 목록 대시보드 */}
+            {accounts.length > 0 && (
+              <div className="bg-white rounded-3xl border border-gray-100 p-6 shadow-sm mt-4">
+                <div className="flex justify-between items-center mb-4">
+                  <h4 className="text-sm font-black text-gray-800 flex items-center gap-2">
+                    <span className="w-1.5 h-3.5 bg-emerald-500 rounded-full"></span>
+                    내 보유 계좌 목록 ({accounts.length}개)
+                  </h4>
+                  <span className="text-xs text-gray-400 font-bold">
+                    총 잔액: {formatCurrency(accounts.reduce((sum, a) => sum + a.balance, 0))}
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {accounts.map((acc, index) => {
+                    let bankColor = "bg-emerald-100 text-emerald-600";
+                    if (acc.bankName.includes("신한")) bankColor = "bg-blue-100 text-blue-600";
+                    else if (acc.bankName.includes("국민")) bankColor = "bg-amber-100 text-amber-600";
+                    else if (acc.bankName.includes("우리")) bankColor = "bg-sky-100 text-sky-600";
+                    else if (acc.bankName.includes("하나")) bankColor = "bg-emerald-100 text-emerald-600";
+                    
+                    const isActive = index === activeAccountIndex;
+
+                    return (
+                      <div 
+                        key={acc.id}
+                        onClick={() => setActiveAccountIndex(index)}
+                        className={`flex items-center justify-between p-4 border rounded-2xl cursor-pointer transition-all ${
+                          isActive 
+                            ? 'border-emerald-500 bg-emerald-50/40 ring-1 ring-emerald-500/20 shadow-sm' 
+                            : 'border-gray-100 hover:border-emerald-200 hover:bg-emerald-50/10'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className={`w-10 h-10 rounded-full flex items-center justify-center font-black text-xs ${bankColor}`}>
+                            {acc.bankName.substring(0, 2)}
+                          </div>
+                          <div className="text-left">
+                            <div className="text-xs font-black text-gray-800 flex items-center gap-1.5">
+                              {acc.bankName}
+                              {acc.isMain && <span className="bg-emerald-100 text-emerald-700 text-[8px] font-extrabold px-1.5 py-0.5 rounded">대표</span>}
+                            </div>
+                            <div className="text-[10px] text-gray-400 font-bold">{acc.accountNumber}</div>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <div className="text-right mr-1">
+                            <div className="text-xs font-black text-gray-900">{formatCurrency(acc.balance)}</div>
+                            <span className="text-[9px] text-emerald-600 font-extrabold">{isActive ? '선택됨' : '선택'}</span>
+                          </div>
+                          <div className="flex gap-1.5">
+                            <button 
+                              onClick={(e) => handleOpenEditModal(acc, e)}
+                              className="px-2.5 py-1.5 bg-gray-50 text-gray-600 rounded-lg text-[10px] font-bold hover:bg-emerald-50 hover:text-emerald-600 transition-all border border-gray-100"
+                            >
+                              수정
+                            </button>
+                            <button 
+                              onClick={(e) => handleDeleteAccount(acc, e)}
+                              className="px-2.5 py-1.5 bg-red-50 text-red-600 rounded-lg text-[10px] font-bold hover:bg-red-100 hover:text-red-700 transition-all border border-red-100"
+                            >
+                              삭제
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
-            ))}
+            )}
 
-            <button 
-              onClick={() => setIsRegisterModalOpen(true)}
-              className="w-full py-12 border-2 border-dashed border-gray-200 rounded-3xl text-gray-400 font-bold hover:border-emerald-300 hover:text-emerald-500 hover:bg-emerald-50/30 transition-all flex flex-col items-center gap-2 group"
-            >
-              <span className="text-4xl group-hover:scale-110 transition-transform">+</span>
-              <span className="text-sm">새로운 결제 계좌를 등록해 주세요</span>
-            </button>
+
           </div>
 
           <div className="bg-white rounded-3xl border border-gray-100 p-8 shadow-sm h-fit sticky top-24">
@@ -320,7 +586,7 @@ const TransferManagementPage = () => {
                   거래처 선택
                 </h4>
                 <div className="grid grid-cols-2 gap-4">
-                  <div>
+                  <div className="relative">
                     <label className="block text-[10px] font-bold text-gray-400 mb-1.5 uppercase tracking-widest">거래처명</label>
                     <input 
                       type="text" 
@@ -328,7 +594,27 @@ const TransferManagementPage = () => {
                       className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all"
                       value={newAccount.partnerName}
                       onChange={(e) => setNewAccount({...newAccount, partnerName: e.target.value})}
+                      onFocus={() => setIsPartnerDropdownOpen(true)}
+                      onBlur={() => setTimeout(() => setIsPartnerDropdownOpen(false), 200)}
                     />
+                    
+                    {/* 거래처명 아래로 내려오는 스크롤 창 UI */}
+                    {isPartnerDropdownOpen && (
+                      <div className="absolute top-full left-0 w-full mt-2 bg-white border border-gray-100 rounded-xl shadow-xl z-50 max-h-40 overflow-y-auto custom-scrollbar animate-fade-in">
+                        {['(주)대박식자재', '대성농산', '우진주류', '농협하나로마트', '정성유통', '동보수산', '대원축산'].map((partner, idx) => (
+                          <div 
+                            key={idx}
+                            onClick={() => {
+                              setNewAccount({...newAccount, partnerName: partner});
+                              setIsPartnerDropdownOpen(false);
+                            }}
+                            className="px-4 py-2.5 text-xs font-bold text-gray-600 hover:bg-emerald-50 hover:text-emerald-600 transition-colors cursor-pointer border-b border-gray-50 last:border-b-0"
+                          >
+                            {partner}
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                   <div>
                     <label className="block text-[10px] font-bold text-gray-400 mb-1.5 uppercase tracking-widest">담당자</label>
@@ -345,14 +631,76 @@ const TransferManagementPage = () => {
             </div>
 
             <button 
-              onClick={() => {
-                alert("계좌 정보 등록이 완료되었습니다.");
-                setIsRegisterModalOpen(false);
-              }}
+              onClick={handleAddAccount}
               className="w-full mt-10 py-5 bg-emerald-600 text-white rounded-2xl font-black text-sm hover:bg-emerald-700 transition-all shadow-xl shadow-emerald-200"
             >
               등록 완료
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* 계좌 수정 모달 */}
+      {isEditModalOpen && editingAccount && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 overflow-y-auto">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setIsEditModalOpen(false)}></div>
+          <div className="relative bg-white w-full max-w-lg rounded-3xl shadow-2xl p-8 animate-fade-in-up my-8">
+            <div className="flex justify-between items-center mb-8">
+              <h3 className="text-xl font-black text-gray-900">계좌 정보 수정</h3>
+              <button onClick={() => setIsEditModalOpen(false)} className="text-gray-400 hover:text-gray-600 text-2xl">×</button>
+            </div>
+            
+            <div className="space-y-6">
+              <div>
+                <label className="block text-[10px] font-bold text-gray-400 mb-1.5 uppercase tracking-widest">은행명</label>
+                <select 
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all"
+                  value={editingAccount.bankName}
+                  onChange={(e) => setEditingAccount({...editingAccount, bankName: e.target.value})}
+                >
+                  <option value="신한은행">신한은행</option>
+                  <option value="국민은행">국민은행</option>
+                  <option value="우리은행">우리은행</option>
+                  <option value="하나은행">하나은행</option>
+                </select>
+              </div>
+              
+              <div>
+                <label className="block text-[10px] font-bold text-gray-400 mb-1.5 uppercase tracking-widest">계좌번호</label>
+                <input 
+                  type="text" 
+                  placeholder="- 없이 입력"
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all"
+                  value={editingAccount.accountNumber}
+                  onChange={(e) => setEditingAccount({...editingAccount, accountNumber: e.target.value})}
+                />
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-bold text-gray-400 mb-1.5 uppercase tracking-widest">잔액 (원)</label>
+                <input 
+                  type="number" 
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all"
+                  value={editingAccount.balance}
+                  onChange={(e) => setEditingAccount({...editingAccount, balance: Number(e.target.value)})}
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-3 mt-8">
+              <button 
+                onClick={() => setIsEditModalOpen(false)}
+                className="flex-grow py-4 bg-gray-100 text-gray-600 rounded-2xl font-black text-sm hover:bg-gray-200 transition-all"
+              >
+                취소
+              </button>
+              <button 
+                onClick={handleUpdateAccount}
+                className="flex-grow py-4 bg-emerald-600 text-white rounded-2xl font-black text-sm hover:bg-emerald-700 transition-all shadow-xl shadow-emerald-200"
+              >
+                수정 완료
+              </button>
+            </div>
           </div>
         </div>
       )}
