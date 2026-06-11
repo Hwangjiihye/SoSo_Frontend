@@ -393,14 +393,14 @@ const ExpenseCategoryPage = () => {
       </main>
       {/* 지출 비용 등록 모달 (카테고리입력.jpg 디자인 참고) */}
       {isExpenseModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 overflow-y-auto">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center overflow-hidden p-4">
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setIsExpenseModalOpen(false)}></div>
-          <div className={`relative bg-white w-full rounded-3xl shadow-2xl p-8 animate-fade-in-up my-8 ${
+          <div className={`relative w-full overflow-hidden rounded-3xl bg-white px-8 py-5 shadow-2xl animate-fade-in-up ${
             localCategories.find(cat => cat.id === Number(expenseForm.categoryId))?.name === '식자재비'
               ? 'max-w-3xl'
               : 'max-w-lg'
           }`}>
-            <div className="flex justify-between items-center mb-6">
+            <div className="flex justify-between items-center mb-4">
               <div>
                 <h3 className="text-xl font-black text-gray-900">지출 비용 등록</h3>
                 <p className="text-xs text-gray-400 mt-1">매장에서 발생한 비용 명세를 정확히 입력해 주세요.</p>
@@ -408,12 +408,12 @@ const ExpenseCategoryPage = () => {
               <button onClick={() => setIsExpenseModalOpen(false)} className="text-gray-400 hover:text-gray-600 text-2xl">×</button>
             </div>
             
-            <form onSubmit={handleAddExpense} className="space-y-5">
+            <form onSubmit={handleAddExpense} className="space-y-3">
               <div>
                 <label className="block text-[10px] font-bold text-gray-400 mb-1.5 uppercase tracking-widest">지출 일자</label>
                 <input 
                   type="date" 
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all"
+                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-100 rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all"
                   value={expenseForm.date}
                   onChange={(e) => setExpenseForm({...expenseForm, date: e.target.value})}
                   required
@@ -423,7 +423,7 @@ const ExpenseCategoryPage = () => {
               <div>
                 <label className="block text-[10px] font-bold text-gray-400 mb-1.5 uppercase tracking-widest">지출 카테고리</label>
                 <select 
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all"
+                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-100 rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all"
                   value={expenseForm.categoryId}
                   onChange={(e) => {
                     setExpenseForm({...expenseForm, categoryId: e.target.value});
@@ -444,7 +444,7 @@ const ExpenseCategoryPage = () => {
               </div>
 
               {localCategories.find(cat => cat.id === Number(expenseForm.categoryId))?.name === '식자재비' && (
-                <div className="space-y-4 rounded-2xl border border-emerald-100 bg-emerald-50/40 p-5">
+                <div className="space-y-3 rounded-2xl border border-emerald-100 bg-emerald-50/40 p-4">
                   <div className="flex items-start justify-between gap-4">
                     <div>
                       <h4 className="text-sm font-black text-gray-900">식자재 구매 유형</h4>
@@ -495,7 +495,7 @@ const ExpenseCategoryPage = () => {
                   </div>
 
                   {ingredientExpenseType === 'general' ? (
-                    <div className="h-[400px] space-y-4 overflow-hidden rounded-xl border border-emerald-100 bg-white/60 p-4">
+                    <div className="h-[300px] space-y-3 overflow-hidden rounded-xl border border-emerald-100 bg-white/60 p-4">
                       <div>
                         <h5 className="text-xs font-black text-gray-800">일반 발주 내역 연결</h5>
                         <p className="mt-1 text-[11px] font-medium text-gray-400">
@@ -536,7 +536,7 @@ const ExpenseCategoryPage = () => {
                             <span className="text-[10px] font-bold text-gray-400">최근 발주 3건</span>
                           </div>
 
-                          <div className="max-h-48 space-y-2 overflow-y-auto">
+                          <div className="max-h-28 space-y-2 overflow-y-auto">
                             {[
                               { id: 'PO-20260610-03', date: '2026.06.10', item: '양파 외 4개 품목', amount: '1,240,000원', status: '입고 완료' },
                               { id: 'PO-20260608-02', date: '2026.06.08', item: '냉동 삼겹살 외 2개 품목', amount: '3,200,000원', status: '검수 완료' },
@@ -592,7 +592,7 @@ const ExpenseCategoryPage = () => {
                       )}
                     </div>
                   ) : ingredientExpenseType === 'group' ? (
-                    <div className="h-[400px] space-y-4 overflow-hidden rounded-xl border border-emerald-100 bg-white/60 p-4">
+                    <div className="h-[300px] space-y-3 overflow-hidden rounded-xl border border-emerald-100 bg-white/60 p-4">
                       <div>
                         <h5 className="text-xs font-black text-gray-800">공동 발주 내역 연결</h5>
                         <p className="mt-1 text-[11px] font-medium text-gray-400">
@@ -633,7 +633,7 @@ const ExpenseCategoryPage = () => {
                             <span className="text-[10px] font-bold text-gray-400">최근 공동구매 3건</span>
                           </div>
 
-                          <div className="max-h-48 space-y-2 overflow-y-auto">
+                          <div className="max-h-28 space-y-2 overflow-y-auto">
                             {[
                               { id: 'GO-20260611-01', date: '2026.06.11', item: '국내산 양파 20kg 외 2개 품목', amount: '890,000원', status: '분배 완료', members: '8개 매장' },
                               { id: 'GO-20260607-04', date: '2026.06.07', item: '냉동 삼겹살 50kg 외 1개 품목', amount: '2,450,000원', status: '수령 완료', members: '5개 매장' },
@@ -692,7 +692,7 @@ const ExpenseCategoryPage = () => {
                       )}
                     </div>
                   ) : (
-                    <div className="flex h-[440px] flex-col gap-4 overflow-hidden rounded-xl border border-emerald-100 bg-white/60 p-4">
+                    <div className="flex h-[300px] flex-col gap-3 overflow-hidden rounded-xl border border-emerald-100 bg-white/60 p-4">
                       <div className="flex items-start justify-between gap-4">
                         <div>
                           <h5 className="text-xs font-black text-gray-800">직접 구매</h5>
@@ -800,7 +800,7 @@ const ExpenseCategoryPage = () => {
                 <input 
                   type="text" 
                   placeholder="예: 양파 구매, 5월 임대료 납부"
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all"
+                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-100 rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all"
                   value={expenseForm.title}
                   onChange={(e) => setExpenseForm({...expenseForm, title: e.target.value})}
                   required
@@ -811,24 +811,24 @@ const ExpenseCategoryPage = () => {
                 <label className="block text-[10px] font-bold text-gray-400 mb-1.5 uppercase tracking-widest">메모 (선택, 최대 150자)</label>
                 <textarea 
                   placeholder="추가 세부 사항 입력 (최대 150자)"
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all min-h-[80px] resize-none"
+                  className="h-14 w-full resize-none rounded-xl border border-gray-100 bg-gray-50 px-4 py-2.5 text-sm font-bold transition-all focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
                   value={expenseForm.memo}
                   onChange={(e) => setExpenseForm({...expenseForm, memo: e.target.value})}
                   maxLength={150}
                 />
               </div>
 
-              <div className="flex gap-3 pt-4">
+              <div className="flex gap-3 pt-1">
                 <button 
                   type="button"
                   onClick={() => setIsExpenseModalOpen(false)}
-                  className="flex-grow py-4 bg-gray-100 text-gray-600 rounded-2xl font-black text-sm hover:bg-gray-200 transition-all"
+                  className="flex-grow py-3 bg-gray-100 text-gray-600 rounded-2xl font-black text-sm hover:bg-gray-200 transition-all"
                 >
                   취소
                 </button>
                 <button 
                   type="submit"
-                  className="flex-grow py-4 bg-emerald-600 text-white rounded-2xl font-black text-sm hover:bg-emerald-700 transition-all shadow-xl shadow-emerald-200"
+                  className="flex-grow py-3 bg-emerald-600 text-white rounded-2xl font-black text-sm hover:bg-emerald-700 transition-all shadow-xl shadow-emerald-200"
                 >
                   등록 완료
                 </button>
