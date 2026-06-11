@@ -23,6 +23,8 @@ const TransferManagementPage = () => {
   const [isSettlementMenuOpen, setIsSettlementMenuOpen] = useState(false);
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
   const [isAutoTransferModalOpen, setIsAutoTransferModalOpen] = useState(false);
+  const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
+  const [transferAccount, setTransferAccount] = useState(null);
   const [isAutoTransferEnabled, setIsAutoTransferEnabled] = useState(false);
   const [transferSearchType, setTransferSearchType] = useState('week');
   const [isEditModalOpen, setIsEditModalOpen] = useState(false); // 수정 모달 상태 추가
@@ -292,10 +294,6 @@ const TransferManagementPage = () => {
                 <div className="text-left lg:text-right">
                   <span className="text-sm font-bold text-gray-400">현재 잔액</span>
                   <div className="mt-1 text-4xl font-black tracking-tight">{formatCurrency(accounts[activeAccountIndex]?.balance || 0)}</div>
-                  <div className="mt-5 flex gap-3 lg:justify-end">
-                    <button className="rounded-xl border border-gray-200 bg-white px-8 py-3 text-sm font-black text-gray-600 transition-colors hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-600">내역조회</button>
-                    <button className="rounded-xl bg-emerald-600 px-8 py-3 text-sm font-black text-white shadow-lg shadow-emerald-200 transition-colors hover:bg-emerald-700">이체하기</button>
-                  </div>
                 </div>
               </div>
             </section>
@@ -350,7 +348,17 @@ const TransferManagementPage = () => {
                       </div>
 
                       <div className="grid grid-cols-3 gap-2">
-                        <button type="button" className="rounded-xl border border-gray-200 py-2.5 text-xs font-black text-gray-600 hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-600">이체</button>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setTransferAccount(acc);
+                            setIsTransferModalOpen(true);
+                          }}
+                          className="rounded-xl border border-gray-200 py-2.5 text-xs font-black text-gray-600 hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-600"
+                        >
+                          이체
+                        </button>
                         <button type="button" onClick={(e) => handleOpenEditModal(acc, e)} className="rounded-xl border border-gray-200 py-2.5 text-xs font-black text-gray-600 hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-600">수정</button>
                         <button type="button" onClick={(e) => handleDeleteAccount(acc, e)} className="rounded-xl border border-gray-200 py-2.5 text-xs font-black text-gray-500 hover:border-red-200 hover:bg-red-50 hover:text-red-500">삭제</button>
                       </div>
@@ -533,6 +541,145 @@ const TransferManagementPage = () => {
           </section>
         </div>
       </main>
+
+      {isTransferModalOpen && transferAccount && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <button
+            type="button"
+            aria-label="계좌 이체 닫기"
+            onClick={() => setIsTransferModalOpen(false)}
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+          />
+          <div className="relative w-full max-w-lg rounded-3xl bg-white p-8 shadow-2xl animate-fade-in-up">
+            <div className="mb-6 flex items-start justify-between gap-4">
+              <div>
+                <h3 className="text-xl font-black text-gray-900">계좌 이체</h3>
+                <p className="mt-1 text-xs font-medium text-gray-400">
+                  받는 분의 계좌 정보와 이체 금액을 입력해 주세요.
+                </p>
+              </div>
+              <button
+                type="button"
+                aria-label="계좌 이체 닫기"
+                onClick={() => setIsTransferModalOpen(false)}
+                className="flex h-9 w-9 items-center justify-center rounded-full text-xl text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="mb-6 rounded-2xl border border-emerald-100 bg-emerald-50/60 p-5">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-600">
+                    출금 계좌
+                  </span>
+                  <strong className="mt-2 block text-sm font-black text-gray-900">
+                    {transferAccount.bankName}
+                  </strong>
+                  <span className="mt-1 block text-xs font-semibold text-gray-500">
+                    {transferAccount.accountNumber}
+                  </span>
+                </div>
+                <div className="text-right">
+                  <span className="block text-[10px] font-bold text-gray-400">출금 가능 금액</span>
+                  <strong className="mt-2 block text-lg font-black text-emerald-700">
+                    {formatCurrency(transferAccount.balance)}
+                  </strong>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-5">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-widest text-gray-400">
+                    받는 은행
+                  </label>
+                  <select
+                    defaultValue=""
+                    className="w-full rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-sm font-bold text-gray-700 outline-none transition-all focus:ring-2 focus:ring-emerald-500/20"
+                  >
+                    <option value="" disabled>은행 선택</option>
+                    <option value="국민은행">국민은행</option>
+                    <option value="신한은행">신한은행</option>
+                    <option value="우리은행">우리은행</option>
+                    <option value="하나은행">하나은행</option>
+                    <option value="농협은행">농협은행</option>
+                    <option value="카카오뱅크">카카오뱅크</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-widest text-gray-400">
+                    받는 분
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="예금주명 입력"
+                    className="w-full rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-sm font-bold text-gray-700 outline-none transition-all placeholder:font-medium placeholder:text-gray-300 focus:ring-2 focus:ring-emerald-500/20"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-widest text-gray-400">
+                  받는 계좌번호
+                </label>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  placeholder="'-' 없이 계좌번호 입력"
+                  className="w-full rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-sm font-bold text-gray-700 outline-none transition-all placeholder:font-medium placeholder:text-gray-300 focus:ring-2 focus:ring-emerald-500/20"
+                />
+              </div>
+
+              <div>
+                <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-widest text-gray-400">
+                  이체 금액
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    placeholder="0"
+                    className="w-full rounded-xl border border-gray-100 bg-gray-50 py-3 pl-4 pr-10 text-right text-sm font-black text-gray-900 outline-none transition-all placeholder:text-gray-300 focus:ring-2 focus:ring-emerald-500/20"
+                  />
+                  <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-sm font-black text-gray-500">
+                    원
+                  </span>
+                </div>
+              </div>
+
+              <div>
+                <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-widest text-gray-400">
+                  이체 메모
+                </label>
+                <input
+                  type="text"
+                  placeholder="메모를 입력해 주세요. (선택)"
+                  className="w-full rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-sm font-bold text-gray-700 outline-none transition-all placeholder:font-medium placeholder:text-gray-300 focus:ring-2 focus:ring-emerald-500/20"
+                />
+              </div>
+            </div>
+
+            <div className="mt-8 flex gap-3">
+              <button
+                type="button"
+                onClick={() => setIsTransferModalOpen(false)}
+                className="flex-1 rounded-2xl bg-gray-100 py-4 text-sm font-black text-gray-600 transition-colors hover:bg-gray-200"
+              >
+                취소
+              </button>
+              <button
+                type="button"
+                className="flex-1 rounded-2xl bg-emerald-600 py-4 text-sm font-black text-white shadow-lg shadow-emerald-200 transition-colors hover:bg-emerald-700"
+              >
+                이체하기
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {isAutoTransferModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">

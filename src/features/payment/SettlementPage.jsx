@@ -204,12 +204,10 @@ const SettlementPage = () => {
           <p className="text-sm text-gray-500">매장의 실시간 매출 데이터와 정산 내역을 확인하세요.</p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
           {[
-            { t: '이번 달 총 매출', v: formatCurrency(settlementData.summary.totalSales), b: '지난 달 대비 +12%', c: 'border-emerald-100', tc: 'text-emerald-600' },
             { t: '정산 예정 금액', v: formatCurrency(settlementData.summary.expectedSettlement), b: '차주 월요일 정산 예정', c: 'border-blue-100', tc: 'text-blue-600' },
             { t: '정산 완료 금액', v: formatCurrency(settlementData.summary.completedSettlement), b: '2024년 누적 기준', c: 'border-gray-100', tc: 'text-gray-600' },
-            { t: '결제 수수료(합계)', v: formatCurrency(settlementData.summary.fees), b: '평균 수수료율 2.3%', c: 'border-red-100', tc: 'text-red-600' }
           ].map((s, i) => (
             <div key={i} className={`bg-white p-6 rounded-2xl border-2 shadow-sm ${s.c}`}>
               <div className="text-gray-500 text-xs font-bold mb-2 uppercase tracking-tight">{s.t}</div>
