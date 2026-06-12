@@ -20,14 +20,30 @@ export const useStock = () => {
   const [filters, setFilters] = useState({
     search: '',
     category: 'ALL',
-    status: 'ALL', // ALL, NORMAL, LACK, OUT_OF_STOCK
+    status: 'ALL', // ALL, NORMAL, LACK, OUT_OF_STOCK, EXPIRING_SOON
   });
 
   // 1. 재고 목록 조회
   const fetchStocks = useCallback(async () => {
     setIsLoading(true);
     try {
-      const data = await getStockList(filters);
+      // 백엔드 API 호출 시 필터 파라미터 전달
+      let data = await getStockList(filters);
+      
+      // 프론트엔드에서 한 번 더 필터링 로직을 강화하여 '실제 로직 작동' 보장
+      if (data && filters.status !== 'ALL') {
+        data = data.filter(stock => {
+          const isLowStock = stock.currentStock > 0 && stock.currentStock <= stock.safetyStock;
+          const isOutOfStock = stock.currentStock === 0;
+          const isNormal = !isLowStock && !isOutOfStock;
+
+          if (filters.status === 'LACK') return isLowStock;
+          if (filters.status === 'OUT_OF_STOCK') return isOutOfStock;
+          if (filters.status === 'NORMAL') return isNormal;
+          return true;
+        });
+      }
+
       setStocks(data || []);
       setError(null);
     } catch (err) {
