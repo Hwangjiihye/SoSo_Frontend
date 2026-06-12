@@ -186,7 +186,6 @@ const TransferManagementPage = () => {
             onMouseLeave={() => setIsSettlementMenuOpen(false)}
           >
             <div 
-              onClick={() => navigate("/settlement")}
               className={`px-4 py-1.5 text-sm font-bold rounded shadow-sm border cursor-pointer transition-all whitespace-nowrap ${isSettlementMenuOpen ? 'bg-white text-emerald-600 border-gray-100' : 'bg-white text-emerald-600 border-gray-200'}`}
             >
               수금 관리
@@ -194,14 +193,13 @@ const TransferManagementPage = () => {
             
             <div className={`absolute top-full left-0 w-40 pt-2 z-[60] transition-all duration-200 ${isSettlementMenuOpen ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-2'}`}>
               <div className="bg-white border border-gray-100 rounded-xl shadow-xl p-2">
-                {['이체 관리', '비용 카테고리', '결제 요약', '내보내기'].map((sub) => (
+                {['이체 관리', '비용 카테고리', '지출 요약'].map((sub) => (
                   <button 
                     key={sub} 
                     onClick={() => {
                       if (sub === '이체 관리') navigate("/transfer-management");
                       else if (sub === '비용 카테고리') navigate("/expense-category");
-                      else if (sub === '결제 요약') navigate("/settlement");
-                      else if (sub === '내보내기') navigate("/export");
+                      else if (sub === '지출 요약') navigate("/settlement");
                     }}
                     className={`w-full text-left px-3 py-2 text-[11px] font-bold rounded-lg transition-all ${sub === '이체 관리' ? 'bg-emerald-50 text-emerald-600' : 'text-gray-600 hover:bg-emerald-50 hover:text-emerald-600'}`}
                   >
@@ -437,7 +435,7 @@ const TransferManagementPage = () => {
                 </svg>
                 <input
                   type="search"
-                  placeholder="받는 분 또는 이체 내용을 검색하세요"
+                  placeholder="은행명, 받는 사람을 검색하세요"
                   className="w-full rounded-xl border border-gray-200 bg-white py-2.5 pl-10 pr-4 text-xs font-bold text-gray-700 outline-none transition-all placeholder:font-medium placeholder:text-gray-400 focus:border-emerald-300 focus:ring-2 focus:ring-emerald-500/10"
                 />
               </div>
@@ -449,7 +447,7 @@ const TransferManagementPage = () => {
                 </button>
             </div>
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[1180px] table-fixed text-left">
+              <table className="w-full min-w-[1180px] table-fixed text-center">
                 <colgroup>
                   <col className="w-[16%]" />
                   <col className="w-[11%]" />
@@ -466,8 +464,8 @@ const TransferManagementPage = () => {
                     <th className="px-5 py-4">계좌번호</th>
                     <th className="px-5 py-4">보낸 사람</th>
                     <th className="px-5 py-4">받는 사람</th>
-                    <th className="px-5 py-4 text-right">이체 금액</th>
-                    <th className="px-5 py-4 text-center">상태</th>
+                    <th className="px-5 py-4">이체 금액</th>
+                    <th className="px-5 py-4">상태</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
@@ -491,7 +489,7 @@ const TransferManagementPage = () => {
                         <td className="whitespace-nowrap px-5 py-5 text-sm font-semibold text-gray-500">{transferAccount.number}</td>
                         <td className="whitespace-nowrap px-5 py-5 text-sm font-black text-gray-700">{transferAccount.sender}</td>
                         <td className="px-5 py-5">
-                          <div className="flex items-center gap-3">
+                          <div className="flex items-center justify-center gap-3">
                             <span className={`flex h-9 w-9 items-center justify-center rounded-full text-xs font-black ${avatarColors[index % avatarColors.length]}`}>
                               {recipientName.substring(0, 1)}
                             </span>
@@ -501,8 +499,8 @@ const TransferManagementPage = () => {
                             </div>
                           </div>
                         </td>
-                        <td className="px-5 py-5 text-right text-base font-black">{formatCurrency(item.amount)}</td>
-                        <td className="px-5 py-5 text-center">
+                        <td className="px-5 py-5 text-center text-base font-black">{formatCurrency(item.amount)}</td>
+                        <td className="px-5 py-5">
                           <span className="rounded-full bg-emerald-50 px-4 py-2 text-xs font-black text-emerald-700">{item.status}</span>
                         </td>
                       </tr>

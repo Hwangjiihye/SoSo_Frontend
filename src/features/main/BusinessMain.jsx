@@ -47,6 +47,7 @@ function BusinessMain({ setRole }) {
 
   // 프로필 드롭다운 상태
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isSettlementMenuOpen, setIsSettlementMenuOpen] = useState(false);
 
   // 마이페이지 이동 핸들러
   const handleProfileClick = () => {
@@ -130,7 +131,37 @@ function BusinessMain({ setRole }) {
         <nav className="hidden md:flex justify-center gap-1 border border-gray-100 rounded-lg p-1 bg-gray-50 w-fit mx-auto">
           <a href="/" className="px-4 py-1.5 text-sm font-semibold bg-white text-gray-900 rounded shadow-sm border border-gray-200">홈</a>
           <Link to="#" className="px-4 py-1.5 text-sm font-medium text-gray-500 hover:text-emerald-600 transition-colors whitespace-nowrap">발주 관리</Link>
-          <Link to="/settlement" className="px-4 py-1.5 text-sm font-medium text-gray-500 hover:text-emerald-600 transition-colors whitespace-nowrap">수금 관리</Link>
+          <div
+            className="relative"
+            onMouseEnter={() => setIsSettlementMenuOpen(true)}
+            onMouseLeave={() => setIsSettlementMenuOpen(false)}
+          >
+            <div className="cursor-pointer whitespace-nowrap px-4 py-1.5 text-sm font-medium text-gray-500 transition-colors hover:text-emerald-600">
+              수금 관리
+            </div>
+            <div className={`absolute left-0 top-full z-[60] w-40 pt-2 transition-all duration-200 ${
+              isSettlementMenuOpen
+                ? 'visible translate-y-0 opacity-100'
+                : 'invisible -translate-y-2 opacity-0'
+            }`}>
+              <div className="rounded-xl border border-gray-100 bg-white p-2 shadow-xl">
+                {['이체 관리', '비용 카테고리', '지출 요약'].map((sub) => (
+                  <button
+                    key={sub}
+                    type="button"
+                    onClick={() => {
+                      if (sub === '이체 관리') navigate('/transfer-management');
+                      else if (sub === '비용 카테고리') navigate('/expense-category');
+                      else if (sub === '지출 요약') navigate('/settlement');
+                    }}
+                    className="w-full rounded-lg px-3 py-2 text-left text-[11px] font-bold text-gray-600 transition-all hover:bg-emerald-50 hover:text-emerald-600"
+                  >
+                    {sub}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
           {['공동 발주', '업체 홍보', '통계'].map(m => (
             <a key={m} href="#" className="px-4 py-1.5 text-sm font-medium text-gray-500 hover:text-emerald-600 transition-colors whitespace-nowrap">{m}</a>
           ))}

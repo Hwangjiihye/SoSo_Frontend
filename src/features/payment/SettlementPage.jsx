@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Chart as ChartJS,
@@ -40,10 +40,11 @@ const SettlementPage = () => {
   const navigate = useNavigate();
   const { logout, user_nickname, bizname, selectedStoreSeq, setSelectedStore } = authStore();
   const { stores, isLoading: isStoresLoading } = useStores();
-  const { settlementData, isLoading, formatCurrency } = useSettlement();
+  const { settlementData, formatCurrency } = useSettlement();
 
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isSettlementMenuOpen, setIsSettlementMenuOpen] = useState(false);
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
 
   const handleLogOut = () => {
     logout();
@@ -85,7 +86,9 @@ const SettlementPage = () => {
         borderWidth: 2,
         fill: 'origin',
         tension: 0.35,
-        pointBackgroundColor: 'rgb(37, 99, 235)',
+        pointBackgroundColor: chartMonthlySales.map((_, index, monthlySales) =>
+          index === monthlySales.length - 1 ? 'rgb(239, 68, 68)' : 'rgb(37, 99, 235)'
+        ),
         pointBorderColor: '#ffffff',
         pointBorderWidth: 2,
         pointRadius: 5,
@@ -251,15 +254,15 @@ const SettlementPage = () => {
             {/* 드롭다운 컨테이너 (투명 브릿지 포함 및 부드러운 전환) */}
             <div className={`absolute top-full left-0 w-40 pt-2 z-[60] transition-all duration-200 ${isSettlementMenuOpen ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-2'}`}>
               <div className="bg-white border border-gray-100 rounded-xl shadow-xl p-2">
-                {['이체 관리', '비용 카테고리', '결제 요약', '내보내기'].map((sub) => (
+                {['이체 관리', '비용 카테고리', '지출 요약'].map((sub) => (
                   <button 
                     key={sub} 
                     onClick={() => {
                       if (sub === '이체 관리') navigate("/transfer-management");
-                      else if (sub === '결제 요약') navigate("/settlement");
-                      else if (sub === '내보내기') navigate("/export");
+                      else if (sub === '비용 카테고리') navigate("/expense-category");
+                      else if (sub === '지출 요약') navigate("/settlement");
                     }}
-                    className={`w-full text-left px-3 py-2 text-[11px] font-bold rounded-lg transition-all ${sub === '결제 요약' ? 'bg-emerald-50 text-emerald-600' : 'text-gray-600 hover:bg-emerald-50 hover:text-emerald-600'}`}
+                    className={`w-full text-left px-3 py-2 text-[11px] font-bold rounded-lg transition-all ${sub === '지출 요약' ? 'bg-emerald-50 text-emerald-600' : 'text-gray-600 hover:bg-emerald-50 hover:text-emerald-600'}`}
                   >
                     {sub}
                   </button>
@@ -334,9 +337,28 @@ const SettlementPage = () => {
       </header>
 
       <main className="max-w-7xl mx-auto px-8 py-8">
-        <div className="mb-8">
-          <h2 className="text-2xl font-black text-gray-900 mb-1">매출 및 정산 현황</h2>
-          <p className="text-sm text-gray-500">매장의 실시간 매출 데이터와 정산 내역을 확인하세요.</p>
+        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="text-2xl font-black text-gray-900 mb-1">지출 및 결제 현황</h2>
+            <p className="text-sm text-gray-500">매장에 대한 결제 예정, 완료, 미결제 내역을 확인하세요.</p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setIsExportModalOpen(true)}
+            className="inline-flex h-10 shrink-0 items-center justify-center gap-2 self-start rounded-xl border border-emerald-200 bg-white px-4 text-xs font-black text-emerald-700 shadow-sm transition-colors hover:bg-emerald-50 sm:mt-2 sm:self-auto"
+          >
+            <svg
+              className="h-4 w-4"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              aria-hidden="true"
+            >
+              <path d="M12 3v12m0 0 4-4m-4 4-4-4M5 20h14" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            엑셀로 내보내기
+          </button>
         </div>
 
         <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -442,7 +464,7 @@ const SettlementPage = () => {
               <div className="mb-5 flex items-start justify-between gap-4">
                 <h3 className="flex items-center gap-2 font-bold text-gray-700">
                   <span className="h-2 w-2 rounded-full bg-emerald-500"></span>
-                  거래처별 결제 예정 금액
+                  거래처별 결제 비중
                 </h3>
                 <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-black text-emerald-600">
                   4개 거래처
@@ -450,7 +472,7 @@ const SettlementPage = () => {
               </div>
 
               <div className="overflow-hidden rounded-xl border border-gray-100">
-                <div className="grid grid-cols-[160px_1fr] gap-6 bg-gray-50 px-4 py-3 text-[10px] font-black text-gray-400">
+                <div className="grid grid-cols-[160px_1fr] gap-6 bg-gray-50 px-4 py-3 text-[11px] font-black text-gray-600">
                   <span>거래처</span>
                   <span>비중</span>
                 </div>
@@ -487,28 +509,28 @@ const SettlementPage = () => {
               <div className="mb-5 flex items-start justify-between gap-4">
                 <h3 className="flex items-center gap-2 font-bold text-gray-700">
                   <span className="h-2 w-2 rounded-full bg-blue-500"></span>
-                  월별 결제 완료 상세
+                  월별 결제 완료 비교
                 </h3>
-                <span className="rounded-full bg-blue-50 px-2.5 py-1 text-[10px] font-black text-blue-600">
+                <span className="rounded-full bg-blue-50 px-2.5 py-1 text-[11px] font-black text-blue-600">
                   최근 4개월
                 </span>
               </div>
 
               <div className="mb-5 flex items-end justify-between rounded-xl bg-gray-50 px-5 py-4">
                 <div>
-                  <p className="mb-1 text-[11px] font-bold text-gray-400">최근 4개월 결제 완료</p>
+                  <p className="mb-1 text-[11px] font-bold text-gray-600">최근 4개월 결제 완료</p>
                   <p className="text-2xl font-black tracking-tight text-gray-900">
                     {formatCurrency(46900000)}
                   </p>
                 </div>
-                <span className="text-[11px] font-bold text-blue-500">월평균 11,725,000원</span>
+                <span className="text-[12px] font-bold text-blue-500">월 평균 11,725,000원</span>
               </div>
 
-              <div className="overflow-hidden rounded-xl border border-gray-100">
-                <div className="grid grid-cols-[54px_1fr_auto] gap-3 bg-gray-50 px-4 py-3 text-[10px] font-black text-gray-400">
-                  <span>월</span>
-                  <span className="text-right">지출 금액</span>
-                  <span className="min-w-24 text-right">전월 대비</span>
+              <div className="overflow-hidden rounded-xl border border-gray-100 text-center">
+                <div className="grid grid-cols-[54px_1fr_auto] gap-3 bg-gray-50 px-4 py-3 text-[11px] font-black text-gray-600">
+                  <span className="text-center">월</span>
+                  <span className="text-center">지출 금액</span>
+                  <span className="min-w-24 text-center">전월 대비</span>
                 </div>
                 {[
                   { month: '6월', amount: 12640000, difference: 1480000, rate: 13.3 },
@@ -521,10 +543,10 @@ const SettlementPage = () => {
                   return (
                     <div
                       key={item.month}
-                      className="grid grid-cols-[54px_1fr_auto] items-center gap-3 border-t border-gray-100 px-4 py-4 transition-colors hover:bg-gray-50"
+                      className="grid grid-cols-[60px_1fr_130px] items-center gap-3 border-t border-gray-100 px-4 py-4 transition-colors hover:bg-gray-50"
                     >
                       <span className="text-sm font-black text-gray-700">{item.month}</span>
-                      <span className="text-right text-sm font-black text-gray-900">
+                      <span className="justify-self-center w-[120px] text-right text-sm font-black text-gray-900">
                         {formatCurrency(item.amount)}
                       </span>
                       <span
@@ -548,14 +570,14 @@ const SettlementPage = () => {
           <div className="flex flex-col gap-5 border-b border-gray-100 p-6 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <div className="mb-2 flex items-center gap-2">
-                <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-black text-emerald-600">
+                <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-black text-emerald-600">
                   월별 결제 예정
                 </span>
-                <span className="text-xs font-medium text-gray-400">
+                <span className="text-xs font-medium text-gray-600">
                   해당 월에 결제해야 할 내역입니다.
                 </span>
               </div>
-              <h3 className="text-lg font-black text-gray-900">최근 정산 상세 내역</h3>
+              <h3 className="text-lg font-black text-gray-900">6월 결제 예정 상세내역</h3>
             </div>
 
             <div className="flex items-center rounded-xl border border-gray-200 bg-gray-50 p-1">
@@ -587,35 +609,35 @@ const SettlementPage = () => {
 
           <div className="grid gap-3 border-b border-gray-100 bg-gray-50/70 p-6 sm:grid-cols-3">
             <div className="rounded-xl border border-gray-100 bg-white p-4">
-              <p className="mb-2 text-xs font-bold text-gray-400">결제 예정 건수</p>
+              <p className="mb-2 text-xs font-bold text-gray-500">결제 예정 건수</p>
               <p className="text-xl font-black text-gray-900">
                 {settlementData.history.length}
                 <span className="ml-1 text-sm font-bold text-gray-500">건</span>
               </p>
             </div>
             <div className="rounded-xl border border-gray-100 bg-white p-4">
-              <p className="mb-2 text-xs font-bold text-gray-400">총 결제 예정 금액</p>
+              <p className="mb-2 text-xs font-bold text-gray-500">총 결제 예정 금액</p>
               <p className="text-xl font-black text-emerald-600">
                 {formatCurrency(settlementData.history.reduce((total, item) => total + item.amount, 0))}
               </p>
             </div>
             <div className="rounded-xl border border-gray-100 bg-white p-4">
-              <p className="mb-2 text-xs font-bold text-gray-400">정산 기준</p>
+              <p className="mb-2 text-xs font-bold text-gray-500">정산 기준</p>
               <p className="text-sm font-black text-gray-800">월 결제 예정 내역</p>
-              <p className="mt-1 text-[11px] font-medium text-gray-400">결제일 순으로 확인하세요.</p>
+              <p className="mt-1 text-[11px] font-medium text-gray-500">결제일 순으로 확인하세요.</p>
             </div>
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[980px] text-left">
-              <thead className="border-b border-gray-100 bg-white text-[10px] font-black uppercase tracking-widest text-gray-400">
+            <table className="w-full table-fixed min-w-[980px] text-center">
+              <thead className="border-b border-gray-100 bg-white text-[11px] font-black uppercase tracking-widest text-gray-600">
                 <tr>
-                  <th className="px-6 py-4">결제 대상</th>
-                  <th className="px-6 py-4">거래 식품</th>
+                  <th className="px-6 py-4">거래처명</th>
+                  <th className="px-6 py-4">발주 내역</th>
                   <th className="px-6 py-4">결제 항목</th>
                   <th className="px-6 py-4">결제 예정일</th>
-                  <th className="px-6 py-4 text-right">결제 금액</th>
-                  <th className="px-6 py-4 text-center">결제 상태</th>
+                  <th className="px-6 py-4">결제 금액</th>
+                  <th className="px-6 py-4">결제 상태</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
@@ -628,18 +650,17 @@ const SettlementPage = () => {
                   return (
                     <tr key={item.id} className="transition-colors hover:bg-emerald-50/30">
                       <td className="px-6 py-5">
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center justify-center gap-3">
                           <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-xs font-black text-emerald-600">
                             {item.store?.substring(0, 1)}
                           </span>
                           <div>
                             <p className="text-sm font-bold text-gray-800">{item.store}</p>
-                            <p className="mt-0.5 text-[11px] text-gray-400">정산 번호 #{String(item.id).padStart(4, '0')}</p>
                           </div>
                         </div>
                       </td>
                       <td className="px-6 py-5">
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center justify-center gap-3">
                           <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-orange-50 text-orange-500">
                             <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
                               <path d="M5 8.5 12 5l7 3.5v7L12 19l-7-3.5v-7Z" strokeLinejoin="round" />
@@ -658,10 +679,10 @@ const SettlementPage = () => {
                         </span>
                       </td>
                       <td className="px-6 py-5 text-sm font-semibold text-gray-600">{item.date}</td>
-                      <td className="px-6 py-5 text-right text-sm font-black text-gray-900">
+                      <td className="px-6 py-5 text-center text-sm font-black text-gray-900">
                         {formatCurrency(item.amount)}
                       </td>
-                      <td className="px-6 py-5 text-center">
+                      <td className="px-6 py-5">
                         <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[10px] font-black ${statusStyle.badge}`}>
                           <span className={`h-1.5 w-1.5 rounded-full ${statusStyle.dot}`}></span>
                           {paymentStatus}
@@ -727,6 +748,128 @@ const SettlementPage = () => {
           </div>
         </div>
       </main>
+      {isExportModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <button
+            type="button"
+            aria-label="엑셀 내보내기 모달 닫기"
+            onClick={() => setIsExportModalOpen(false)}
+            className="absolute inset-0 bg-gray-950/40 backdrop-blur-sm"
+          />
+
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="export-modal-title"
+            className="relative flex max-h-[90vh] w-full max-w-xl flex-col rounded-3xl bg-white shadow-2xl"
+          >
+            <div className="flex items-start justify-between gap-4 border-b border-gray-100 px-7 py-6">
+              <div className="flex items-start gap-3">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
+                  <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                    <path d="M7 3h7l4 4v14H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z" strokeLinejoin="round" />
+                    <path d="M14 3v5h5M9 12l6 6M15 12l-6 6" strokeLinecap="round" />
+                  </svg>
+                </span>
+                <div>
+                  <h3 id="export-modal-title" className="text-xl font-black text-gray-900">
+                    월 지출 내역 엑셀 내보내기
+                  </h3>
+                  <p className="mt-2 text-xs font-medium leading-5 text-gray-500">
+                    해당 월의 결제 및 지출 내역을 엑셀 파일로 생성합니다.
+                    <br />
+                    세무 신고 또는 증빙 정리에 활용할 수 있습니다.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                aria-label="닫기"
+                onClick={() => setIsExportModalOpen(false)}
+                className="flex h-9 w-9 items-center justify-center rounded-full text-xl text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="space-y-6 overflow-y-auto px-7 py-6">
+              <div>
+                <p className="mb-2 text-xs font-black text-gray-500">대상 기간</p>
+                <div className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5 text-sm font-black text-gray-800">
+                  2024년 6월
+                </div>
+              </div>
+
+              <div>
+                <p className="mb-2 text-xs font-black text-gray-500">내보낼 데이터</p>
+                <div className="flex items-center gap-3 rounded-xl border border-emerald-100 bg-emerald-50/60 px-4 py-3.5">
+                  <span className="h-2.5 w-2.5 rounded-full bg-emerald-500"></span>
+                  <span className="text-sm font-black text-gray-800">월 지출 상세 내역</span>
+                </div>
+              </div>
+
+              <div>
+                <p className="mb-3 text-xs font-black text-gray-500">포함 항목</p>
+                <div className="flex flex-wrap gap-2">
+                  {[
+                    '거래처명',
+                    '발주 내역',
+                    '결제 항목',
+                    '결제 예정일',
+                    '합계 금액(발주서 기준)',
+                    '결제 상태',
+                    '카테고리',
+                    '사업자등록번호',
+                    '공급가액',
+                    '부가세',
+                  ].map((item) => (
+                    <span
+                      key={item}
+                      className="rounded-lg border border-emerald-100 bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-700"
+                    >
+                      {item}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <p className="mb-2 text-xs font-black text-gray-500">파일 정보</p>
+                <div className="space-y-2 rounded-xl border border-gray-200 bg-white px-4 py-4">
+                  <div className="flex items-center justify-between gap-4 text-xs">
+                    <span className="font-bold text-gray-400">파일명</span>
+                    <span className="font-black text-gray-800">2024년_6월_지출내역.xlsx</span>
+                  </div>
+                  <div className="flex items-center justify-between gap-4 text-xs">
+                    <span className="font-bold text-gray-400">형식</span>
+                    <span className="font-black text-emerald-600">.xlsx</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-3 border-t border-gray-100 px-7 py-5">
+              <button
+                type="button"
+                onClick={() => setIsExportModalOpen(false)}
+                className="h-12 flex-1 rounded-xl border border-gray-200 text-sm font-black text-gray-500 transition-colors hover:bg-gray-50"
+              >
+                취소
+              </button>
+              <button
+                type="button"
+                className="flex h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-emerald-600 text-sm font-black text-white transition-colors hover:bg-emerald-700"
+              >
+                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M12 3v12m0 0 4-4m-4 4-4-4M5 20h14" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                엑셀 다운로드
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <MainFooter />
     </div>
   );

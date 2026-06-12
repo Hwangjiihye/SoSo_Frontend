@@ -33,6 +33,7 @@ const ExpenseCategoryPage = () => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isSettlementMenuOpen, setIsSettlementMenuOpen] = useState(false);
   const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false); // 비용 등록 모달 상태
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false); // 지출 상세 모달 상태 추가
   const [selectedCategory, setSelectedCategory] = useState(null); // 선택된 카테고리 상태 추가
   const [ingredientOrderType, setIngredientOrderType] = useState('general');
@@ -254,7 +255,6 @@ const ExpenseCategoryPage = () => {
             onMouseLeave={() => setIsSettlementMenuOpen(false)}
           >
             <div 
-              onClick={() => navigate("/settlement")}
               className={`px-4 py-1.5 text-sm font-bold rounded shadow-sm border cursor-pointer transition-all whitespace-nowrap ${isSettlementMenuOpen ? 'bg-white text-emerald-600 border-gray-100' : 'bg-white text-emerald-600 border-gray-200'}`}
             >
               수금 관리
@@ -262,14 +262,13 @@ const ExpenseCategoryPage = () => {
             
             <div className={`absolute top-full left-0 w-40 pt-2 z-[60] transition-all duration-200 ${isSettlementMenuOpen ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-2'}`}>
               <div className="bg-white border border-gray-100 rounded-xl shadow-xl p-2">
-                {['이체 관리', '비용 카테고리', '결제 요약', '내보내기'].map((sub) => (
+                {['이체 관리', '비용 카테고리', '지출 요약'].map((sub) => (
                   <button 
                     key={sub} 
                     onClick={() => {
                       if (sub === '이체 관리') navigate("/transfer-management");
                       else if (sub === '비용 카테고리') navigate("/expense-category");
-                      else if (sub === '결제 요약') navigate("/settlement");
-                      else if (sub === '내보내기') navigate("/export");
+                      else if (sub === '지출 요약') navigate("/settlement");
                     }}
                     className={`w-full text-left px-3 py-2 text-[11px] font-bold rounded-lg transition-all ${sub === '비용 카테고리' ? 'bg-emerald-50 text-emerald-600' : 'text-gray-600 hover:bg-emerald-50 hover:text-emerald-600'}`}
                   >
@@ -314,12 +313,32 @@ const ExpenseCategoryPage = () => {
             <h2 className="text-2xl font-black text-gray-900 mb-1">비용 카테고리 관리</h2>
             <p className="text-sm text-gray-500">매장의 지출 항목을 체계적으로 분류하고 관리하세요.</p>
           </div>
-          <button 
-            onClick={() => setIsExpenseModalOpen(true)}
-            className="px-6 py-3 bg-emerald-600 text-white rounded-2xl text-sm font-black hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-200"
-          >
-            + 지출 비용 등록
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setIsExportModalOpen(true)}
+              className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl border border-emerald-200 bg-white px-5 text-sm font-black text-emerald-700 shadow-sm transition-colors hover:bg-emerald-50"
+            >
+              <svg
+                className="h-4 w-4"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                aria-hidden="true"
+              >
+                <path d="M12 3v12m0 0 4-4m-4 4-4-4M5 20h14" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              엑셀로 내보내기
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsExpenseModalOpen(true)}
+              className="h-12 rounded-2xl bg-emerald-600 px-6 text-sm font-black text-white shadow-lg shadow-emerald-200 transition-all hover:bg-emerald-700"
+            >
+              + 지출 비용 등록
+            </button>
+          </div>
         </div>
 
         {/* 지출 분포 요약 차트 섹션 추가 */}
@@ -329,18 +348,18 @@ const ExpenseCategoryPage = () => {
               <Doughnut data={chartData} options={chartOptions} />
             </div>
             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">총 지출액</span>
-              <span className="text-xl font-black text-gray-900">{formatCurrency(totalExpense)}</span>
+              <span className="text-xs font-bold uppercase tracking-widest text-gray-400">총 지출액</span>
+              <span className="mt-1 text-2xl font-black text-gray-900">{formatCurrency(totalExpense)}</span>
             </div>
           </div>
           
-          <div className="flex-grow grid grid-cols-2 sm:grid-cols-3 gap-6 w-full">
+          <div className="grid w-full flex-grow grid-cols-2 gap-8 sm:grid-cols-3">
             {localCategories.map((cat) => (
-              <div key={cat.id} className="flex items-center gap-3">
-                <div className={`w-3 h-3 rounded-full`} style={{ backgroundColor: getChartColors(cat.color) }}></div>
+              <div key={cat.id} className="flex items-center gap-4">
+                <div className="h-4 w-4 shrink-0 rounded-full" style={{ backgroundColor: getChartColors(cat.color) }}></div>
                 <div>
-                  <div className="text-xs font-bold text-gray-700">{cat.name}</div>
-                  <div className="text-[10px] text-gray-400 font-medium">
+                  <div className="text-sm font-bold text-gray-700">{cat.name}</div>
+                  <div className="mt-0.5 text-xs font-medium text-gray-400">
                     {totalExpense > 0 ? ((cat.amount / totalExpense) * 100).toFixed(1) : '0.0'}%
                   </div>
                 </div>
@@ -1214,6 +1233,128 @@ const ExpenseCategoryPage = () => {
               확인 완료 및 닫기
             </button>
           </footer>
+        </div>
+      )}
+
+      {isExportModalOpen && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+          <button
+            type="button"
+            aria-label="엑셀 내보내기 모달 닫기"
+            onClick={() => setIsExportModalOpen(false)}
+            className="absolute inset-0 bg-gray-950/40 backdrop-blur-sm"
+          />
+
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="expense-export-modal-title"
+            className="relative flex max-h-[90vh] w-full max-w-xl flex-col rounded-3xl bg-white shadow-2xl"
+          >
+            <div className="flex items-start justify-between gap-4 border-b border-gray-100 px-7 py-6">
+              <div className="flex items-start gap-3">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
+                  <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                    <path d="M7 3h7l4 4v14H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z" strokeLinejoin="round" />
+                    <path d="M14 3v5h5M9 12l6 6M15 12l-6 6" strokeLinecap="round" />
+                  </svg>
+                </span>
+                <div>
+                  <h3 id="expense-export-modal-title" className="text-xl font-black text-gray-900">
+                    비용 카테고리 엑셀 내보내기
+                  </h3>
+                  <p className="mt-2 text-xs font-medium leading-5 text-gray-500">
+                    선택한 기간의 카테고리별 지출 내역을 엑셀 파일로 생성합니다.
+                    <br />
+                    카테고리별 지출 금액과 상세 지출 내역을 함께 확인할 수 있습니다.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                aria-label="닫기"
+                onClick={() => setIsExportModalOpen(false)}
+                className="flex h-9 w-9 items-center justify-center rounded-full text-xl text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="space-y-6 overflow-y-auto px-7 py-6">
+              <div>
+                <p className="mb-2 text-xs font-black text-gray-500">대상 기간</p>
+                <div className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5 text-sm font-black text-gray-800">
+                  2024년 6월
+                </div>
+              </div>
+
+              <div>
+                <p className="mb-2 text-xs font-black text-gray-500">내보낼 카테고리</p>
+                <div className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5 text-sm font-black text-gray-800">
+                  전체 카테고리
+                </div>
+              </div>
+
+              <div>
+                <p className="mb-3 text-xs font-black text-gray-500">포함 항목</p>
+                <div className="flex flex-wrap gap-2">
+                  {[
+                    '카테고리명',
+                    '지출명',
+                    '거래일',
+                    '거래처명',
+                    '거래 품목',
+                    '구매 수량',
+                    '결제수단',
+                    '공급가액',
+                    '부가세',
+                    '합계금액',
+                    '메모',
+                  ].map((item) => (
+                    <span
+                      key={item}
+                      className="rounded-lg border border-emerald-100 bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-700"
+                    >
+                      {item}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <p className="mb-2 text-xs font-black text-gray-500">파일 정보</p>
+                <div className="space-y-2 rounded-xl border border-gray-200 bg-white px-4 py-4">
+                  <div className="flex items-center justify-between gap-4 text-xs">
+                    <span className="font-bold text-gray-400">파일명</span>
+                    <span className="font-black text-gray-800">2024년_6월_비용카테고리_지출내역.xlsx</span>
+                  </div>
+                  <div className="flex items-center justify-between gap-4 text-xs">
+                    <span className="font-bold text-gray-400">형식</span>
+                    <span className="font-black text-emerald-600">.xlsx</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-3 border-t border-gray-100 px-7 py-5">
+              <button
+                type="button"
+                onClick={() => setIsExportModalOpen(false)}
+                className="h-12 flex-1 rounded-xl border border-gray-200 text-sm font-black text-gray-500 transition-colors hover:bg-gray-50"
+              >
+                취소
+              </button>
+              <button
+                type="button"
+                className="flex h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-emerald-600 text-sm font-black text-white transition-colors hover:bg-emerald-700"
+              >
+                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M12 3v12m0 0 4-4m-4 4-4-4M5 20h14" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                엑셀 다운로드
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
