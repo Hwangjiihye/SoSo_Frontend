@@ -31,7 +31,7 @@ const StockTransactionModal = ({ isOpen, onClose, selectedStock, onSuccess }) =>
         {/* 헤더 */}
         <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
           <div>
-            <span className="text-xs font-bold text-emerald-600 mb-1 block">재고 거래 관리</span>
+            <span className="text-xs font-bold text-emerald-600 mb-1 block">입/출고</span>
             <h3 className="text-lg font-bold text-gray-900">{selectedStock.stockName}</h3>
           </div>
           <button 

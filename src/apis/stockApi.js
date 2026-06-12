@@ -39,7 +39,6 @@ export const getStockHistories = async (stockSeq) => {
 export const createIncomingStock = async (data) => {
   // data: { stockSeq, detailProductName, quantity, incomingPrice, expirationDate, manager, memo }
   const response = await axiosInstance.post('/api/stocks/incoming', data);
-  console.log("테스트 :", response.data);
   return response.data;
 };
 

@@ -35,7 +35,7 @@ const StockHistoryModal = ({ isOpen, onClose, stock, fetchDetailData }) => {
           <div>
             <h3 className="text-lg font-bold text-gray-900">재고 상세 및 변동 이력</h3>
             <p className="text-sm text-emerald-600 font-medium mt-0.5">
-              [{stock.stockSeq}] {stock.stockName} ({stock.category})
+             {stock.stockName} ({stock.category})
             </p>
           </div>
           <button 
@@ -51,16 +51,16 @@ const StockHistoryModal = ({ isOpen, onClose, stock, fetchDetailData }) => {
           <section>
             <div className="flex items-center gap-2 mb-4">
               <div className="w-1 h-5 bg-emerald-500 rounded-full"></div>
-              <h4 className="font-bold text-gray-900">현재 보유 재고 (배치 리스트)</h4>
+              <h4 className="font-bold text-gray-900">현재 보유 재고 </h4>
             </div>
             <div className="border border-gray-100 rounded-2xl overflow-hidden shadow-sm">
               <table className="w-full text-left border-collapse">
                 <thead className="bg-gray-50 border-b border-gray-100">
                   <tr>
-                    <th className="px-6 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider">입고일</th>
-                    <th className="px-6 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider">상세 품목명</th>
-                    <th className="px-6 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider text-right">남은 수량</th>
-                    <th className="px-6 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider text-right">입고 단가</th>
+                    <th className="px-6 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider text-center">입고일</th>
+                    <th className="px-6 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider text-center">상세 품목명</th>
+                    <th className="px-6 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider text-center">남은 수량</th>
+                    <th className="px-6 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider text-center">입고 단가</th>
                     <th className="px-6 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider text-center">유통기한</th>
                     <th className="px-6 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider text-center">로트번호</th>
                   </tr>
@@ -71,10 +71,10 @@ const StockHistoryModal = ({ isOpen, onClose, stock, fetchDetailData }) => {
                   ) : data.batches.length > 0 ? (
                     data.batches.map((batch, idx) => (
                       <tr key={idx} className="hover:bg-gray-50/50">
-                        <td className="px-6 py-4 text-sm text-gray-600">{batch.incomingDate}</td>
-                        <td className="px-6 py-4 text-sm font-bold text-gray-900">{batch.detailStockName}</td>
-                        <td className="px-6 py-4 text-sm font-bold text-emerald-600 text-right">{batch.quantity}</td>
-                        <td className="px-6 py-4 text-sm text-gray-600 text-right">{batch.incomingPrice}원</td>
+                        <td className="px-6 py-4 text-sm text-gray-600 text-center">{batch.incomingDate}</td>
+                        <td className="px-6 py-4 text-sm font-bold text-gray-900 text-center">{batch.detailStockName}</td>
+                        <td className="px-6 py-4 text-sm font-bold text-emerald-600 text-center">{batch.currentQuantity}</td>
+                        <td className="px-6 py-4 text-sm text-gray-600 text-center">{batch.incomingPrice}원</td>
                         <td className="px-6 py-4 text-sm font-bold text-rose-500 text-center">{batch.expirationDate}</td>
                         <td className="px-6 py-4 text-xs font-mono text-gray-400 text-center">{batch.lotNumber}</td>
                       </tr>
@@ -97,14 +97,15 @@ const StockHistoryModal = ({ isOpen, onClose, stock, fetchDetailData }) => {
               <table className="w-full text-left border-collapse">
                 <thead className="bg-gray-50 border-b border-gray-100">
                   <tr>
-                    <th className="px-6 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider">일시</th>
+                    <th className="px-6 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider text-center">일시</th>
                     <th className="px-6 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider text-center">구분</th>
-                    <th className="px-6 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider">상세 품목명</th>
-                    <th className="px-6 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider text-right">변동수량</th>
-                    <th className="px-6 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider text-right">최종재고</th>
-                    <th className="px-6 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider text-right">단가</th>
+                    <th className="px-6 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider text-center">상세 품목명</th>
+                    <th className="px-6 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider text-center">변동수량</th>
+                    <th className="px-6 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider text-center">최종재고</th>
+                    <th className="px-6 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider text-center">단가</th>
                     <th className="px-6 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider text-center">유통기한</th>
-                    <th className="px-6 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider">사유</th>
+                    <th className="px-6 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider text-center">사유</th>
+                    <th className="px-6 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider text-center">메모</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
@@ -113,7 +114,7 @@ const StockHistoryModal = ({ isOpen, onClose, stock, fetchDetailData }) => {
                   ) : data.histories.length > 0 ? (
                     data.histories.map((hist, idx) => (
                       <tr key={idx} className="hover:bg-gray-50/50">
-                        <td className="px-6 py-4 text-xs text-gray-500">{hist.createdAt}</td>
+                        <td className="px-6 py-4 text-xs text-gray-500 text-center">{hist.createdAt}</td>
                         <td className="px-6 py-4 text-center">
                           <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${
                             hist.transactionType === 'INCOMING' ? 'bg-blue-50 text-blue-600 border-blue-100' :
@@ -123,16 +124,17 @@ const StockHistoryModal = ({ isOpen, onClose, stock, fetchDetailData }) => {
                             {hist.transactionType}
                           </span>
                         </td>
-                        <td className="px-6 py-4 text-sm text-gray-900">{hist.detailStockName || '-'}</td>
-                        <td className={`px-6 py-4 text-sm font-bold text-right ${
+                        <td className="px-6 py-4 text-sm text-gray-900 text-center">{hist.detailStockName || '-'}</td>
+                        <td className={`px-6 py-4 text-sm font-bold text-center ${
                           hist.transactionType === 'INCOMING' ? 'text-blue-600' : 'text-rose-500'
                         }`}>
                           {hist.transactionType === 'INCOMING' ? `+${hist.changeQuantity}` : hist.changeQuantity}
                         </td>
-                        <td className="px-6 py-4 text-sm font-bold text-gray-900 text-right">{hist.currentTotalStock.toLocaleString()}</td>
-                        <td className="px-6 py-4 text-sm text-gray-600 text-right">{hist.price > 0 ? `${hist.price.toLocaleString()}원` : '-'}</td>
+                        <td className="px-6 py-4 text-sm font-bold text-gray-900 text-center">{hist.currentTotalStock.toLocaleString()}</td>
+                        <td className="px-6 py-4 text-sm text-gray-600 text-center">{hist.price > 0 ? `${hist.price.toLocaleString()}원` : '-'}</td>
                         <td className="px-6 py-4 text-sm text-gray-600 text-center">{hist.expirationDate || '-'}</td>
-                        <td className="px-6 py-4 text-sm text-gray-500">{hist.reason}</td>
+                        <td className="px-6 py-4 text-sm text-gray-500 text-center">{hist.reason || '-'}</td>
+                        <td className="px-6 py-4 text-sm text-gray-500 text-center">{hist.memo || '-'}</td>
                       </tr>
                     ))
                   ) : (
