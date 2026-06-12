@@ -146,7 +146,7 @@ const SignUpPage = () => {
               </div>
               <div>
                 <label className={labelStyle}>대표자명</label>
-                <input name="repName" value={formData.repName} onChange={handleChange} className={inputStyle} />
+                <input name="ceoName" value={formData.ceoName} onChange={handleChange} className={inputStyle} />
               </div>
               <div>
                 <label className={labelStyle}>개업일자</label>

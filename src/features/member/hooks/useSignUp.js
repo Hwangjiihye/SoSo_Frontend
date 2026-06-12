@@ -29,7 +29,7 @@ export const useSignUp = () => {
     ssnBack: '',
     email: '',
     bizNo: '',
-    repName: '',
+    ceoName: '',
     openDate: '',
     corpName: '',
     zipCode: '',
@@ -143,9 +143,9 @@ export const useSignUp = () => {
    * 사업자 진위 확인 API 호출
    */
   const verifyBusiness = async () => {
-    const { bizNo, openDate, repName, corpName } = formData;
+    const { bizNo, openDate, ceoName, corpName } = formData;
     
-    if (!bizNo || !openDate || !repName || !corpName) {
+    if (!bizNo || !openDate || !ceoName || !corpName) {
       alert('사업자 정보를 모두 입력해 주세요.');
       return;
     }
@@ -154,7 +154,7 @@ export const useSignUp = () => {
       // YYYY-MM-DD -> YYYYMMDD 형식으로 변환 (백엔드 요구사항에 맞춤)
       const formattedDate = openDate.replace(/-/g, '');
       
-      const message = await checkBusinessApi(bizNo, formattedDate, repName, corpName);
+      const message = await checkBusinessApi(bizNo, formattedDate, ceoName, corpName);
       
       setApiStatus(prev => ({ ...prev, bizVerified: true }));
       alert(message || '사업자 인증이 완료되었습니다.');
