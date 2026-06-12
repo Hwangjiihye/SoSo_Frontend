@@ -269,6 +269,7 @@ const ExpenseCategoryPage = () => {
                       if (sub === '이체 관리') navigate("/transfer-management");
                       else if (sub === '비용 카테고리') navigate("/expense-category");
                       else if (sub === '결제 요약') navigate("/settlement");
+                      else if (sub === '내보내기') navigate("/export");
                     }}
                     className={`w-full text-left px-3 py-2 text-[11px] font-bold rounded-lg transition-all ${sub === '비용 카테고리' ? 'bg-emerald-50 text-emerald-600' : 'text-gray-600 hover:bg-emerald-50 hover:text-emerald-600'}`}
                   >

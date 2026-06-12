@@ -1,6 +1,7 @@
 import SettlementPage from '../features/payment/SettlementPage';
 import TransferManagementPage from '../features/payment/TransferManagementPage';
 import ExpenseCategoryPage from '../features/payment/ExpenseCategoryPage';
+import ExportPage from '../features/payment/ExportPage';
 
 /**
  * @file settlementRoutes.jsx
@@ -18,6 +19,10 @@ const settlementRoutes = [
   {
     path: '/expense-category',
     element: <ExpenseCategoryPage />,
+  },
+  {
+    path: '/export',
+    element: <ExportPage />,
   },
 ];
 
