@@ -121,7 +121,8 @@ const StockHistoryModal = ({ isOpen, onClose, stock, fetchDetailData }) => {
                             hist.transactionType === 'OUTBOUND' ? 'bg-rose-50 text-rose-600 border-rose-100' :
                             'bg-amber-50 text-amber-600 border-amber-100'
                           }`}>
-                            {hist.transactionType}
+                            {hist.transactionType === 'INCOMING' ? '입고': 
+                            hist.transactionType === 'OUTBOUND' ? '출고': '조정'} 
                           </span>
                         </td>
                         <td className="px-6 py-4 text-sm text-gray-900 text-center">{hist.detailStockName || '-'}</td>
