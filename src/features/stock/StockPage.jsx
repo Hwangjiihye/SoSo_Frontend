@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useStock } from './hooks/useStock';
 import StockHeader from './components/StockHeader';
 import StockFilter from './components/StockFilter';
@@ -25,9 +25,11 @@ const StockPage = () => {
     getStockDetailData,
     registerStock,
     editStock,
+    getExpiringSoonCount, // 훅에서 가져오기
   } = useStock();
 
   const [selectedIds, setSelectedIds] = useState([]);
+  const [expiringSoonCount, setExpiringSoonCount] = useState(0); // 상태 추가
 
   // 모달 관련 상태
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
@@ -38,6 +40,15 @@ const StockPage = () => {
   const [selectedStockForHistory, setSelectedStockForHistory] = useState(null);
   const [selectedStockForTransaction, setSelectedStockForTransaction] = useState(null);
   const [selectedStockForEdit, setSelectedStockForEdit] = useState(null);
+
+  // 데이터 로딩 시 임박 수치 갱신
+  useEffect(() => {
+    const updateExpiringCount = async () => {
+      const count = await getExpiringSoonCount();
+      setExpiringSoonCount(count);
+    };
+    if (stocks.length > 0) updateExpiringCount();
+  }, [stocks, getExpiringSoonCount]);
 
   const handleAddStock = () => setIsRegisterModalOpen(true);
   const handleRegister = (formData) => registerStock(formData);
@@ -83,7 +94,6 @@ const StockPage = () => {
   // 요약 수치 계산 (백엔드 필드 기준)
   const lowStockCount = stocks.filter(s => s.currentStock > 0 && s.currentStock <= s.safetyStock).length;
   const outOfStockCount = stocks.filter(s => s.currentStock === 0).length;
-  const expiringSoonCount = stocks.filter(s => s.expirationDays !== null && s.expirationDays >= 0 && s.expirationDays <= 7).length;
 
   return (
     <div className="min-h-screen bg-gray-50 pb-12">

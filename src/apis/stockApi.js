@@ -58,9 +58,9 @@ export const createAdjustStock = async (data) => {
   return response.data;
 };
 
-// 기존 함수들 유지 (필요 시 수정/삭제 가능하나 안정성을 위해 일단 보존)
-export const getStockDetail = async (stockId) => {
-  const response = await axiosInstance.get(`/api/stocks/${stockId}`);
+//유통기한 임박 카운트 가져오기
+export const getStockExpiringSoonCountApi = async (stockId) => {
+  const response = await axiosInstance.get(`/api/stocks/countExpiringSoon`);
   return response.data;
 };
 

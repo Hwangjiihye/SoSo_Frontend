@@ -5,7 +5,8 @@ import {
   getStockBatches, 
   getStockHistories,
   deleteStock,
-  updateStock
+  updateStock,
+  getStockExpiringSoonCountApi
 } from '../../../apis/stockApi';
 
 /**
@@ -99,6 +100,19 @@ export const useStock = () => {
     }
   };
 
+  // 유통기한 7일 이내 임박한 전체 배치 수량 계산
+  const getExpiringSoonCount = useCallback(async () => {
+    try {
+      // 1. 전체 품목 목록 조회
+      const count = await getStockExpiringSoonCountApi();
+      
+      return count;
+    } catch (err) {
+      console.error('Calculate Expiry Error:', err);
+      return 0;
+    }
+  }, []);
+
   useEffect(() => {
     fetchStocks();
   }, [fetchStocks]);
@@ -123,5 +137,6 @@ export const useStock = () => {
     registerStock,
     editStock,
     getStockDetailData,
+    getExpiringSoonCount, // 반환 추가
   };
 };
