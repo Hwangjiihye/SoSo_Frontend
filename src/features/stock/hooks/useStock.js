@@ -86,17 +86,27 @@ export const useStock = () => {
 
   // 5. 품목 삭제 (복수)
   const deleteStocks = async (ids) => {
-    if (!window.confirm(`${ids.length}개의 항목을 삭제하시겠습니까?`)) return;
+    if (!ids || ids.length === 0) return false;
+    if (!window.confirm(`${ids.length}개의 항목을 삭제하시겠습니까?\n삭제된 데이터는 복구할 수 없습니다.`)) return false;
     
+    setIsLoading(true);
     try {
+      // 순차적으로 혹은 병렬로 삭제 처리 (여기서는 병렬 처리)
       await Promise.all(ids.map(id => deleteStock(id)));
-      alert('삭제되었습니다.');
+      
+      alert('선택한 항목이 모두 삭제되었습니다.');
+      // 삭제 후 목록 새로고침
       await fetchStocks();
       return true;
     } catch (err) {
       console.error('Delete Stocks Error:', err);
+      setError('항목 삭제 중 오류가 발생했습니다. 일부 항목이 삭제되지 않았을 수 있습니다.');
       alert('삭제 중 오류가 발생했습니다.');
+      // 오류가 발생하더라도 일부는 삭제되었을 수 있으므로 목록 새로고침
+      await fetchStocks();
       return false;
+    } finally {
+      setIsLoading(false);
     }
   };
 

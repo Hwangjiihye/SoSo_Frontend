@@ -136,6 +136,7 @@ const StockPage = () => {
         selectedCount={selectedIds.length}
         onCancel={() => setSelectedIds([])}
         onDelete={handleDeleteSelected}
+        isLoading={isLoading}
       />
 
       <StockHistoryModal 
