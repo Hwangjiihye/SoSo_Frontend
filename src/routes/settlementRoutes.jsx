@@ -1,6 +1,7 @@
 import SettlementPage from '../features/payment/SettlementPage';
 import TransferManagementPage from '../features/payment/TransferManagementPage';
 import ExpenseCategoryPage from '../features/payment/ExpenseCategoryPage';
+import CollectionManagementPage from '../features/payment/CollectionManagementPage';
 
 /**
  * @file settlementRoutes.jsx
@@ -18,6 +19,10 @@ const settlementRoutes = [
   {
     path: '/expense-category',
     element: <ExpenseCategoryPage />,
+  },
+  {
+    path: '/collection-management',
+    element: <CollectionManagementPage />,
   },
 ];
 

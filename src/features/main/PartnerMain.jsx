@@ -117,7 +117,7 @@ function PartnerMain({ setRole }) {
         <nav className="hidden md:flex justify-center gap-1 border border-gray-100 rounded-lg p-1 bg-gray-50 w-fit mx-auto">
           <a href="#" className="px-4 py-1.5 text-sm font-semibold bg-white text-gray-900 rounded shadow-sm border border-gray-200">홈</a>
           {['발주 관리', '수금 관리', '공동 발주', '업체 홍보', '통계'].map(m => (
-            <a key={m} href="#" className="px-4 py-1.5 text-sm font-medium text-gray-500 hover:text-emerald-600 transition-colors whitespace-nowrap">{m}</a>
+            <a key={m} href={m === '수금 관리' ? '/collection-management' : '#'} className="px-4 py-1.5 text-sm font-medium text-gray-500 hover:text-emerald-600 transition-colors whitespace-nowrap">{m}</a>
           ))}
         </nav>
         <div className="flex items-center justify-end gap-4">
