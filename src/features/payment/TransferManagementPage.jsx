@@ -400,7 +400,7 @@ const TransferManagementPage = () => {
                         <div className={`mt-6 text-2xl font-black ${isActive ? 'text-emerald-600' : 'text-gray-900'}`}>{formatCurrency(acc.balance || 0)}</div>
                       </div>
 
-                      <div className="grid grid-cols-3 gap-2">
+                      <div className="grid grid-cols-2 gap-2">
                         <button
                           type="button"
                           onClick={(e) => {
@@ -412,7 +412,6 @@ const TransferManagementPage = () => {
                         >
                           이체
                         </button>
-                        <button type="button" onClick={(e) => handleOpenEditModal(acc, e)} className="rounded-xl border border-gray-200 py-2.5 text-xs font-black text-gray-600 hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-600">수정</button>
                         <button type="button" onClick={(e) => handleDeleteAccount(acc, e)} className="rounded-xl border border-gray-200 py-2.5 text-xs font-black text-gray-500 hover:border-red-200 hover:bg-red-50 hover:text-red-500">삭제</button>
                       </div>
                     </article>
