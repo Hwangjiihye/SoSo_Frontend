@@ -33,7 +33,7 @@ const StockStatusPage = () => {
                 location.pathname === '/stock-status' ? 'text-gray-900' : 'text-gray-400 hover:text-gray-900'
               }`}
             >
-              재고 상태 관리
+              자동 재고 제어 관리
               {location.pathname === '/stock-status' && (
                 <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-900 rounded-t-full" />
               )}
@@ -45,7 +45,7 @@ const StockStatusPage = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         {/* 헤더 섹션 */}
         <div className="mb-12">
-          <h1 className="text-4xl font-black text-gray-900 tracking-tight mb-3">재고 상태 관리</h1>
+          <h1 className="text-4xl font-black text-gray-900 tracking-tight mb-3">자동 재고 제어 관리</h1>
           <p className="text-[15px] text-gray-400 font-medium">자동 차감, 자동 발주 연동, 실시간 변동 알림</p>
         </div>
 
