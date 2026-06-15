@@ -100,22 +100,46 @@ const StockPage = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <StockHeader onAddClick={handleAddStock} />
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm">
-            <div className="text-[11px] font-bold text-gray-400 uppercase mb-1">전체 품목</div>
-            <div className="text-xl font-black text-gray-900">{stocks.length}건</div>
+        {/* 요약 카드 섹션 - 이미지 스타일 반영 */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <div className="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-10 h-10 rounded-2xl bg-blue-50 flex items-center justify-center text-xl">📦</div>
+              <div className="text-[12px] font-bold text-gray-400 uppercase tracking-wider">전체 품목</div>
+            </div>
+            <div className="text-3xl font-black text-gray-900 leading-none">
+              {stocks.length}<span className="text-sm font-medium text-gray-400 ml-1">건</span>
+            </div>
           </div>
-          <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm">
-            <div className="text-[11px] font-bold text-amber-500 uppercase mb-1">재고 부족</div>
-            <div className="text-xl font-black text-amber-500">{lowStockCount}건</div>
+
+          <div className="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-10 h-10 rounded-2xl bg-amber-50 flex items-center justify-center text-xl">⚠️</div>
+              <div className="text-[12px] font-bold text-amber-500 uppercase tracking-wider">재고 부족</div>
+            </div>
+            <div className="text-3xl font-black text-amber-500 leading-none">
+              {lowStockCount}<span className="text-sm font-medium text-amber-300 ml-1">건</span>
+            </div>
           </div>
-          <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm">
-            <div className="text-[11px] font-bold text-rose-500 uppercase mb-1">품절</div>
-            <div className="text-xl font-black text-rose-500">{outOfStockCount}건</div>
+
+          <div className="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-10 h-10 rounded-2xl bg-rose-50 flex items-center justify-center text-xl">🚫</div>
+              <div className="text-[12px] font-bold text-rose-500 uppercase tracking-wider">품절 임박</div>
+            </div>
+            <div className="text-3xl font-black text-rose-500 leading-none">
+              {outOfStockCount}<span className="text-sm font-medium text-rose-300 ml-1">건</span>
+            </div>
           </div>
-          <div className="bg-white p-4 rounded-2xl border border-red-200 shadow-sm ring-1 ring-red-100">
-            <div className="text-[11px] font-bold text-red-500 uppercase mb-1">유통기한 임박</div>
-            <div className="text-xl font-black text-red-600">{expiringSoonCount}건</div>
+
+          <div className="bg-gradient-to-br from-red-500 to-rose-600 p-5 rounded-3xl shadow-lg shadow-red-200">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-10 h-10 rounded-2xl bg-white/20 flex items-center justify-center text-xl">⏰</div>
+              <div className="text-[12px] font-bold text-white/80 uppercase tracking-wider">유통기한 임박</div>
+            </div>
+            <div className="text-3xl font-black text-white leading-none">
+              {expiringSoonCount}<span className="text-sm font-medium text-white/60 ml-1">건</span>
+            </div>
           </div>
         </div>
 

@@ -22,107 +22,85 @@ const StockTransactionModal = ({ isOpen, onClose, selectedStock, onSuccess }) =>
 
   if (!isOpen || !selectedStock) return null;
 
-  const labelStyle = "block text-xs font-bold text-gray-500 mb-1.5 ml-1";
-  const inputStyle = "w-full h-11 px-4 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:border-emerald-500 focus:bg-white transition-all";
-  const selectStyle = "w-full h-11 px-4 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:border-emerald-500 focus:bg-white transition-all appearance-none";
+  const labelStyle = "block text-[11px] font-black text-gray-400 uppercase tracking-wider mb-2 ml-1";
+  const inputStyle = "w-full h-12 px-5 bg-gray-50 border-2 border-transparent rounded-2xl text-[14px] font-bold outline-none focus:bg-white focus:border-emerald-500 transition-all placeholder:text-gray-300";
+  const selectStyle = "w-full h-12 px-5 bg-gray-50 border-2 border-transparent rounded-2xl text-[14px] font-bold outline-none focus:bg-white focus:border-emerald-500 transition-all cursor-pointer appearance-none";
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
-      <div className="bg-white w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden animate-scale-up">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-md animate-fade-in">
+      <div className="bg-white w-full max-w-lg rounded-[2.5rem] shadow-2xl overflow-hidden animate-scale-up border border-white/20">
         {/* 헤더 */}
-        <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+        <div className="px-8 pt-8 pb-4 flex items-center justify-between">
           <div>
-            <span className="text-xs font-bold text-emerald-600 mb-1 block">입/출고</span>
-            <h3 className="text-lg font-bold text-gray-900">{selectedStock.stockName}</h3>
+            <h3 className="text-2xl font-black text-gray-900 tracking-tight">{selectedStock.stockName}</h3>
+            <p className="text-xs text-gray-400 font-medium mt-1">품목의 재고 수량을 변경합니다.</p>
           </div>
           <button 
             onClick={onClose}
-            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-200 text-gray-400 hover:text-gray-600 transition-colors"
+            className="w-10 h-10 flex items-center justify-center rounded-2xl bg-gray-50 hover:bg-gray-100 text-gray-400 hover:text-gray-900 transition-all active:scale-90"
           >
-            <span className="text-2xl">&times;</span>
+            <span className="text-xl">✕</span>
           </button>
         </div>
 
         {/* 탭 스위치 */}
-        <div className="flex p-1 bg-gray-100 mx-6 mt-6 rounded-2xl">
-          <button
-            onClick={() => handleTabChange('INBOUND')}
-            className={`flex-1 py-2.5 text-sm font-bold rounded-xl transition-all ${
-              activeTab === 'INBOUND' ? 'bg-white text-emerald-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            입고
-          </button>
-          <button
-            onClick={() => handleTabChange('OUTBOUND')}
-            className={`flex-1 py-2.5 text-sm font-bold rounded-xl transition-all ${
-              activeTab === 'OUTBOUND' ? 'bg-white text-emerald-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            출고
-          </button>
-          <button
-            onClick={() => handleTabChange('ADJUST')}
-            className={`flex-1 py-2.5 text-sm font-bold rounded-xl transition-all ${
-              activeTab === 'ADJUST' ? 'bg-white text-emerald-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            재고 조정
-          </button>
+        <div className="flex p-1.5 bg-gray-100 mx-8 mt-6 rounded-[1.25rem]">
+          {[
+            { id: 'INBOUND', label: '📥 입고' },
+            { id: 'OUTBOUND', label: '📤 출고' },
+            { id: 'ADJUST', label: '⚖️ 조정' }
+          ].map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => handleTabChange(tab.id)}
+              className={`flex-1 py-3 text-[13px] font-black rounded-xl transition-all ${
+                activeTab === tab.id ? 'bg-white text-emerald-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
         </div>
 
         {/* 폼 영역 */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="px-8 pb-8 pt-6 space-y-5">
           {activeTab === 'INBOUND' && (
-            <div className="animate-fade-in">
-              <div className="space-y-4">
+            <div className="animate-fade-in space-y-5">
+              <div>
+                <label className={labelStyle}>상세 품목명 <span className="text-rose-500">*</span></label>
+                <input
+                  type="text"
+                  name="detailStockName"
+                  value={inboundForm.detailStockName}
+                  onChange={handleInboundChange}
+                  placeholder="예: 국내산 목살 500g"
+                  className={inputStyle}
+                  required
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className={labelStyle}>상세 품목명 <span className="text-rose-500">*</span></label>
+                  <label className={labelStyle}>입고 수량 ({selectedStock.unit}) <span className="text-rose-500">*</span></label>
                   <input
-                    type="text"
-                    name="detailStockName"
-                    value={inboundForm.detailStockName}
+                    type="number"
+                    name="quantity"
+                    value={inboundForm.quantity}
                     onChange={handleInboundChange}
-                    placeholder="예: 냉동 삼겹살 A유통 국내산"
+                    placeholder="0"
                     className={inputStyle}
                     required
                   />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className={labelStyle}>입고 수량 ({selectedStock.unit}) <span className="text-rose-500">*</span></label>
-                    <input
-                      type="number"
-                      name="quantity"
-                      value={inboundForm.quantity}
-                      onChange={handleInboundChange}
-                      placeholder="0"
-                      className={inputStyle}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className={labelStyle}>입고 단가 (원) <span className="text-rose-500">*</span></label>
-                    <input
-                      type="number"
-                      name="incomingPrice"
-                      value={inboundForm.incomingPrice}
-                      onChange={handleInboundChange}
-                      placeholder="0"
-                      className={inputStyle}
-                      required
-                    />
-                  </div>
-                </div>
                 <div>
-                  <label className={labelStyle}>메모</label>
+                  <label className={labelStyle}>입고 단가 (원) <span className="text-rose-500">*</span></label>
                   <input
-                    type="text"
-                    name="memo"
-                    value={inboundForm.memo}
+                    type="number"
+                    name="incomingPrice"
+                    value={inboundForm.incomingPrice}
                     onChange={handleInboundChange}
-                    placeholder="입고 관련 특이사항"
+                    placeholder="0"
                     className={inputStyle}
+                    required
                   />
                 </div>
               </div>
@@ -130,8 +108,8 @@ const StockTransactionModal = ({ isOpen, onClose, selectedStock, onSuccess }) =>
           )}
 
           {activeTab === 'OUTBOUND' && (
-            <div className="animate-fade-in">
-              <div className="space-y-4">
+            <div className="animate-fade-in space-y-5">
+              <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className={labelStyle}>출고 수량 ({selectedStock.unit}) <span className="text-rose-500">*</span></label>
                   <input
@@ -144,70 +122,46 @@ const StockTransactionModal = ({ isOpen, onClose, selectedStock, onSuccess }) =>
                     required
                   />
                 </div>
-                <div>
+                <div className="relative">
                   <label className={labelStyle}>출고 사유 <span className="text-rose-500">*</span></label>
-                  <div className="relative">
-                    <select
-                      name="reason"
-                      value={outboundForm.reason}
-                      onChange={handleOutboundChange}
-                      className={selectStyle}
-                      required
-                    >
-                      <option value="주방 소진">주방 소진</option>
-                      <option value="밀키트 제작용">밀키트 제작용</option>
-                      <option value="매장 간 이동">매장 간 이동</option>
-                      <option value="기타">기타</option>
-                    </select>
-                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
-                      ▼
-                    </div>
-                  </div>
-                </div>
-                <div>
-                  <label className={labelStyle}>메모</label>
-                  <input
-                    type="text"
-                    name="memo"
-                    value={outboundForm.memo}
+                  <select
+                    name="reason"
+                    value={outboundForm.reason}
                     onChange={handleOutboundChange}
-                    placeholder="상세 내역 입력"
-                    className={inputStyle}
-                  />
+                    className={selectStyle}
+                    required
+                  >
+                    <option value="주방 소진">🍳 주방 소진</option>
+                    <option value="밀키트 제작용">🍱 밀키트 제작</option>
+                    <option value="매장 간 이동">🚚 매장 간 이동</option>
+                    <option value="기타">ETC 기타</option>
+                  </select>
                 </div>
               </div>
             </div>
           )}
 
           {activeTab === 'ADJUST' && (
-            <div className="animate-fade-in">
-              <div className="space-y-4">
-                {/* 배치 선택 추가 */}
-                <div>
-                  <label className={labelStyle}>조정 대상 (배치 선택)</label>
-                  <div className="relative">
-                    <select
-                      name="batchSeq"
-                      value={adjustmentForm.batchSeq}
-                      onChange={handleAdjustmentChange}
-                      className={selectStyle}
-                    >
-                      <option value="">전체 재고 </option>
-                      {batches.map(batch => (
-                        <option key={batch.batchSeq} value={batch.batchSeq}>
-                          {batch.detailStockName} | 현재 수량 : {batch.currentQuantity} | 유통기한 : {batch.expirationDate}
-                        </option>
-                      ))}
-                    </select>
-                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
-                      ▼
-                    </div>
-                  </div>
-                  <p className="text-[10px] text-gray-400 mt-1 ml-1">
-                    * 특정 품목를 선택하면 해당 품목의 수량이 직접 조정됩니다.
-                  </p>
+            <div className="animate-fade-in space-y-5">
+              <div>
+                <label className={labelStyle}>조정 대상 배치</label>
+                <div className="relative">
+                  <select
+                    name="batchSeq"
+                    value={adjustmentForm.batchSeq}
+                    onChange={handleAdjustmentChange}
+                    className={selectStyle}
+                  >
+                    <option value="">전체 재고 통합 조정</option>
+                    {batches.map(batch => (
+                      <option key={batch.batchSeq} value={batch.batchSeq}>
+                        {batch.detailStockName} (남은 재고: {batch.currentQuantity})
+                      </option>
+                    ))}
+                  </select>
                 </div>
-
+              </div>
+              <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className={labelStyle}>조정 수량 (+/-) <span className="text-rose-500">*</span></label>
                   <input
@@ -220,57 +174,52 @@ const StockTransactionModal = ({ isOpen, onClose, selectedStock, onSuccess }) =>
                     required
                   />
                 </div>
-                <div>
+                <div className="relative">
                   <label className={labelStyle}>조정 사유 <span className="text-rose-500">*</span></label>
-                  <div className="relative">
-                    <select
-                      name="reason"
-                      value={adjustmentForm.reason}
-                      onChange={handleAdjustmentChange}
-                      className={selectStyle}
-                      required
-                    >
-                      <option value="파손/분실">파손/분실</option>
-                      <option value="유통기한 만료/부패">유통기한 만료/부패</option>
-                      <option value="재고 실사 후 수정">재고 실사 후 수정</option>
-                      <option value="입력 착오 보정">입력 착오 보정</option>
-                      <option value="기타">기타</option>
-                    </select>
-                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
-                      ▼
-                    </div>
-                  </div>
-                </div>
-                <div>
-                  <label className={labelStyle}>메모</label>
-                  <input
-                    type="text"
-                    name="memo"
-                    value={adjustmentForm.memo}
+                  <select
+                    name="reason"
+                    value={adjustmentForm.reason}
                     onChange={handleAdjustmentChange}
-                    placeholder="조정 상세 사유 입력"
-                    className={inputStyle}
-                  />
+                    className={selectStyle}
+                    required
+                  >
+                    <option value="파손/분실">💔 파손/분실</option>
+                    <option value="유통기한 만료/부패">⏰ 만료/부패</option>
+                    <option value="재고 실사 후 수정">📝 실사 결과</option>
+                    <option value="기타">ETC 기타</option>
+                  </select>
                 </div>
               </div>
             </div>
           )}
 
+          <div>
+            <label className={labelStyle}>추가 메모</label>
+            <input
+              type="text"
+              name="memo"
+              value={activeTab === 'INBOUND' ? inboundForm.memo : activeTab === 'OUTBOUND' ? outboundForm.memo : adjustmentForm.memo}
+              onChange={activeTab === 'INBOUND' ? handleInboundChange : activeTab === 'OUTBOUND' ? handleOutboundChange : handleAdjustmentChange}
+              placeholder="특이사항을 입력하세요 (선택)"
+              className={inputStyle}
+            />
+          </div>
+
           {/* 버튼 */}
-          <div className="flex gap-3 pt-6">
+          <div className="flex gap-3 pt-4">
             <button 
               type="button"
               onClick={onClose}
-              className="flex-1 h-12 bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold rounded-2xl transition-colors"
+              className="flex-1 h-14 bg-gray-100 hover:bg-gray-200 text-gray-600 text-[14px] font-black rounded-2xl transition-all active:scale-95"
             >
               취소
             </button>
             <button 
               type="submit"
               disabled={isLoading}
-              className="flex-1 h-12 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-2xl transition-colors shadow-lg shadow-emerald-600/20 disabled:opacity-50"
+              className="flex-1 h-14 bg-gray-900 hover:bg-emerald-600 text-white text-[14px] font-black rounded-2xl transition-all shadow-xl shadow-gray-100 active:scale-95 disabled:opacity-50"
             >
-              {isLoading ? '처리 중...' : '등록하기'}
+              {isLoading ? '처리 중...' : '데이터 저장하기'}
             </button>
           </div>
         </form>

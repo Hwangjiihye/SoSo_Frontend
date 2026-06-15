@@ -6,17 +6,21 @@ import React from 'react';
  */
 const StockHeader = ({ onAddClick }) => {
   return (
-    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+    <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">재고 관리</h1>
-        <p className="text-sm text-gray-500 mt-1">실시간 재고 현황을 파악하고 관리합니다.</p>
+        <div className="flex items-center gap-2 mb-2">
+          
+        </div>
+        <h1 className="text-4xl font-black text-gray-900 tracking-tight">재고 관리</h1>
+        <p className="text-[15px] text-gray-400 mt-2 font-medium">실시간 재고 현황을 파악하고 스마트하게 관리하세요.</p>
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-3">
         <button 
           onClick={onAddClick}
-          className="flex-1 md:flex-none px-6 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-bold hover:bg-emerald-700 transition-colors shadow-lg shadow-emerald-600/20"
+          className="group relative flex items-center gap-2 px-8 py-4 bg-gray-900 text-white rounded-[1.5rem] text-sm font-black hover:bg-emerald-600 transition-all shadow-xl shadow-gray-200 hover:shadow-emerald-200 active:scale-95 overflow-hidden"
         >
-          + 재고 등록
+          <span className="relative z-10">+ 새 품목 등록</span>
+          <div className="absolute inset-0 bg-gradient-to-r from-emerald-600 to-teal-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
         </button>
       </div>
     </div>

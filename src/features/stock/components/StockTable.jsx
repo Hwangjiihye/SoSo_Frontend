@@ -63,79 +63,89 @@ const StockTable = ({ stocks, isLoading, selectedIds, onSelectChange, onSelectAl
   }
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-      <div className="overflow-x-auto scrollbar-hide">
+    <div className="bg-white rounded-[2rem] border border-gray-100 shadow-xl shadow-gray-200/50 overflow-hidden">
+      <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="bg-gray-50 border-b border-gray-100">
-              <th className="px-6 py-4 w-10 text-center">
+            <tr className="bg-gray-50/50 border-b border-gray-100">
+              <th className="px-6 py-5 w-14 text-center">
                 <input 
                   type="checkbox" 
                   checked={stocks.length > 0 && selectedIds.length === stocks.length}
                   onChange={onSelectAll}
-                  className="w-4 h-4 accent-emerald-600 cursor-pointer"
+                  className="w-5 h-5 accent-emerald-600 rounded-lg cursor-pointer transition-all"
                 />
               </th>
-              <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">품목번호</th>
-              <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">품목명</th>
-              <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-center">카테고리</th>
-              <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-center">현재 수량</th>
-              <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-center">안전재고</th>
-              <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-center">소비기한</th>
-              <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-center">상태</th>
-              <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-center">입/출고</th>
-              <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-center">이력/상세</th>
-              <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-center">관리</th>
+              <th className="px-4 py-5 text-[11px] font-black text-gray-400 uppercase tracking-[0.1em]">Code</th>
+              <th className="px-6 py-5 text-[11px] font-black text-gray-400 uppercase tracking-[0.1em]">품목 정보</th>
+              <th className="px-4 py-5 text-[11px] font-black text-gray-400 uppercase tracking-[0.1em] text-center">카테고리</th>
+              <th className="px-4 py-5 text-[11px] font-black text-gray-400 uppercase tracking-[0.1em] text-center">현재고</th>
+              <th className="px-4 py-5 text-[11px] font-black text-gray-400 uppercase tracking-[0.1em] text-center">안전재고</th>
+              <th className="px-4 py-5 text-[11px] font-black text-gray-400 uppercase tracking-[0.1em] text-center">소비기한</th>
+              <th className="px-4 py-5 text-[11px] font-black text-gray-400 uppercase tracking-[0.1em] text-center">상태</th>
+              <th className="px-4 py-5 text-[11px] font-black text-gray-400 uppercase tracking-[0.1em] text-center">업무</th>
+              <th className="px-6 py-5 text-[11px] font-black text-gray-400 uppercase tracking-[0.1em] text-center">관리</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
             {stocks.length > 0 ? (
               stocks.map((stock) => (
-                <tr key={stock.stockSeq} className={`hover:bg-gray-50/50 transition-colors ${selectedIds.includes(stock.stockSeq) ? 'bg-emerald-50/30' : ''}`}>
-                  <td className="px-6 py-4 text-center">
+                <tr key={stock.stockSeq} className={`group hover:bg-emerald-50/20 transition-all ${selectedIds.includes(stock.stockSeq) ? 'bg-emerald-50/40' : ''}`}>
+                  <td className="px-6 py-5 text-center">
                     <input 
                       type="checkbox" 
                       checked={selectedIds.includes(stock.stockSeq)}
                       onChange={() => onSelectChange(stock.stockSeq)}
-                      className="w-4 h-4 accent-emerald-600 cursor-pointer"
+                      className="w-5 h-5 accent-emerald-600 rounded-lg cursor-pointer transition-all"
                     />
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-500 font-medium">#{stock.stockSeq}</td>
-                  <td className="px-6 py-4">
-                    <div className="text-sm font-bold text-gray-900">{stock.stockName}</div>
+                  <td className="px-4 py-5 text-xs font-bold text-gray-300">#{stock.stockSeq}</td>
+                  <td className="px-6 py-5">
+                    <div className="flex flex-col">
+                      <span className="text-[15px] font-black text-gray-900 group-hover:text-emerald-700 transition-colors">{stock.stockName}</span>
+                      <span className="text-[11px] text-gray-400 mt-0.5 font-medium">{stock.unit || 'EA'} 기준</span>
+                    </div>
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-600 text-center">{stock.category}</td>
-                  <td className="px-6 py-4 text-sm font-bold text-gray-900 text-center">
-                    {stock.currentStock.toLocaleString()}
+                  <td className="px-4 py-5 text-center">
+                    <span className="inline-block px-3 py-1 bg-gray-100 text-gray-600 text-[11px] font-bold rounded-lg uppercase tracking-tight">
+                      {stock.category}
+                    </span>
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-500 text-center">{stock.safetyStock.toLocaleString()}</td>
-                  <td className="px-6 py-4 text-center text-sm">
+                  <td className="px-4 py-5 text-center">
+                    <div className="text-[16px] font-black text-gray-900 tabular-nums">
+                      {stock.currentStock.toLocaleString()}
+                    </div>
+                  </td>
+                  <td className="px-4 py-5 text-center text-[13px] font-bold text-gray-400 tabular-nums">
+                    {stock.safetyStock.toLocaleString()}
+                  </td>
+                  <td className="px-4 py-5 text-center text-[13px] font-bold tabular-nums">
                     {getExpiryDisplay(stock.daysUntilExpiry)}
                   </td>
-                  <td className="px-6 py-4 text-center">
+                  <td className="px-4 py-5 text-center">
                     {getStatusBadge(stock.currentStock, stock.safetyStock, stock.daysUntilExpiry)}
                   </td>
-                  <td className="px-6 py-4 text-center">
-                    <button 
-                      onClick={() => onIncoming(stock)}
-                      className="text-[11px] font-bold text-emerald-600 hover:text-white hover:bg-emerald-600 border border-emerald-200 px-3 py-1 rounded-md transition-all shadow-sm"
-                    >
-                      입/출고
-                    </button>
+                  <td className="px-4 py-5 text-center">
+                    <div className="flex items-center justify-center gap-2">
+                      <button 
+                        onClick={() => onIncoming(stock)}
+                        className="px-4 py-2 bg-white border-2 border-emerald-100 text-emerald-600 text-[11px] font-black rounded-2xl hover:bg-emerald-600 hover:text-white hover:border-emerald-600 transition-all shadow-sm active:scale-95"
+                      >
+                        입/출고
+                      </button>
+                      <button 
+                        onClick={() => onViewHistory(stock)}
+                        className="px-4 py-2 bg-white border-2 border-emerald-100 text-emerald-600 text-[11px] font-black rounded-2xl hover:bg-emerald-600 hover:text-white hover:border-emerald-600 transition-all shadow-sm active:scale-95"
+                        title="이력 보기"
+                      >
+                        이력
+                      </button>
+                    </div>
                   </td>
-
-                  <td className="px-6 py-4 text-center">
-                    <button 
-                      onClick={() => onViewHistory(stock)}
-                      className="text-[11px] font-bold text-gray-400 hover:text-gray-600 border border-gray-200 px-2 py-1 rounded-md transition-colors"
-                    >
-                      보기
-                    </button>
-                  </td>
-                  <td className="px-6 py-4 text-center">
+                  <td className="px-6 py-5 text-center">
                     <button 
                       onClick={() => onEdit(stock)}
-                      className="text-[11px] font-bold text-gray-500 hover:text-emerald-600 border border-gray-200 hover:border-emerald-200 px-3 py-1 rounded-md transition-all"
+                      className="px-4 py-2 bg-gray-900 text-white text-[11px] font-black rounded-2xl hover:bg-emerald-600 transition-all shadow-lg shadow-gray-200 active:scale-95"
                     >
                       수정
                     </button>

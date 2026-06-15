@@ -39,107 +39,111 @@ const StockEditModal = ({ isOpen, onClose, stock, onEdit }) => {
     onClose();
   };
 
-  const labelStyle = "block text-xs font-bold text-gray-500 mb-1.5 ml-1";
-  const inputStyle = "w-full h-11 px-4 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:border-emerald-500 focus:bg-white transition-all";
+  const labelStyle = "block text-[11px] font-black text-gray-400 uppercase tracking-wider mb-2 ml-1";
+  const inputStyle = "w-full h-12 px-5 bg-gray-50 border-2 border-transparent rounded-2xl text-[14px] font-bold outline-none focus:bg-white focus:border-emerald-500 transition-all placeholder:text-gray-300";
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
-      <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden animate-scale-up">
-        <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-md animate-fade-in">
+      <div className="bg-white w-full max-w-md rounded-[2.5rem] shadow-2xl overflow-hidden animate-scale-up border border-white/20">
+        {/* 헤더 */}
+        <div className="px-8 pt-8 pb-4 flex items-center justify-between">
           <div>
-            <h3 className="text-lg font-bold text-gray-900">품목 정보 수정</h3>
-            <p className="text-xs text-gray-400 mt-0.5">#{stock.stockSeq} 항목을 수정합니다.</p>
+            
+            <h3 className="text-2xl font-black text-gray-900 tracking-tight">품목 정보 수정</h3>
           </div>
           <button 
-            onClick={onClose} 
-            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-200 text-gray-400 hover:text-gray-600 transition-colors"
+            onClick={onClose}
+            className="w-10 h-10 flex items-center justify-center rounded-2xl bg-gray-50 hover:bg-gray-100 text-gray-400 hover:text-gray-900 transition-all active:scale-90"
           >
-            <span className="text-2xl">&times;</span>
+            <span className="text-xl">✕</span>
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        {/* 폼 */}
+        <form onSubmit={handleSubmit} className="px-8 pb-8 pt-4 space-y-5">
           <div>
             <label className={labelStyle}>품목명 <span className="text-rose-500">*</span></label>
-            <input 
-              type="text" 
-              name="stockName" 
-              value={formData.stockName} 
-              onChange={handleChange} 
-              className={inputStyle} 
-              required 
+            <input
+              type="text"
+              name="stockName"
+              value={formData.stockName}
+              onChange={handleChange}
+              className={inputStyle}
+              required
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className={labelStyle}>카테고리 <span className="text-rose-500">*</span></label>
-              <select 
-                name="category" 
-                value={formData.category} 
-                onChange={handleChange} 
-                className={inputStyle} 
+              <select
+                name="category"
+                value={formData.category}
+                onChange={handleChange}
+                className={inputStyle}
                 required
               >
-                <option value="육류">육류</option>
-                <option value="채소">채소</option>
-                <option value="소스/오일">소스/오일</option>
-                <option value="가공식품">가공식품</option>
-                <option value="기타">기타</option>
+                <option value="육류">🍖 육류</option>
+                <option value="채소">🥬 채소</option>
+                <option value="소스/오일">🍯 소스/오일</option>
+                <option value="가공식품">🍱 가공식품</option>
+                <option value="유제품">🥛 유제품</option>
+                <option value="기타">📦 기타</option>
               </select>
             </div>
             <div>
-              <label className={labelStyle}>단위 <span className="text-rose-500">*</span></label>
-              <input 
-                type="text" 
-                name="unit" 
-                value={formData.unit} 
-                onChange={handleChange} 
-                className={inputStyle} 
-                required 
+              <label className={labelStyle}>관리 단위 <span className="text-rose-500">*</span></label>
+              <input
+                type="text"
+                name="unit"
+                value={formData.unit}
+                onChange={handleChange}
+                className={inputStyle}
+                required
               />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className={labelStyle}>안전재고수량</label>
-              <input 
-                type="number" 
-                name="safetyStock" 
-                value={formData.safetyStock} 
-                onChange={handleChange} 
-                className={inputStyle} 
+              <label className={labelStyle}>안전 재고 수량</label>
+              <input
+                type="number"
+                name="safetyStock"
+                value={formData.safetyStock}
+                onChange={handleChange}
+                className={inputStyle}
               />
             </div>
             <div>
-              <label className={labelStyle}>기본 소비기한 일수</label>
+              <label className={labelStyle}>기본 소비기한</label>
               <div className="relative">
-                <input 
-                  type="number" 
-                  name="defaultExpiryDays" 
-                  value={formData.defaultExpiryDays} 
-                  onChange={handleChange} 
-                  className={`${inputStyle} pr-10`} 
+                <input
+                  type="number"
+                  name="defaultExpiryDays"
+                  value={formData.defaultExpiryDays}
+                  onChange={handleChange}
+                  className={`${inputStyle} pr-12`}
                 />
-                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-gray-400 font-bold">일</span>
+                <span className="absolute right-5 top-1/2 -translate-y-1/2 text-xs font-black text-gray-400">DAYS</span>
               </div>
             </div>
           </div>
 
-          <div className="flex gap-3 mt-8">
+          {/* 버튼 */}
+          <div className="flex gap-3 pt-4">
             <button 
-              type="button" 
-              onClick={onClose} 
-              className="flex-1 h-12 bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold rounded-2xl transition-colors"
+              type="button"
+              onClick={onClose}
+              className="flex-1 h-14 bg-gray-100 hover:bg-gray-200 text-gray-600 text-[14px] font-black rounded-2xl transition-all active:scale-95"
             >
               취소
             </button>
             <button 
-              type="submit" 
-              className="flex-1 h-12 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-2xl transition-colors shadow-lg shadow-emerald-600/20"
+              type="submit"
+              className="flex-1 h-14 bg-emerald-600 hover:bg-emerald-700 text-white text-[14px] font-black rounded-2xl transition-all shadow-xl shadow-emerald-100 active:scale-95"
             >
-              수정하기
+              정보 수정하기
             </button>
           </div>
         </form>
