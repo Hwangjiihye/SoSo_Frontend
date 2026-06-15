@@ -67,17 +67,19 @@ function AccountRegistrationPage() {
             </button>
           </div>
 
-          {/* 검색 결과 리스트 */}
-          <div className={`mt-10 transition-all duration-300 ${hasSearched || isLoading ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4 pointer-events-none'}`}>
+          {/* 검색 결과 리스트 (기본 전체 리스트 표시) */}
+          <div className={`mt-10 transition-all duration-300 ${isLoading ? 'opacity-0' : 'opacity-100'}`}>
             {isLoading ? (
               <div className="bg-white border border-gray-100 shadow-2xl rounded-3xl p-16 text-center">
                 <div className="animate-spin text-4xl mb-4 inline-block text-emerald-500">⏳</div>
-                <p className="text-gray-500 font-bold">거래처 정보를 불러오는 중입니다...</p>
+                <p className="text-gray-500 font-bold">거래처 목록을 불러오는 중입니다...</p>
               </div>
             ) : searchResults.length > 0 ? (
               <div className="bg-white border border-gray-100 shadow-2xl rounded-3xl overflow-hidden">
                 <div className="p-4 bg-gray-50 border-b border-gray-100 flex justify-between items-center">
-                  <span className="text-xs font-black text-gray-400 uppercase tracking-widest">검색 결과 {searchResults.length}건</span>
+                  <span className="text-xs font-black text-gray-400 uppercase tracking-widest">
+                    {searchTerm ? `검색 결과 ${searchResults.length}건` : `전체 거래처 ${searchResults.length}건`}
+                  </span>
                 </div>
                 <div className="divide-y divide-gray-50 max-h-[500px] overflow-y-auto custom-scrollbar">
                   {searchResults.map((business, index) => (
@@ -103,16 +105,16 @@ function AccountRegistrationPage() {
                   ))}
                 </div>
               </div>
-            ) : hasSearched && (
+            ) : (
               <div className="bg-white border border-gray-100 shadow-2xl rounded-3xl p-16 text-center">
                 <div className="text-6xl mb-6">🏜️</div>
-                <h3 className="text-xl font-bold text-gray-800 mb-2">검색 결과가 없습니다</h3>
-                <p className="text-gray-400 font-medium">업체명을 정확히 입력했는지 확인해 주세요.</p>
+                <h3 className="text-xl font-bold text-gray-800 mb-2">해당하는 거래처가 없습니다</h3>
+                <p className="text-gray-400 font-medium">검색어(업체명 또는 사업자 번호)를 다시 확인해 주세요.</p>
                 <button 
                   onClick={resetSearch}
                   className="mt-6 text-sm font-bold text-emerald-600 hover:underline"
                 >
-                  검색어 초기화
+                  전체 목록 다시 보기
                 </button>
               </div>
             )}

@@ -23,6 +23,20 @@ export const searchAccounts = async (searchTerm) => {
 };
 
 /**
+ * 모든 거래처(파트너사) 목록 조회 API 호출
+ * @returns {Promise} 파트너사 전체 리스트 및 카운트
+ */
+export const getAllPartners = async () => {
+  try {
+    const response = await axiosInstance.get('/api/account/all-partners');
+    return response.data;
+  } catch (error) {
+    console.error('전체 거래처 조회 중 오류 발생:', error);
+    throw error;
+  }
+};
+
+/**
  * 거래처 관계 등록 API 호출
  * @param {Object} relationData { businessSeq, partnerSeq, memo }
  * @returns {Promise} 등록 결과
