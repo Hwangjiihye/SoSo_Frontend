@@ -7,15 +7,7 @@ import { useState, useEffect } from 'react';
 export const useTransfer = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [transferData, setTransferData] = useState({
-    accounts: [
-      {
-        id: 1,
-        bankName: '신한은행',
-        accountNumber: '110-123-456789',
-        balance: 5420000,
-        isMain: true,
-      }
-    ],
+    accounts: [],
     recentTransfers: [
       { id: 1, date: '2024-06-10 14:30', recipient: '김철수 (식자재)', amount: 150000, status: '이체완료' },
       { id: 2, date: '2024-06-09 11:20', recipient: '박영희 (임대료)', amount: 2300000, status: '이체완료' },

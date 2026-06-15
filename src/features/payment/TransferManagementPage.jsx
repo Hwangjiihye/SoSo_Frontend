@@ -5,6 +5,7 @@ import MainFooter from '../../components/layout/MainFooter';
 import authStore from '../../store/authStore';
 import { useStores } from '../../hooks/useStores';
 import { useTransfer } from './hooks/useTransfer';
+import { insertAccount, accountList, accountDel } from '../../apis/account';
 
 /**
  * @file TransferManagementPage.jsx
@@ -29,80 +30,104 @@ const TransferManagementPage = () => {
   const [transferSearchType, setTransferSearchType] = useState('week');
   const [isEditModalOpen, setIsEditModalOpen] = useState(false); // 수정 모달 상태 추가
   const [editingAccount, setEditingAccount] = useState(null); // 수정 중인 계좌 상태 추가
-  const [newAccount, setNewAccount] = useState({ 
-    bank: '', 
-    number: '', 
-    name: ''
+  const [newAccount, setNewAccount] = useState({ // 계좌 추가
+    bankName: '', 
+    accountNumber: '', 
+    accountName: ''
   });
 
-  // 초기 데이터 연동 및 여러 개의 예시 계좌 설정
+  // 등록된 계좌 출력
   useEffect(() => {
-    if (transferData && transferData.accounts) {
-      const mockAccounts = [
-        ...transferData.accounts,
-        {
-          id: 2,
-          bankName: '국민은행',
-          accountNumber: '456-789-012345',
-          balance: 12500000,
-          isMain: false,
-        },
-        {
-          id: 3,
-          bankName: '우리은행',
-          accountNumber: '1002-345-678901',
-          balance: 870000,
-          isMain: false,
-        },
-        {
-          id: 4,
-          bankName: '하나은행',
-          accountNumber: '234-567-890123',
-          balance: 3210000,
-          isMain: false,
-        }
-      ];
-      setAccounts(mockAccounts);
-    }
-  }, [transferData]);
+    fetchAccountList();
+  }, [selectedStoreSeq, stores]);
 
-  const handleAddAccount = () => {
+  // useEffect(() => {
+  //   if (transferData && transferData.accounts) {
+  //     setAccounts(transferData.accounts);
+  //   }
+  // }, [transferData, stores]);
+
+  // 등록된 계좌 조회
+  const fetchAccountList = async () => {
+  const currentStoreSeq = selectedStoreSeq ?? stores?.[0]?.storeSeq;
+
+  if (!currentStoreSeq) {
+    console.log("사업장 번호 없음");
+    return;
+  }
+
+  try {
+    const data = await accountList(Number(currentStoreSeq));
+    console.log("계좌 목록 조회 결과:", data);
+    setAccounts(data);
+  } catch (error) {
+    console.error("계좌 목록 조회 실패:", error);
+  }
+
+  
+};
+
+  const handleAddAccount = async () => {
+
     if (accounts.length >= 4) {
       alert("계좌는 최대 4개까지 등록할 수 있습니다.");
       setIsRegisterModalOpen(false);
       return;
     }
-    if (!newAccount.bank) {
+    if (!newAccount.bankName) {
       alert("은행을 선택해 주세요.");
       return;
     }
-    if (!newAccount.number) {
+    if (!newAccount.accountNumber) {
       alert("계좌번호를 입력해 주세요.");
       return;
     }
-    if (!newAccount.name) {
+    if (!newAccount.accountName) {
       alert("예금주를 입력해 주세요.");
       return;
     }
 
+    const currentStoreSeq = selectedStoreSeq ?? stores?.[0]?.storeSeq;
+
+    if (currentStoreSeq === null || currentStoreSeq === undefined || currentStoreSeq === '') {
+      alert("사업장 정보가 없습니다.");
+      return;
+    }
+
+    // 계좌 등록
+    const accountData = {
+      storeSeq: Number(currentStoreSeq),
+      bankName: newAccount.bankName,
+      accountNumber: newAccount.accountNumber,
+      accountName: newAccount.accountName
+    };
+
+    console.log("계좌 정보 : " , accountData);
+
+    await insertAccount(accountData);
+
     const nextId = accounts.length > 0 ? Math.max(...accounts.map(a => a.id)) + 1 : 1;
     const addedAccount = {
       id: nextId,
-      bankName: newAccount.bank,
-      accountNumber: newAccount.number,
-      balance: Math.floor(Math.random() * 800 + 100) * 10000, // 100만 ~ 900만원 랜덤 설정
+      bankName: newAccount.bankName,
+      accountNumber: newAccount.accountNumber,
+      balance: 0,
       isMain: accounts.length === 0,
     };
 
     const updatedAccounts = [...accounts, addedAccount];
     setAccounts(updatedAccounts);
     setIsRegisterModalOpen(false);
+
+    await fetchAccountList();
+
+    setIsRegisterModalOpen(false);
     
     // 모달 필드 초기화
     setNewAccount({
-      bank: '', 
-      number: '', 
-      name: ''
+      bankName: '', 
+      accountNumber: '', 
+      accountName: ''
     });
     alert("새 계좌 등록이 완료되었습니다.");
     // 새로 등록한 계좌로 포커스 이동
@@ -124,7 +149,7 @@ const TransferManagementPage = () => {
       alert("계좌번호를 입력해 주세요.");
       return;
     }
-    if (!editingAccount.accountHolder) {
+    if (!editingAccount.accountName) {
       alert("예금주명을 입력해 주세요.");
       return;
     }
@@ -134,20 +159,49 @@ const TransferManagementPage = () => {
     alert("계좌 정보가 수정되었습니다.");
   };
 
-  const handleDeleteAccount = (acc, e) => {
-    e.stopPropagation();
-    if (confirm(`정말 ${acc.bankName} (${acc.accountNumber}) 계좌를 삭제하시겠습니까?`)) {
-      const updated = accounts.filter(a => a.id !== acc.id);
-      if (acc.isMain && updated.length > 0) {
-        const nextMain = { ...updated[0], isMain: true };
-        setAccounts([nextMain, ...updated.slice(1)]);
-      } else {
-        setAccounts(updated);
-      }
-      setActiveAccountIndex(0);
-      alert("계좌가 삭제되었습니다.");
-    }
-  };
+  const handleDeleteAccount = async (acc, e) => {
+  e.stopPropagation();
+
+  console.log("삭제할 계좌 acc:", acc);
+  console.log("삭제할 accountSeq:", acc.accountSeq);
+
+  const ok = confirm(
+    `정말 ${acc.bankName} (${acc.accountNumber}) 계좌를 삭제하시겠습니까?`
+  );
+
+  if (!ok) return;
+
+  try {
+    await accountDel(acc.accountSeq);
+
+    alert("계좌가 삭제되었습니다.");
+
+    await fetchAccountList();
+
+    setActiveAccountIndex(0);
+  } catch (error) {
+    const message =
+      error.response?.data?.message ||
+      error.response?.data ||
+      "계좌 삭제 중 오류가 발생했습니다.";
+
+    alert(message);
+  }
+};
+  // const handleDeleteAccount = (acc, e) => {
+  //   e.stopPropagation();
+  //   if (confirm(`정말 ${acc.bankName} (${acc.accountNumber}) 계좌를 삭제하시겠습니까?`)) {
+  //     const updated = accounts.filter(a => a.id !== acc.accountSeq);
+  //     if (acc.isMain && updated.length > 0) {
+  //       const nextMain = { ...updated[0], isMain: true };
+  //       setAccounts([nextMain, ...updated.slice(1)]);
+  //     } else {
+  //       setAccounts(updated);
+  //     }
+  //     setActiveAccountIndex(0);
+  //     alert("계좌가 삭제되었습니다.");
+  //   }
+  // };
 
   const handlePrevAccount = () => {
     setActiveAccountIndex((prev) => (prev === 0 ? accounts.length - 1 : prev - 1));
@@ -321,7 +375,7 @@ const TransferManagementPage = () => {
 
                   return (
                     <article
-                      key={acc.id}
+                      key={acc.accountSeq}
                       onClick={() => setActiveAccountIndex(index)}
                       className={`flex min-h-[250px] cursor-pointer flex-col justify-between rounded-2xl border p-5 transition-all ${
                         isActive ? 'border-emerald-500 bg-emerald-50/40 shadow-sm' : 'border-gray-200 bg-white hover:border-emerald-200 hover:bg-emerald-50/20'
@@ -343,7 +397,7 @@ const TransferManagementPage = () => {
                           </div>
                           {isActive && <span className="rounded-xl bg-emerald-50 px-3 py-2 text-[10px] font-black text-emerald-700">선택됨</span>}
                         </div>
-                        <div className={`mt-6 text-2xl font-black ${isActive ? 'text-emerald-600' : 'text-gray-900'}`}>{formatCurrency(acc.balance)}</div>
+                        <div className={`mt-6 text-2xl font-black ${isActive ? 'text-emerald-600' : 'text-gray-900'}`}>{formatCurrency(acc.balance || 0)}</div>
                       </div>
 
                       <div className="grid grid-cols-3 gap-2">
@@ -597,7 +651,9 @@ const TransferManagementPage = () => {
                   </label>
                   <select
                     defaultValue=""
+                    value={newAccount.bankName}
                     className="w-full rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-sm font-bold text-gray-700 outline-none transition-all focus:ring-2 focus:ring-emerald-500/20"
+                    onChange={(e) => setNewAccount({...newAccount, bankName: e.target.value})}                
                   >
                     <option value="" disabled>은행 선택</option>
                     <option value="국민은행">국민은행</option>
@@ -614,6 +670,8 @@ const TransferManagementPage = () => {
                   </label>
                   <input
                     type="text"
+                    value={newAccount.accountName}
+                    onChange={(e) => setNewAccount({...newAccount, accountName: e.target.value})}
                     placeholder="예금주명 입력"
                     className="w-full rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-sm font-bold text-gray-700 outline-none transition-all placeholder:font-medium placeholder:text-gray-300 focus:ring-2 focus:ring-emerald-500/20"
                   />
@@ -626,6 +684,8 @@ const TransferManagementPage = () => {
                 </label>
                 <input
                   type="text"
+                  value={newAccount.accountNumber}
+                  onChange={(e) => setNewAccount({...newAccount, accountNumber: e.target.value})}
                   inputMode="numeric"
                   placeholder="'-' 없이 계좌번호 입력"
                   className="w-full rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-sm font-bold text-gray-700 outline-none transition-all placeholder:font-medium placeholder:text-gray-300 focus:ring-2 focus:ring-emerald-500/20"
@@ -807,8 +867,8 @@ const TransferManagementPage = () => {
                     <label className="block text-[10px] font-bold text-gray-400 mb-1.5 uppercase tracking-widest">은행명</label>
                     <select 
                       className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all"
-                      value={newAccount.bank}
-                      onChange={(e) => setNewAccount({...newAccount, bank: e.target.value})}
+                      value={newAccount.bankName}
+                      onChange={(e) => setNewAccount({...newAccount, bankName: e.target.value})}
                     >
                       <option value="">은행을 선택해 주세요</option>
                       <option value="신한은행">신한은행</option>
@@ -824,8 +884,8 @@ const TransferManagementPage = () => {
                         type="text" 
                         placeholder="- 없이 입력"
                         className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all"
-                        value={newAccount.number}
-                        onChange={(e) => setNewAccount({...newAccount, number: e.target.value})}
+                        value={newAccount.accountNumber}
+                        onChange={(e) => setNewAccount({...newAccount, accountNumber: e.target.value})}
                       />
                     </div>
                     <div>
@@ -834,8 +894,8 @@ const TransferManagementPage = () => {
                         type="text" 
                         placeholder="실명 입력"
                         className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all"
-                        value={newAccount.name}
-                        onChange={(e) => setNewAccount({...newAccount, name: e.target.value})}
+                        value={newAccount.accountName}
+                        onChange={(e) => setNewAccount({...newAccount, accountName: e.target.value})}
                       />
                     </div>
                   </div>
