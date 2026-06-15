@@ -12,10 +12,12 @@ import LoginPage from '../features/member/LoginPage';
 import PartnerMain from '../features/main/PartnerMain';
 import BusinessMain from '../features/main/BusinessMain';
 import { createBrowserRouter, RouterProvider, Outlet } from 'react-router-dom';
+import RootLayout from '../components/layout/RootLayout';
 import memberRoutes from './memberRoutes';
 import mypageRoutes from './mypageRoutes';
 import orderRoutes from './orders';
 import communityRoutes from './communityRoutes';
+import accountRoutes from './accountRoutes';
 
 /**
  * @file AppRoutes.jsx
@@ -25,7 +27,7 @@ import communityRoutes from './communityRoutes';
 const router = createBrowserRouter([
   {
     path: '/',
-    element: <Outlet />,
+    element: <RootLayout />,
     children: [
       {
         index: true,
@@ -55,6 +57,7 @@ const router = createBrowserRouter([
       ...mypageRoutes,
       ...orderRoutes,
       ...communityRoutes,
+      ...accountRoutes,
     ],
   },
 ]);

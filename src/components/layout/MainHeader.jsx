@@ -16,6 +16,7 @@ function MainHeader({ activeMenu = '홈' }) {
 
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isOrderDropdownOpen, setIsOrderDropdownOpen] = useState(false);
+  const [isAccountDropdownOpen, setIsAccountDropdownOpen] = useState(false);
 
   const handleLogOut = () => {
     logout();
@@ -46,7 +47,7 @@ function MainHeader({ activeMenu = '홈' }) {
   };
 
   return (
-    <header className="grid grid-cols-3 items-center py-5 px-6 md:px-12 border-b border-gray-200 bg-white sticky top-0 z-50">
+    <header className="flex justify-between items-center py-5 px-6 md:px-12 border-b border-gray-200 bg-white sticky top-0 z-50">
       {/* Logo Section */}
       <div className="flex items-center gap-1 cursor-pointer" onClick={() => navigate("/")}>
         <img src={logo} alt="SoSo Logo" className="w-12 h-12 object-contain relative top-[5px]" />
@@ -55,8 +56,6 @@ function MainHeader({ activeMenu = '홈' }) {
 
       {/* Navigation Section */}
       <nav className="hidden md:flex justify-center gap-1 border border-gray-100 rounded-lg p-1 bg-gray-50 w-fit mx-auto relative">
-        <Link to="/" className={getNavStyle('홈')}>홈</Link>
-        
         {/* 발주 관리 드롭다운 메뉴 */}
         <div 
           className="relative"
@@ -86,7 +85,36 @@ function MainHeader({ activeMenu = '홈' }) {
           </div>
         </div>
 
-        {['수금 관리', '업체 홍보', '통계'].map(m => (
+        <Link to="#" className={getNavStyle('이체/수금 관리')}>이체/수금 관리</Link>
+
+        {/* 거래처 관리 드롭다운 메뉴 */}
+        <div 
+          className="relative"
+          onMouseEnter={() => setIsAccountDropdownOpen(true)}
+          onMouseLeave={() => setIsAccountDropdownOpen(false)}
+        >
+          <div className={activeMenu === '거래처 관리' 
+            ? "px-4 py-1.5 text-sm font-semibold bg-white text-emerald-600 rounded shadow-sm border border-gray-200 cursor-pointer transition-all whitespace-nowrap"
+            : "px-4 py-1.5 text-sm font-medium text-gray-500 hover:text-emerald-600 transition-all cursor-pointer whitespace-nowrap"}>
+            거래처 관리
+          </div>
+          
+          <div className={`absolute top-full left-0 w-48 pt-2 z-[60] transition-all duration-200 ${isAccountDropdownOpen ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-2'}`}>
+            <div className="bg-white border border-gray-100 rounded-2xl shadow-xl p-2">
+              <Link to="/account/list" className="block w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl mb-1">
+                거래처 목록
+              </Link>
+              <Link to="/account/register" className="block w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl">
+                신규 거래처 등록
+              </Link>
+              <Link to="/account/management" className="block w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl mb-1">
+                품목 관리
+              </Link>
+            </div>
+          </div>
+        </div>
+
+        {['공동발주', '커뮤니티', '고객지원'].map(m => (
           <Link 
             key={m} 
             to="#" 
@@ -95,108 +123,123 @@ function MainHeader({ activeMenu = '홈' }) {
             {m}
           </Link>
         ))}
-        
-        <Link to="/community" className={getNavStyle('커뮤니티')}>
-          커뮤니티
-        </Link>
       </nav>
 
       {/* Right Section (Notifications & Profile) */}
       <div className="flex items-center justify-end gap-4">
-        <button className="text-gray-400 hover:text-emerald-600 relative">
-          <span className="text-xl">🔔</span>
-          <span className="absolute -top-1 -right-1 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"></span>
-        </button>
-
-        <div className="relative">
-          <div
-            onClick={() => setIsProfileOpen(!isProfileOpen)}
-            className="flex items-center gap-2 border border-gray-200 rounded-full py-1.5 px-3 bg-white hover:bg-emerald-50 cursor-pointer transition-colors"
-          >
-            <div className="w-6 h-6 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-[10px] font-bold">
-              {user_nickname ? user_nickname.substring(0, 1) : 'G'}
-            </div>
-            <span className="text-sm font-semibold whitespace-nowrap text-gray-700">
-              {user_nickname || '회원님'}
-              <span className="text-xs text-gray-400 font-normal ml-1">
-                {bizname || '상호명 미등록'}
-              </span>
-            </span>
+        {!user_type ? (
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => navigate('/login')}
+              className="text-sm font-bold text-gray-500 hover:text-emerald-600 transition-colors cursor-pointer"
+            >
+              로그인
+            </button>
+            <button
+              onClick={() => navigate('/signup')}
+              className="px-6 py-2.5 text-sm font-bold text-white bg-emerald-600 rounded-full hover:bg-emerald-700 transition-all shadow-md active:scale-95 transition-colors cursor-pointer"
+            >
+              회원가입
+            </button>
           </div>
+        ) : (
+          <>
+            <button className="text-gray-400 hover:text-emerald-600 relative">
+              <span className="text-xl">🔔</span>
+              <span className="absolute -top-1 -right-1 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"></span>
+            </button>
 
-          {isProfileOpen && (
-            <div className="absolute right-0 mt-2 w-64 bg-white border border-gray-100 rounded-2xl shadow-2xl p-2 z-[60] animate-fade-in-up">
-              {user_type === 'BUSINESS' && (
-                <>
-                  <div className="p-3 border-b border-gray-50 flex justify-between items-center">
-                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">나의 매장 목록</span>
-                    {isStoresLoading && <span className="text-[10px] text-emerald-500 animate-pulse">로딩 중...</span>}
-                  </div>
+            <div className="relative">
+              <div
+                onClick={() => setIsProfileOpen(!isProfileOpen)}
+                className="flex items-center gap-2 border border-gray-200 rounded-full py-1.5 px-3 bg-white hover:bg-emerald-50 cursor-pointer transition-colors"
+              >
+                <div className="w-6 h-6 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-[10px] font-bold">
+                  {user_nickname ? user_nickname.substring(0, 1) : 'G'}
+                </div>
+                <span className="text-sm font-semibold whitespace-nowrap text-gray-700">
+                  {user_nickname || '회원님'}
+                  <span className="text-xs text-gray-400 font-normal ml-1">
+                    {bizname || '상호명 미등록'}
+                  </span>
+                </span>
+              </div>
 
-                  <div className="py-2 max-h-60 overflow-y-auto custom-scrollbar">
-                    {stores && stores.length > 0 ? (
-                      stores.map((store) => (
-                        <button
-                          key={store.storeSeq}
-                          onClick={() => handleStoreSwitch(store.storeSeq, store.companyName)}
-                          className={`w-full text-left px-4 py-3 rounded-xl mb-1 flex justify-between items-center transition-all ${
-                            (selectedStoreSeq == store.storeSeq || (!selectedStoreSeq && stores[0].storeSeq === store.storeSeq))
-                              ? 'bg-emerald-50 text-emerald-600 font-bold border border-emerald-100'
-                              : 'text-gray-600 hover:bg-gray-50 font-medium'
-                            }`}
-                        >
-                          <div className="flex flex-col">
-                            <span className="text-sm">{store.companyName}</span>
-                            <span className="text-[10px] text-gray-400 font-normal">{store.bizNumber.replace(/(\d{3})(\d{2})(\d{5})/, '$1-$2-$3')}</span>
-                          </div>
-                          {(selectedStoreSeq == store.storeSeq || (!selectedStoreSeq && stores[0].storeSeq === store.storeSeq)) && (
-                            <span className="text-[10px] bg-emerald-500 text-white px-1.5 py-0.5 rounded uppercase">Active</span>
-                          )}
-                        </button>
-                      ))
-                    ) : (
-                      <div className="px-4 py-6 text-center">
-                        <p className="text-xs text-gray-400">등록된 매장이 없습니다.</p>
+              {isProfileOpen && (
+                <div className="absolute right-0 mt-2 w-64 bg-white border border-gray-100 rounded-2xl shadow-2xl p-2 z-[60] animate-fade-in-up">
+                  {user_type === 'BUSINESS' && (
+                    <>
+                      <div className="p-3 border-b border-gray-50 flex justify-between items-center">
+                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">나의 매장 목록</span>
+                        {isStoresLoading && <span className="text-[10px] text-emerald-500 animate-pulse">로딩 중...</span>}
                       </div>
-                    )}
-                  </div>
+
+                      <div className="py-2 max-h-60 overflow-y-auto custom-scrollbar">
+                        {stores && stores.length > 0 ? (
+                          stores.map((store) => (
+                            <button
+                              key={store.storeSeq}
+                              onClick={() => handleStoreSwitch(store.storeSeq, store.companyName)}
+                              className={`w-full text-left px-4 py-3 rounded-xl mb-1 flex justify-between items-center transition-all ${
+                                (selectedStoreSeq == store.storeSeq || (!selectedStoreSeq && stores[0].storeSeq === store.storeSeq))
+                                  ? 'bg-emerald-50 text-emerald-600 font-bold border border-emerald-100'
+                                  : 'text-gray-600 hover:bg-gray-50 font-medium'
+                                }`}
+                            >
+                              <div className="flex flex-col">
+                                <span className="text-sm">{store.companyName}</span>
+                                <span className="text-[10px] text-gray-400 font-normal">{store.bizNumber.replace(/(\d{3})(\d{2})(\d{5})/, '$1-$2-$3')}</span>
+                              </div>
+                              {(selectedStoreSeq == store.storeSeq || (!selectedStoreSeq && stores[0].storeSeq === store.storeSeq)) && (
+                                <span className="text-[10px] bg-emerald-500 text-white px-1.5 py-0.5 rounded uppercase">Active</span>
+                              )}
+                            </button>
+                          ))
+                        ) : (
+                          <div className="px-4 py-6 text-center">
+                            <p className="text-xs text-gray-400">등록된 매장이 없습니다.</p>
+                          </div>
+                        )}
+                      </div>
+                      <div className="border-t border-gray-50 pt-2 mt-2">
+                        <button
+                          onClick={() => { navigate("/business-multiprofile"); setIsProfileOpen(false); }}
+                          className="w-full text-center py-2 text-[11px] font-bold text-emerald-500 hover:bg-emerald-50 rounded-lg transition-all mb-1"
+                        >
+                          + 새 매장 추가하기
+                        </button>
+                      </div>
+                    </>
+                  )}
+
+                  {user_type === 'PARTNER' && (
+                    <div className="py-2">
+                      <button className="w-full text-left px-4 py-3 text-sm font-bold text-emerald-600 bg-emerald-50 rounded-xl mb-1 flex justify-between items-center">
+                        {bizname || '한빛 식품 유통'}
+                        <span className="text-[10px] bg-emerald-500 text-white px-1.5 py-0.5 rounded uppercase">Main</span>
+                      </button>
+                    </div>
+                  )}
+
                   <div className="border-t border-gray-50 pt-2 mt-2">
                     <button
-                      onClick={() => { navigate("/business-multiprofile"); setIsProfileOpen(false); }}
-                      className="w-full text-center py-2 text-[11px] font-bold text-emerald-500 hover:bg-emerald-50 rounded-lg transition-all mb-1"
+                      onClick={handleProfileClick}
+                      className="w-full text-center py-3 text-sm font-black text-gray-700 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all"
                     >
-                      + 새 매장 추가하기
+                      마이페이지
+                    </button>
+                    <button 
+                      onClick={handleLogOut}
+                      className="w-full text-center py-3 text-sm font-black text-red-500 hover:bg-red-50 rounded-xl transition-all"
+                    >
+                      로그아웃
                     </button>
                   </div>
-                </>
-              )}
-
-              {user_type === 'PARTNER' && (
-                <div className="py-2">
-                  <button className="w-full text-left px-4 py-3 text-sm font-bold text-emerald-600 bg-emerald-50 rounded-xl mb-1 flex justify-between items-center">
-                    {bizname || '한빛 식품 유통'}
-                    <span className="text-[10px] bg-emerald-500 text-white px-1.5 py-0.5 rounded uppercase">Main</span>
-                  </button>
                 </div>
               )}
-
-              <div className="border-t border-gray-50 pt-2 mt-2">
-                <button
-                  onClick={handleProfileClick}
-                  className="w-full text-center py-3 text-sm font-black text-gray-700 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all"
-                >
-                  마이페이지
-                </button>
-                <button 
-                  onClick={handleLogOut}
-                  className="w-full text-center py-3 text-sm font-black text-red-500 hover:bg-red-50 rounded-xl transition-all"
-                >
-                  로그아웃
-                </button>
-              </div>
             </div>
-          )}
-        </div>
+          </>
+        )}
       </div>
     </header>
   );

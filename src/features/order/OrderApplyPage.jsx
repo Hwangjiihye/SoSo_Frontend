@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import MainFooter from '../../components/layout/MainFooter';
-import MainHeader from '../../components/layout/MainHeader';
 import { useOrderApply } from './hooks/useOrderApply';
 import {check} from '../../apis/orderApi';
 
@@ -59,8 +57,6 @@ const handleCloseModal = () => {
 
   return (
     <div className="min-h-screen bg-[#F8F9FA] text-gray-800 font-sans">
-      <MainHeader activeMenu="발주 관리" />
-
       <main className="max-w-7xl mx-auto px-6 py-10">
         <div className="flex justify-between items-end mb-8">
           <div>
@@ -401,7 +397,6 @@ const handleCloseModal = () => {
           </div>
         </div>
       </main>
-      <MainFooter />
     </div>
   );
 }

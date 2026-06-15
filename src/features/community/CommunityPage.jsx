@@ -1,6 +1,4 @@
 import React, { useState } from 'react';
-import MainHeader from '../../components/layout/MainHeader';
-import MainFooter from '../../components/layout/MainFooter';
 
 // 더미 데이터
 const jobPosts = [
@@ -319,8 +317,6 @@ function CommunityPage() {
 
   return (
     <div className="min-h-screen bg-[#F8F9FA] text-gray-800 font-sans">
-      <MainHeader activeMenu="커뮤니티" />
-
       <main className="max-w-5xl mx-auto px-6 py-10">
         
         {/* 상단 타이틀 */}
@@ -386,8 +382,6 @@ function CommunityPage() {
         {viewState === 'WRITE' && renderWrite()}
 
       </main>
-
-      <MainFooter />
     </div>
   );
 }

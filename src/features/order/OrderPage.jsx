@@ -1,7 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import MainFooter from '../../components/layout/MainFooter';
-import MainHeader from '../../components/layout/MainHeader';
 import { useOrder } from './hooks/useOrder';
 
 import SockJS from 'sockjs-client';
@@ -141,8 +139,6 @@ function OrderPage() {
 
   return (
     <div className="min-h-screen bg-[#F8F9FA] text-gray-800 font-sans">
-      <MainHeader activeMenu="발주 관리" />
-
       <main className="max-w-7xl mx-auto px-6 py-10">
         {/* Page Title & Main Action */}
         <div className="flex justify-between items-start mb-10">
@@ -331,7 +327,6 @@ function OrderPage() {
           </div>
         </div>
       </main>
-      <MainFooter />
     </div>
   );
 }
