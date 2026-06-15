@@ -19,32 +19,47 @@ const StockAutoHistory = ({ history }) => {
           <thead>
             <tr className="border-b border-gray-50">
               <th className="px-6 py-4 text-[11px] font-black text-gray-300 uppercase tracking-wider text-center">일시</th>
-              <th className="px-6 py-4 text-[11px] font-black text-gray-300 uppercase tracking-wider text-center">품목</th>
-              <th className="px-6 py-4 text-[11px] font-black text-gray-300 uppercase tracking-wider text-center">처리유형</th>
-              <th className="px-6 py-4 text-[11px] font-black text-gray-300 uppercase tracking-wider text-center">변동 수량</th>
-              <th className="px-6 py-4 text-[11px] font-black text-gray-300 uppercase tracking-wider text-center">처리 후 재고</th>
-              <th className="px-6 py-4 text-[11px] font-black text-gray-300 uppercase tracking-wider text-center">원인</th>
+              <th className="px-6 py-4 text-[11px] font-black text-gray-300 uppercase tracking-wider text-center">구분</th>
+              <th className="px-6 py-4 text-[11px] font-black text-gray-300 uppercase tracking-wider text-center">품목명</th>
+              <th className="px-6 py-4 text-[11px] font-black text-gray-300 uppercase tracking-wider text-center">변동수량</th>
+              <th className="px-6 py-4 text-[11px] font-black text-gray-300 uppercase tracking-wider text-center">최종재고</th>
+              <th className="px-6 py-4 text-[11px] font-black text-gray-300 uppercase tracking-wider text-center">사유</th>
+              <th className="px-6 py-4 text-[11px] font-black text-gray-300 uppercase tracking-wider text-center">메모</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
-            {history.map((item) => (
-              <tr key={item.id} className="group hover:bg-emerald-50/10 transition-colors">
-                <td className="px-6 py-5 text-[13px] font-bold text-gray-400 text-center">{item.date}</td>
-                <td className="px-6 py-5 text-[14px] font-black text-gray-900 text-center">{item.item}</td>
+            {history.map((hist) => (
+              <tr key={hist.id} className="group hover:bg-emerald-50/10 transition-colors">
+                <td className="px-6 py-5 text-[11px] font-bold text-gray-400 text-center uppercase tracking-tighter">
+                  {hist.createdAt}
+                </td>
                 <td className="px-6 py-5 text-center">
-                  <span className={`px-3 py-1 rounded-full text-[10px] font-black border ${
-                    item.isNegative 
-                      ? 'bg-rose-50 text-rose-500 border-rose-100' 
-                      : 'bg-emerald-50 text-emerald-500 border-emerald-100'
+                  <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${
+                    hist.transactionType === 'INCOMING' ? 'bg-blue-50 text-blue-600 border-blue-100' :
+                    hist.transactionType === 'OUTBOUND' ? 'bg-rose-50 text-rose-600 border-rose-100' :
+                    'bg-amber-50 text-amber-600 border-amber-100'
                   }`}>
-                    {item.type}
+                    {hist.transactionType === 'INCOMING' ? '입고': 
+                     hist.transactionType === 'OUTBOUND' ? '출고': '조정'} 
                   </span>
                 </td>
-                <td className={`px-6 py-5 text-[14px] font-black text-center ${item.isNegative ? 'text-rose-500' : 'text-emerald-500'}`}>
-                  {item.change}
+                <td className="px-6 py-5 text-[14px] font-black text-gray-900 text-center">
+                  {hist.detailStockName || '-'}
                 </td>
-                <td className="px-6 py-5 text-[14px] font-black text-gray-900 text-center">{item.finalStock}</td>
-                <td className="px-6 py-5 text-[13px] font-medium text-gray-500 text-center">{item.reason}</td>
+                <td className={`px-6 py-5 text-[15px] font-black text-center ${
+                  hist.transactionType === 'INCOMING' ? 'text-blue-600' : 'text-rose-500'
+                }`}>
+                  {hist.transactionType === 'INCOMING' ? `+${hist.changeQuantity}` : hist.changeQuantity}
+                </td>
+                <td className="px-6 py-5 text-[15px] font-black text-gray-900 text-center">
+                  {hist.currentTotalStock.toLocaleString()}
+                </td>
+                <td className="px-6 py-5 text-[13px] font-medium text-gray-500 text-center">
+                  {hist.reason || '-'}
+                </td>
+                <td className="px-6 py-5 text-[13px] font-medium text-gray-400 text-center italic">
+                  {hist.memo || '-'}
+                </td>
               </tr>
             ))}
           </tbody>

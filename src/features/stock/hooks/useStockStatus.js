@@ -7,10 +7,30 @@ import { useState, useEffect, useCallback } from 'react';
  */
 export const useStockStatus = () => {
   const [autoRules, setAutoRules] = useState([
-    { id: 'auto_add', title: '발주 완료 시 재고 자동 추가', description: "발주 상태가 '완료'로 변경될 때 입고 수량 자동 변경", enabled: true },
-    { id: 'auto_subtract', title: '거래처 출고 시 재고 자동 차감', description: '출고 처리 완료 시 해당 수량 실시간 차감', enabled: true },
-    { id: 'auto_expiry', title: '유통기한 만료 시 자동 차감', description: '만료일 경과 시 해당 품목 수량을 0으로 처리', enabled: true },
-    { id: 'auto_order', title: '부족 시 자동 발주 요청', description: '안전 재고 미만 시 등록된 거래처로 자동 발주', enabled: false },
+    { 
+      id: 'auto_sync', 
+      title: '주문 · 거래 상태 자동 재고 연동', 
+      description: '발주 완료 및 거래처 출고 확정 시, 실시간으로 입출고 수량이 자동 반영됩니다.', 
+      enabled: true 
+    },
+    { 
+      id: 'auto_expiry', 
+      title: '유통기한 만료 시 자동 차감', 
+      description: '만료일 경과 시 해당 품목의 실물 배치를 폐기하고 장부 수량을 0으로 처리합니다.', 
+      enabled: true 
+    },
+    { 
+      id: 'alert_expiry_soon', 
+      title: '소비기한 임박 사전 알림 (D-7)', 
+      description: '소비기한이 7일 이하로 남은 품목 발생 시, 매일 아침 폐기 방지 경고 알림을 보냅니다.', 
+      enabled: true 
+    },
+    { 
+      id: 'alert_low_stock', 
+      title: '안전 재고 미달 시 즉시 경고', 
+      description: '현재 재고가 안전 재고 미만으로 떨어지면 알림을 띄우고 메인 화면에 붉은색으로 강조합니다.', 
+      enabled: true 
+    },
   ]);
 
   const [notifications, setNotifications] = useState([
@@ -21,9 +41,36 @@ export const useStockStatus = () => {
   ]);
 
   const [history, setHistory] = useState([
-    { id: 1, date: '05-24 14:32', item: '닭가슴살', type: '차감', change: '-2.0kg', finalStock: '5.5kg', reason: '거래처 출고', isNegative: true },
-    { id: 2, date: '05-24 11:00', item: '우유', type: '차감', change: '-5.0L', finalStock: '0L', reason: '유통기한 만료', isNegative: true },
-    { id: 3, date: '05-23 09:15', item: '한우등심', type: '추가', change: '+10.0kg', finalStock: '12.5kg', reason: '발주 완료', isNegative: false },
+    { 
+      id: 1, 
+      createdAt: '2026-05-24 14:32:10', 
+      transactionType: 'OUTBOUND', 
+      detailStockName: '국내산 닭가슴살 1kg', 
+      changeQuantity: -2.0, 
+      currentTotalStock: 5.5, 
+      reason: '거래처 출고', 
+      memo: '자동 차감 규칙 적용' 
+    },
+    { 
+      id: 2, 
+      createdAt: '2026-05-24 11:00:05', 
+      transactionType: 'ADJUST', 
+      detailStockName: '서울우유 1L', 
+      changeQuantity: -5.0, 
+      currentTotalStock: 0, 
+      reason: '유통기한 만료', 
+      memo: '만료 자동 폐기 처리' 
+    },
+    { 
+      id: 3, 
+      createdAt: '2026-05-23 09:15:30', 
+      transactionType: 'INCOMING', 
+      detailStockName: '한우 등심 A++ 5kg', 
+      changeQuantity: 10.0, 
+      currentTotalStock: 12.5, 
+      reason: '발주 완료', 
+      memo: '주문 번호 #ORD-12345' 
+    },
   ]);
 
   const toggleRule = (id) => {
