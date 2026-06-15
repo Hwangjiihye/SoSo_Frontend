@@ -143,6 +143,27 @@ export const useStockTransaction = (selectedStock, onClose, onSuccess) => {
     }
   };
 
+  const resetForms = () => {
+    setInboundForm({
+      detailStockName: selectedStock?.stockName || '',
+      quantity: '',
+      incomingPrice: '',
+      memo: '',
+    });
+    setOutboundForm({
+      quantity: '',
+      reason: '주방 소진',
+      memo: '',
+    });
+    setAdjustmentForm({
+      batchSeq: '',
+      quantity: '',
+      reason: '파손/분실',
+      memo: '',
+    });
+    setActiveTab('INBOUND');
+  };
+
   return {
     activeTab,
     handleTabChange,
@@ -155,5 +176,6 @@ export const useStockTransaction = (selectedStock, onClose, onSuccess) => {
     handleAdjustmentChange,
     handleSubmit,
     isLoading,
+    resetForms,
   };
 };

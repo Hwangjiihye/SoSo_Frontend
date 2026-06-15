@@ -18,7 +18,15 @@ const StockTransactionModal = ({ isOpen, onClose, selectedStock, onSuccess }) =>
     handleAdjustmentChange,
     handleSubmit,
     isLoading,
+    resetForms,
   } = useStockTransaction(selectedStock, onClose, onSuccess);
+
+  // 모달이 닫힐 때 데이터 초기화
+  React.useEffect(() => {
+    if (!isOpen) {
+      resetForms();
+    }
+  }, [isOpen]);
 
   if (!isOpen || !selectedStock) return null;
 

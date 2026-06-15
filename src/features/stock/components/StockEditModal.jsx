@@ -5,16 +5,19 @@ import React, { useState, useEffect } from 'react';
  * @description 재고 정보를 수정하는 모달 컴포넌트 (MySQL 스키마 반영)
  */
 const StockEditModal = ({ isOpen, onClose, stock, onEdit }) => {
-  const [formData, setFormData] = useState({
+  const initialFormState = {
     stockName: '',
     category: '',
     unit: '',
     safetyStock: '',
     defaultExpiryDays: '',
-  });
+  };
 
+  const [formData, setFormData] = useState(initialFormState);
+
+  // 모달 상태에 따른 데이터 관리
   useEffect(() => {
-    if (stock) {
+    if (isOpen && stock) {
       setFormData({
         stockName: stock.stockName || '',
         category: stock.category || '',
@@ -22,8 +25,10 @@ const StockEditModal = ({ isOpen, onClose, stock, onEdit }) => {
         safetyStock: stock.safetyStock || 0,
         defaultExpiryDays: stock.defaultExpiryDays || 0,
       });
+    } else if (!isOpen) {
+      setFormData(initialFormState);
     }
-  }, [stock]);
+  }, [isOpen, stock]);
 
   if (!isOpen || !stock) return null;
 

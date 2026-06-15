@@ -5,13 +5,22 @@ import React, { useState } from 'react';
  * @description 새로운 재고 품목을 등록하는 모달 컴포넌트 (a6.png 기반)
  */
 const StockRegistrationModal = ({ isOpen, onClose, onRegister }) => {
-  const [formData, setFormData] = useState({
+  const initialFormState = {
     stockName: '',
     category: '',
     unit: '',
     safetyStock: '',
     defaultExpiryDays: '',
-  });
+  };
+
+  const [formData, setFormData] = useState(initialFormState);
+
+  // 모달이 닫힐 때 데이터 초기화
+  React.useEffect(() => {
+    if (!isOpen) {
+      setFormData(initialFormState);
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
