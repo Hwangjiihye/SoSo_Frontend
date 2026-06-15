@@ -1,4 +1,5 @@
 import StockPage from '../features/stock/StockPage';
+import StockStatusPage from '../features/stock/StockStatusPage';
 
 /**
  * @file stockRoutes.jsx
@@ -8,6 +9,10 @@ const stockRoutes = [
   {
     path: '/stock',
     element: <StockPage />,
+  },
+  {
+    path: '/stock-status',
+    element: <StockStatusPage />,
   }
 ];
 
