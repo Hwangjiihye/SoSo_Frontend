@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { 
   createIncomingStock, 
   createOutboundStock, 
-  createAdjustStock 
+  createAdjustStock,
+  getStockBatches
 } from '../../../apis/stockApi';
 
 /**
@@ -12,7 +13,9 @@ import {
 export const useStockTransaction = (selectedStock, onClose, onSuccess) => {
   const [activeTab, setActiveTab] = useState('INBOUND'); // INBOUND, OUTBOUND, ADJUST
   const [isLoading, setIsLoading] = useState(false);
-  // 1. 입고 폼 상태 (manager, expirationDate 제거)
+  const [batches, setBatches] = useState([]); // 조정 시 선택할 배치 목록
+
+  // 1. 입고 폼 상태
   const [inboundForm, setInboundForm] = useState({
     detailStockName: '',
     quantity: '',
@@ -20,28 +23,39 @@ export const useStockTransaction = (selectedStock, onClose, onSuccess) => {
     memo: '',
   });
 
-  // 2. 출고 폼 상태 (manager 제거)
+  // 2. 출고 폼 상태
   const [outboundForm, setOutboundForm] = useState({
     quantity: '',
     reason: '주방 소진',
     memo: '',
   });
 
-  // 3. 조정 폼 상태 (manager 제거)
+  // 3. 조정 폼 상태
   const [adjustmentForm, setAdjustmentForm] = useState({
-    batchSeq: '', // 선택 사항
+    batchSeq: '', // 선택 사항 (0 또는 빈값은 마스터만 조정)
     quantity: '',
     reason: '파손/분실',
     memo: '',
   });
 
-  // 초기 데이터 설정
+  // 초기 데이터 설정 및 배치 목록 로드
   useEffect(() => {
     if (selectedStock) {
       setInboundForm(prev => ({
         ...prev,
         detailStockName: selectedStock.stockName || ''
       }));
+
+      // 조정 탭이거나 선택된 스톡이 바뀔 때 배치 정보 가져오기
+      const fetchBatches = async () => {
+        try {
+          const data = await getStockBatches(selectedStock.stockSeq);
+          setBatches(data || []);
+        } catch (err) {
+          console.error('Fetch Batches Error:', err);
+        }
+      };
+      fetchBatches();
     }
   }, [selectedStock]);
 
@@ -62,13 +76,6 @@ export const useStockTransaction = (selectedStock, onClose, onSuccess) => {
     setAdjustmentForm(prev => ({ ...prev, [name]: value }));
   };
 
-  // 소비기한(expirationDate) 자동 계산 로직
-  const calculateExpirationDate = (defaultDays) => {
-    const date = new Date();
-    date.setDate(date.getDate() + Number(defaultDays || 0));
-    return date.toISOString().split('T')[0]; // YYYY-MM-DD
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!selectedStock) return;
@@ -81,13 +88,11 @@ export const useStockTransaction = (selectedStock, onClose, onSuccess) => {
         if (!inboundForm.quantity || !inboundForm.incomingPrice) {
           throw new Error('필수 입력 항목을 확인해주세요.');
         }
-
-                
         await createIncomingStock({ 
-         stockSeq: stockSeq,
+          stockSeq: stockSeq,
           detailStockName: inboundForm.detailStockName,
-          quantity: Number(inboundForm.quantity),       // "20" -> 20 숫자로 변경
-          incomingPrice: Number(inboundForm.incomingPrice), // "20000" -> 20000 숫자로 변경
+          quantity: Number(inboundForm.quantity),
+          incomingPrice: Number(inboundForm.incomingPrice),
           memo: inboundForm.memo,
           expirationDate: null
         });
@@ -95,12 +100,36 @@ export const useStockTransaction = (selectedStock, onClose, onSuccess) => {
         if (!outboundForm.quantity || !outboundForm.reason) {
           throw new Error('필수 입력 항목을 확인해주세요.');
         }
+        // 출고 시 재고 부족 체크
+        if (Number(outboundForm.quantity) > selectedStock.currentStock) {
+          throw new Error('출고 수량이 현재 재고보다 많을 수 없습니다.');
+        }
         await createOutboundStock({ stockSeq: stockSeq, ...outboundForm });
       } else if (activeTab === 'ADJUST') {
         if (!adjustmentForm.quantity || !adjustmentForm.reason) {
           throw new Error('필수 입력 항목을 확인해주세요.');
         }
-        await createAdjustStock({ stockSeq: stockSeq, ...adjustmentForm });
+
+        const changeQty = Number(adjustmentForm.quantity);
+        
+        // 백엔드 로직 검증: 조정 후 재고가 0보다 작아지는지 체크
+        if (adjustmentForm.batchSeq) {
+          const targetBatch = batches.find(b => b.batchSeq === Number(adjustmentForm.batchSeq));
+          if (targetBatch && (targetBatch.currentQuantity + changeQty) < 0) {
+            throw new Error(`조정 후 배치 재고(${targetBatch.currentQuantity + changeQty})가 0보다 작을 수 없습니다.`);
+          }
+        } else if ((selectedStock.currentStock + changeQty) < 0) {
+          throw new Error(`조정 후 총 재고(${selectedStock.currentStock + changeQty})가 0보다 작을 수 없습니다.`);
+        }
+
+        // 백엔드 StockAdjustRequest 사양에 맞춰 changeQuantity로 전달
+        await createAdjustStock({ 
+          stockSeq: stockSeq, 
+          batchSeq: adjustmentForm.batchSeq ? Number(adjustmentForm.batchSeq) : null,
+          changeQuantity: changeQty,
+          reason: adjustmentForm.reason,
+          memo: adjustmentForm.memo
+        });
       }
 
       alert('거래가 정상적으로 등록되었습니다.');
@@ -120,6 +149,7 @@ export const useStockTransaction = (selectedStock, onClose, onSuccess) => {
     inboundForm,
     outboundForm,
     adjustmentForm,
+    batches,
     handleInboundChange,
     handleOutboundChange,
     handleAdjustmentChange,

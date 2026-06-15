@@ -12,6 +12,7 @@ const StockTransactionModal = ({ isOpen, onClose, selectedStock, onSuccess }) =>
     inboundForm,
     outboundForm,
     adjustmentForm,
+    batches,
     handleInboundChange,
     handleOutboundChange,
     handleAdjustmentChange,
@@ -181,6 +182,32 @@ const StockTransactionModal = ({ isOpen, onClose, selectedStock, onSuccess }) =>
           {activeTab === 'ADJUST' && (
             <div className="animate-fade-in">
               <div className="space-y-4">
+                {/* 배치 선택 추가 */}
+                <div>
+                  <label className={labelStyle}>조정 대상 (배치 선택)</label>
+                  <div className="relative">
+                    <select
+                      name="batchSeq"
+                      value={adjustmentForm.batchSeq}
+                      onChange={handleAdjustmentChange}
+                      className={selectStyle}
+                    >
+                      <option value="">전체 재고 </option>
+                      {batches.map(batch => (
+                        <option key={batch.batchSeq} value={batch.batchSeq}>
+                          {batch.detailStockName} | 현재 수량 : {batch.currentQuantity} | 유통기한 : {batch.expirationDate}
+                        </option>
+                      ))}
+                    </select>
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
+                      ▼
+                    </div>
+                  </div>
+                  <p className="text-[10px] text-gray-400 mt-1 ml-1">
+                    * 특정 품목를 선택하면 해당 품목의 수량이 직접 조정됩니다.
+                  </p>
+                </div>
+
                 <div>
                   <label className={labelStyle}>조정 수량 (+/-) <span className="text-rose-500">*</span></label>
                   <input
