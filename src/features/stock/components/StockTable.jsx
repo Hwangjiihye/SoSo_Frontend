@@ -6,12 +6,18 @@ import React from 'react';
  */
 const StockTable = ({ stocks, isLoading, selectedIds, onSelectChange, onSelectAll, onViewHistory, onIncoming, onEdit }) => {
   // 소비기한 D-Day 텍스트 반환 및 스타일링 (요구사항 반영)
-  const getExpiryDisplay = (days) => {
-
-    return <span className="text-gray-600">{days}일</span>;
+  const getExpiryDisplay = (daysUntilExpiry) => {
+    if (daysUntilExpiry === null || daysUntilExpiry === undefined) return <span className="text-gray-400">-</span>;
+    
+    const isNearExpiry = daysUntilExpiry >= 0 && daysUntilExpiry <= 7;
+    return (
+      <span className={`font-medium ${isNearExpiry ? 'text-[#ff4d4f] font-bold' : 'text-gray-600'}`}>
+        {daysUntilExpiry}일
+      </span>
+    );
   };
 
-  const getStatusBadge = (currentStock, safetyStock, expirationDays) => {
+  const getStatusBadge = (currentStock, safetyStock, daysUntilExpiry) => {
     // 1. 품절 (currentStock == 0)
     if (currentStock === 0) {
       return (
@@ -23,8 +29,8 @@ const StockTable = ({ stocks, isLoading, selectedIds, onSelectChange, onSelectAl
 
     // 2. 재고부족 (0 < currentStock <= safetyStock)
     const isLowStock = currentStock > 0 && currentStock <= safetyStock;
-    // 3. 기한임박 (expirationDays <= 7)
-    const isNearExpiry = expirationDays !== null && expirationDays <= 7;
+    // 3. 기한임박 (0 <= daysUntilExpiry <= 7)
+    const isNearExpiry = daysUntilExpiry !== null && daysUntilExpiry !== undefined && daysUntilExpiry >= 0 && daysUntilExpiry <= 7;
 
     return (
       <div className="flex flex-wrap gap-1 justify-center">
@@ -34,8 +40,8 @@ const StockTable = ({ stocks, isLoading, selectedIds, onSelectChange, onSelectAl
           </span>
         )}
         {isNearExpiry && (
-          <span className="px-2.5 py-1 rounded-full text-[11px] font-bold border bg-rose-50 text-rose-600 border-rose-100">
-            기한임박
+          <span className="px-2.5 py-1 rounded-full text-[11px] font-bold border bg-red-50 text-[#ff4d4f] border-red-100">
+            임박
           </span>
         )}
         {!isLowStock && !isNearExpiry && (
@@ -104,10 +110,10 @@ const StockTable = ({ stocks, isLoading, selectedIds, onSelectChange, onSelectAl
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-500 text-center">{stock.safetyStock.toLocaleString()}</td>
                   <td className="px-6 py-4 text-center text-sm">
-                    {getExpiryDisplay(stock.defaultExpiryDays)}
+                    {getExpiryDisplay(stock.daysUntilExpiry)}
                   </td>
                   <td className="px-6 py-4 text-center">
-                    {getStatusBadge(stock.currentStock, stock.safetyStock, stock.expirationDays)}
+                    {getStatusBadge(stock.currentStock, stock.safetyStock, stock.daysUntilExpiry)}
                   </td>
                   <td className="px-6 py-4 text-center">
                     <button 

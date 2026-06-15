@@ -28,22 +28,8 @@ export const useStock = () => {
     setIsLoading(true);
     try {
       // 백엔드 API 호출 시 필터 파라미터 전달
-      let data = await getStockList(filters);
-      
-      // 프론트엔드에서 한 번 더 필터링 로직을 강화하여 '실제 로직 작동' 보장
-      if (data && filters.status !== 'ALL') {
-        data = data.filter(stock => {
-          const isLowStock = stock.currentStock > 0 && stock.currentStock <= stock.safetyStock;
-          const isOutOfStock = stock.currentStock === 0;
-          const isNormal = !isLowStock && !isOutOfStock;
-
-          if (filters.status === 'LACK') return isLowStock;
-          if (filters.status === 'OUT_OF_STOCK') return isOutOfStock;
-          if (filters.status === 'NORMAL') return isNormal;
-          return true;
-        });
-      }
-
+      // 백엔드에서 모든 필터링이 완료된 데이터를 반환하므로 그대로 사용
+      const data = await getStockList(filters);
       setStocks(data || []);
       setError(null);
     } catch (err) {
