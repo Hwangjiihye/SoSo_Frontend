@@ -18,6 +18,7 @@ import mypageRoutes from './mypageRoutes';
 import orderRoutes from './orders';
 import communityRoutes from './communityRoutes';
 import accountRoutes from './accountRoutes';
+import supportRoutes from './supportRoutes';
 
 /**
  * @file AppRoutes.jsx
@@ -53,11 +54,11 @@ const router = createBrowserRouter([
       // 추후 로그인, 마이페이지 등 새로운 페이지가 생기면 여기에 객체를 추가합니다.
       ...memberRoutes, // /member, /signup 등의 경로가 루트 하위에 조립됨
       // 도메인별 라우트 장부 조립
-      ...memberRoutes,
       ...mypageRoutes,
       ...orderRoutes,
       ...communityRoutes,
       ...accountRoutes,
+      ...supportRoutes,
     ],
   },
 ]);

@@ -17,6 +17,7 @@ function MainHeader({ activeMenu = '홈' }) {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isOrderDropdownOpen, setIsOrderDropdownOpen] = useState(false);
   const [isAccountDropdownOpen, setIsAccountDropdownOpen] = useState(false);
+  const [isSupportDropdownOpen, setIsSupportDropdownOpen] = useState(false);
 
   const handleLogOut = () => {
     logout();
@@ -114,7 +115,7 @@ function MainHeader({ activeMenu = '홈' }) {
           </div>
         </div>
 
-        {['공동발주', '커뮤니티', '고객지원'].map(m => (
+        {['공동발주', '커뮤니티'].map(m => (
           <Link 
             key={m} 
             to="#" 
@@ -123,6 +124,33 @@ function MainHeader({ activeMenu = '홈' }) {
             {m}
           </Link>
         ))}
+
+        {/* 고객지원 드롭다운 메뉴 */}
+        <div 
+          className="relative"
+          onMouseEnter={() => setIsSupportDropdownOpen(true)}
+          onMouseLeave={() => setIsSupportDropdownOpen(false)}
+        >
+          <div className={activeMenu === '고객지원' 
+            ? "px-4 py-1.5 text-sm font-semibold bg-white text-emerald-600 rounded shadow-sm border border-gray-200 cursor-pointer transition-all whitespace-nowrap"
+            : "px-4 py-1.5 text-sm font-medium text-gray-500 hover:text-emerald-600 transition-all cursor-pointer whitespace-nowrap"}>
+            고객지원
+          </div>
+          
+          <div className={`absolute top-full left-0 w-48 pt-2 z-[60] transition-all duration-200 ${isSupportDropdownOpen ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-2'}`}>
+            <div className="bg-white border border-gray-100 rounded-2xl shadow-xl p-2">
+              <Link to="/support/notice" className="block w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl mb-1">
+                공지사항
+              </Link>
+              <Link to="/support/faq" className="block w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl mb-1">
+                자주 묻는 질문
+              </Link>
+              <Link to="/support/inquiry" className="block w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl">
+                문의 하기
+              </Link>
+            </div>
+          </div>
+        </div>
       </nav>
 
       {/* Right Section (Notifications & Profile) */}
