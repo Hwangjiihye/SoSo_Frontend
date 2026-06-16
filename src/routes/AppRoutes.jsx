@@ -15,6 +15,7 @@ import { createBrowserRouter, RouterProvider, Outlet } from 'react-router-dom';
 import RootLayout from '../components/layout/RootLayout';
 import memberRoutes from './memberRoutes';
 import mypageRoutes from './mypageRoutes';
+import stockRoutes from './stockRoutes';
 import orderRoutes from './orders';
 import communityRoutes from './communityRoutes';
 import accountRoutes from './accountRoutes';
@@ -55,6 +56,7 @@ const router = createBrowserRouter([
       ...memberRoutes, // /member, /signup 등의 경로가 루트 하위에 조립됨
       // 도메인별 라우트 장부 조립
       ...mypageRoutes,
+      ...stockRoutes,
       ...orderRoutes,
       ...communityRoutes,
       ...accountRoutes,

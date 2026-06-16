@@ -18,6 +18,7 @@ function MainHeader({ activeMenu = '홈' }) {
   const [isOrderDropdownOpen, setIsOrderDropdownOpen] = useState(false);
   const [isAccountDropdownOpen, setIsAccountDropdownOpen] = useState(false);
   const [isSupportDropdownOpen, setIsSupportDropdownOpen] = useState(false);
+  const [isStockDropdownOpen, setIsStockDropdownOpen] = useState(false);
 
   const handleLogOut = () => {
     logout();
@@ -108,8 +109,32 @@ function MainHeader({ activeMenu = '홈' }) {
               <Link to="/account/register" className="block w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl">
                 신규 거래처 등록
               </Link>
-              <Link to="/account/management" className="block w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl mb-1">
+              {/* <Link to="/account/management" className="block w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl mb-1">
                 품목 관리
+              </Link> */}
+            </div>
+          </div>
+        </div>
+
+        {/* 재고 관리 드롭다운 메뉴 */}
+        <div 
+          className="relative"
+          onMouseEnter={() => setIsStockDropdownOpen(true)}
+          onMouseLeave={() => setIsStockDropdownOpen(false)}
+        >
+          <div className={activeMenu === '재고 관리' 
+            ? "px-4 py-1.5 text-sm font-semibold bg-white text-emerald-600 rounded shadow-sm border border-gray-200 cursor-pointer transition-all whitespace-nowrap"
+            : "px-4 py-1.5 text-sm font-medium text-gray-500 hover:text-emerald-600 transition-all cursor-pointer whitespace-nowrap"}>
+            재고 관리
+          </div>
+          
+          <div className={`absolute top-full left-0 w-48 pt-2 z-[60] transition-all duration-200 ${isStockDropdownOpen ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-2'}`}>
+            <div className="bg-white border border-gray-100 rounded-2xl shadow-xl p-2">
+              <Link to="/stock" className="block w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl mb-1">
+                재고 관리
+              </Link>
+              <Link to="/stock-status" className="block w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl">
+                자동 재고 제어 관리
               </Link>
             </div>
           </div>
