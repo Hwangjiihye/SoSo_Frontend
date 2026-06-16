@@ -6,6 +6,7 @@ import authStore from '../../store/authStore';
 import { useStores } from '../../hooks/useStores';
 import { useTransfer } from './hooks/useTransfer';
 import { insertAccount, accountList, accountDel } from '../../apis/account';
+import * as PortOne from "@portone/browser-sdk/v2";
 
 /**
  * @file TransferManagementPage.jsx
@@ -36,16 +37,75 @@ const TransferManagementPage = () => {
     accountName: ''
   });
 
+  // 계좌번호 정규식
+  const bankRegexMap = {
+    "신한은행": /^\d{11,12}$/,
+    "국민은행": /^\d{12,14}$/,
+    "우리은행": /^\d{13}$/,
+    "하나은행": /^\d{14}$/,
+    "SC제일은행": /^\d{11,14}$/,
+    "한국씨티은행": /^\d{12}$/,
+    "iM뱅크은행": /^\d{12,14}$/,
+    "농협은행": /^\d{11,14}$/
+  };
+
+  // 계좌번호 화면에 하이픈 추가하여 출력
+  const formatAccountNumber = (bankName, accountNumber) => {
+    const num = String(accountNumber ?? "").replace(/\D/g, "");
+
+    if (!num) return "";
+
+    if (bankName === "신한은행" || bankName === "신한") {
+      if (num.length === 11) return num.replace(/(\d{3})(\d{2})(\d{6})/, "$1-$2-$3");
+      if (num.length === 12) return num.replace(/(\d{3})(\d{3})(\d{6})/, "$1-$2-$3");
+    }
+
+    if (bankName === "국민은행" || bankName === "국민") {
+      if (num.length === 12) return num.replace(/(\d{3})(\d{2})(\d{4})(\d{3})/, "$1-$2-$3-$4");
+      if (num.length === 14) return num.replace(/(\d{6})(\d{2})(\d{6})/, "$1-$2-$3");
+    }
+
+    if (bankName === "우리은행" || bankName === "우리") {
+      if (num.length === 13) return num.replace(/(\d{4})(\d{3})(\d{6})/, "$1-$2-$3");
+    }
+
+    if (bankName === "하나은행" || bankName === "하나") {
+      if (num.length === 14) return num.replace(/(\d{3})(\d{6})(\d{5})/, "$1-$2-$3");
+    }
+
+    if (bankName === "SC제일은행") {
+      if (num.length === 11) return num.replace(/(\d{3})(\d{2})(\d{6})/, "$1-$2-$3");
+      if (num.length === 12) return num.replace(/(\d{3})(\d{3})(\d{6})/, "$1-$2-$3");
+      if (num.length === 14) return num.replace(/(\d{3})(\d{3})(\d{8})/, "$1-$2-$3");
+    }
+
+    if (bankName === "한국씨티은행" || bankName === "씨티은행") {
+      if (num.length === 12) return num.replace(/(\d{3})(\d{6})(\d{3})/, "$1-$2-$3");
+    }
+
+    if (bankName === "iM뱅크은행" || bankName === "iM뱅크" || bankName === "대구은행") {
+      if (num.length === 12) return num.replace(/(\d{3})(\d{2})(\d{7})/, "$1-$2-$3");
+      if (num.length === 13) return num.replace(/(\d{3})(\d{3})(\d{7})/, "$1-$2-$3");
+      if (num.length === 14) return num.replace(/(\d{3})(\d{3})(\d{8})/, "$1-$2-$3");
+    }
+
+    if (bankName === "농협은행" || bankName === "농협") {
+      if (num.length === 11) return num.replace(/(\d{3})(\d{2})(\d{6})/, "$1-$2-$3");
+      if (num.length === 12) return num.replace(/(\d{3})(\d{3})(\d{6})/, "$1-$2-$3");
+      if (num.length === 13) return num.replace(/(\d{3})(\d{4})(\d{6})/, "$1-$2-$3");
+      if (num.length === 14) return num.replace(/(\d{6})(\d{2})(\d{6})/, "$1-$2-$3");
+    }
+
+    return num;
+  };
+
+  // 예금주명 정규식
+  const accountNameRegex = /^[가-힣a-zA-Z0-9\s]{2,30}$/;
+
   // 등록된 계좌 출력
   useEffect(() => {
     fetchAccountList();
   }, [selectedStoreSeq, stores]);
-
-  // useEffect(() => {
-  //   if (transferData && transferData.accounts) {
-  //     setAccounts(transferData.accounts);
-  //   }
-  // }, [transferData, stores]);
 
   // 등록된 계좌 조회
   const fetchAccountList = async () => {
@@ -63,10 +123,75 @@ const TransferManagementPage = () => {
   } catch (error) {
     console.error("계좌 목록 조회 실패:", error);
   }
-
-  
 };
 
+
+
+// 포트원
+const STORE_ID = "store-d07c8343-3eda-4b37-b1b1-d59c24f3d02d";
+const CHANNEL_KEY = "channel-key-3ac881ab-bc4c-4016-b0d0-3c6eb420b83c";
+
+const handleRegisterCard = async () => {
+  try {
+    const currentStoreSeq = selectedStoreSeq ?? stores?.[0]?.storeSeq;
+
+    if (!currentStoreSeq) {
+      alert("사업장 정보가 없습니다.");
+      return;
+    }
+
+    const billingKeyRequestId = `billing-${currentStoreSeq}-${Date.now()}`;
+    const customerId = `customer-${currentStoreSeq}`;
+
+    const response = await PortOne.requestIssueBillingKey({
+      storeId: STORE_ID,
+      channelKey: CHANNEL_KEY,
+      billingKeyMethod: "CARD",
+      billingKeyRequestId,
+      issueId: billingKeyRequestId,
+      issueName: "SOSO카드결제 테스트",
+      customer: {
+        id: customerId,
+        fullName: user_nickname || "테스트사업자",
+        email: "jihye10226@naver.com",
+        phoneNumber: "01073711745"
+      },
+    });
+
+    console.log("포트원 응답:", response);
+
+    if (!response) {
+      alert("카드 등록이 취소되었습니다.");
+      return;
+    }
+
+    if (response.code) {
+      alert(`카드 등록 실패: ${response.message}`);
+      return;
+    }
+
+    console.log("빌링키 발급 성공:", response);
+    alert("카드 등록 성공");
+
+  } catch (error) {
+    console.error("카드 등록 오류:", error);
+    alert(error.message || "카드 등록 중 오류가 발생했습니다.");
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+// 신규 계좌 등록할때 검증/저장
   const handleAddAccount = async () => {
 
     if (accounts.length >= 4) {
@@ -82,8 +207,22 @@ const TransferManagementPage = () => {
       alert("계좌번호를 입력해 주세요.");
       return;
     }
+
+    const regex = bankRegexMap[newAccount.bankName];
+    const cleanAccountNumber = newAccount.accountNumber.replace(/-/g, "");
+
+    if (!regex.test(cleanAccountNumber)) {
+      alert(`${newAccount.bankName} 계좌번호 형식이 올바르지 않습니다.`);
+      return;
+    }
+  
     if (!newAccount.accountName) {
       alert("예금주를 입력해 주세요.");
+      return;
+    }
+
+    if (!accountNameRegex.test(newAccount.accountName.trim())) {
+      alert("예금주명은 한글, 영문, 숫자, 공백만 입력할 수 있으며 2~30자여야 합니다.");
       return;
     }
 
@@ -94,11 +233,11 @@ const TransferManagementPage = () => {
       return;
     }
 
-    // 계좌 등록
+    // 계좌 등록 데이터
     const accountData = {
       storeSeq: Number(currentStoreSeq),
       bankName: newAccount.bankName,
-      accountNumber: newAccount.accountNumber,
+      accountNumber: cleanAccountNumber,
       accountName: newAccount.accountName
     };
 
@@ -106,17 +245,6 @@ const TransferManagementPage = () => {
 
     await insertAccount(accountData);
 
-    const nextId = accounts.length > 0 ? Math.max(...accounts.map(a => a.id)) + 1 : 1;
-    const addedAccount = {
-      id: nextId,
-      bankName: newAccount.bankName,
-      accountNumber: newAccount.accountNumber,
-      balance: 0,
-      isMain: accounts.length === 0,
-    };
-
-    const updatedAccounts = [...accounts, addedAccount];
-    setAccounts(updatedAccounts);
     setIsRegisterModalOpen(false);
 
     await fetchAccountList();
@@ -188,20 +316,6 @@ const TransferManagementPage = () => {
     alert(message);
   }
 };
-  // const handleDeleteAccount = (acc, e) => {
-  //   e.stopPropagation();
-  //   if (confirm(`정말 ${acc.bankName} (${acc.accountNumber}) 계좌를 삭제하시겠습니까?`)) {
-  //     const updated = accounts.filter(a => a.id !== acc.accountSeq);
-  //     if (acc.isMain && updated.length > 0) {
-  //       const nextMain = { ...updated[0], isMain: true };
-  //       setAccounts([nextMain, ...updated.slice(1)]);
-  //     } else {
-  //       setAccounts(updated);
-  //     }
-  //     setActiveAccountIndex(0);
-  //     alert("계좌가 삭제되었습니다.");
-  //   }
-  // };
 
   const handlePrevAccount = () => {
     setActiveAccountIndex((prev) => (prev === 0 ? accounts.length - 1 : prev - 1));
@@ -322,6 +436,9 @@ const TransferManagementPage = () => {
             >
               자동이체 설정
             </button>
+            <button onClick={handleRegisterCard}>
+              카드 등록 테스트
+            </button>
           </div>
         </div>
 
@@ -346,7 +463,7 @@ const TransferManagementPage = () => {
 
                 <div className="text-left lg:text-right">
                   <span className="text-sm font-bold text-gray-400">현재 잔액</span>
-                  <div className="mt-1 text-4xl font-black tracking-tight">{formatCurrency(accounts[activeAccountIndex]?.balance || 0)}</div>
+                  <div className="mt-1 text-4xl font-black tracking-tight">{formatCurrency(accounts[activeAccountIndex]?.testBalance ?? 0)}</div>
                 </div>
               </div>
             </section>
@@ -361,7 +478,7 @@ const TransferManagementPage = () => {
               <div className="mb-6 flex items-center justify-between">
                 <h3 className="text-lg font-black">내 보유 계좌 <span className="font-medium text-gray-400">({accounts.length}개)</span></h3>
                 <span className="text-sm font-bold text-gray-400">
-                  총 잔액 <strong className="text-gray-900">{formatCurrency(accounts.reduce((sum, account) => sum + account.balance, 0))}</strong>
+                  총 잔액 <strong className="text-gray-900">{formatCurrency(accounts.reduce((sum, account) => sum + account.testBalance, 0))}</strong>
                 </span>
               </div>
 
@@ -392,12 +509,12 @@ const TransferManagementPage = () => {
                                 <h4 className="truncate text-base font-black">{acc.bankName}</h4>
                                 {acc.isMain && <span className="rounded-md bg-emerald-50 px-2 py-1 text-[9px] font-black text-emerald-700">대표</span>}
                               </div>
-                              <p className="mt-1 text-xs font-semibold text-gray-400">{acc.accountNumber}</p>
+                              <p className="mt-1 text-xs font-semibold text-gray-400">{formatAccountNumber(acc.bankName, acc.accountNumber)}</p>
                             </div>
                           </div>
                           {isActive && <span className="rounded-xl bg-emerald-50 px-3 py-2 text-[10px] font-black text-emerald-700">선택됨</span>}
                         </div>
-                        <div className={`mt-6 text-2xl font-black ${isActive ? 'text-emerald-600' : 'text-gray-900'}`}>{formatCurrency(acc.balance || 0)}</div>
+                        <div className={`mt-6 text-2xl font-black ${isActive ? 'text-emerald-600' : 'text-gray-900'}`}>{formatCurrency(acc.testBalance ?? 0)}</div>
                       </div>
 
                       <div className="grid grid-cols-2 gap-2">
@@ -874,6 +991,10 @@ const TransferManagementPage = () => {
                       <option value="국민은행">국민은행</option>
                       <option value="우리은행">우리은행</option>
                       <option value="하나은행">하나은행</option>
+                      <option value="SC제일은행">SC제일은행</option>
+                      <option value="한국씨티은행">한국씨티은행</option>
+                      <option value="iM뱅크은행">iM뱅크은행</option>
+                      <option value="농협은행">농협은행</option>
                     </select>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
@@ -891,7 +1012,7 @@ const TransferManagementPage = () => {
                       <label className="block text-[10px] font-bold text-gray-400 mb-1.5 uppercase tracking-widest">예금주</label>
                       <input 
                         type="text" 
-                        placeholder="실명 입력"
+                        placeholder="실명 또는 사업자명 입력"
                         className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all"
                         value={newAccount.accountName}
                         onChange={(e) => setNewAccount({...newAccount, accountName: e.target.value})}

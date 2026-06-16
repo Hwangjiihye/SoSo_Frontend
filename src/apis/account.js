@@ -19,3 +19,10 @@ export const accountDel = async (accountSeq) => {
     const resp = await axiosInstance.delete(`/account/accountDel/${accountSeq}`)
     return resp.data;
 };
+
+// 자동이체 설정 목록 조회
+export const autoSchedule = async (storeSeq) => {
+    const resp = await axiosInstance.get("/account/autoPaymentSchedule", {
+        params : {storeSeq}
+    });
+};
