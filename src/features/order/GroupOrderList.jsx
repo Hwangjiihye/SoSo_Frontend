@@ -1,7 +1,5 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import MainFooter from '../../components/layout/MainFooter';
-import MainHeader from '../../components/layout/MainHeader';
 import { useGroupOrder } from './hooks/useGroupOrderList';
 
 /**
@@ -23,8 +21,6 @@ function GroupOrderList() {
 
   return (
     <div className="min-h-screen bg-[#F8F9FA] text-gray-800 font-sans">
-      <MainHeader activeMenu="공동 발주" />
-
       <main className="max-w-7xl mx-auto px-6 py-10">
         <div className="flex justify-between items-start mb-10">
           <div>
@@ -172,7 +168,6 @@ function GroupOrderList() {
           </div>
         </div>
       </main>
-      <MainFooter />
     </div>
   );
 }

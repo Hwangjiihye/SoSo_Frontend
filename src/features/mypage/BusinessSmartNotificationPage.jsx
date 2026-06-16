@@ -5,7 +5,6 @@
  */
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import MainFooter from '../../components/layout/MainFooter';
 import logo from "../../assets/soso로고.png";
 import authStore from "../../store/authStore";
 import { useBusinessSmartNotification } from './hooks/useBusinessSmartNotification';
@@ -183,95 +182,6 @@ function BusinessSmartNotificationPage() {
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] flex flex-col font-sans">
-      <header className="grid grid-cols-3 items-center py-5 px-6 md:px-12 border-b border-gray-200 bg-white sticky top-0 z-50">
-        <div className="flex items-center gap-1 cursor-pointer" onClick={() => navigate("/")}>
-          <img src={logo} alt="SoSo Logo" className="w-12 h-12 object-contain relative top-[5px]" />
-          <div className="text-[40px] font-black text-[#1d9e75] tracking-tighter leading-none">SoSo</div>
-        </div>
-        <nav className="hidden md:flex justify-center gap-1 border border-gray-100 rounded-lg p-1 bg-gray-50 w-fit mx-auto">
-          <a href="/" className="px-4 py-1.5 text-sm font-medium text-gray-500 hover:text-emerald-600 transition-colors whitespace-nowrap">홈</a>
-          {['발주 관리', '수금 관리', '공동 발주', '업체 홍보', '통계'].map(m => (
-            <a key={m} href="#" className="px-4 py-1.5 text-sm font-medium text-gray-500 hover:text-emerald-600 transition-colors whitespace-nowrap">{m}</a>
-          ))}
-        </nav>
-        <div className="flex items-center justify-end gap-4">
-          <button className="text-gray-400 hover:text-emerald-600 relative">
-            <span className="text-xl">🔔</span>
-            <span className="absolute -top-1 -right-1 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"></span>
-          </button>
-          
-          <div className="relative">
-            <div 
-              onClick={() => setIsProfileOpen(!isProfileOpen)}
-              className="flex items-center gap-2 border border-gray-200 rounded-full py-1.5 px-3 bg-white hover:bg-emerald-50 cursor-pointer transition-colors"
-            >
-              <div className="w-6 h-6 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-[10px] font-bold">
-                {user_nickname ? user_nickname.substring(0, 1) : 'G'}
-              </div>
-              <span className="text-sm font-semibold whitespace-nowrap text-gray-700">
-                {user_nickname || '회원님'}
-                <span className="text-xs text-gray-400 font-normal ml-1">
-                  {bizname || '상호명 미등록'}
-                </span>
-              </span>
-            </div>
-
-            {isProfileOpen && (
-              <div className="absolute right-0 mt-2 w-64 bg-white border border-gray-100 rounded-2xl shadow-2xl p-2 z-[60] animate-fade-in-up">
-                <div className="p-3 border-b border-gray-50 flex justify-between items-center">
-                  <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">나의 매장 목록</span>
-                  {isStoresLoading && <span className="text-[10px] text-emerald-500 animate-pulse">로딩 중...</span>}
-                </div>
-                
-                <div className="py-2 max-h-60 overflow-y-auto custom-scrollbar">
-                  {stores.length > 0 ? (
-                    stores.map((store) => (
-                      <button 
-                        key={store.storeSeq}
-                        onClick={() => handleStoreSwitch(store.storeSeq, store.companyName)}
-                        className={`w-full text-left px-4 py-3 rounded-xl mb-1 flex justify-between items-center transition-all ${
-                          (selectedStoreSeq == store.storeSeq || (!selectedStoreSeq && stores[0].storeSeq === store.storeSeq))
-                            ? 'bg-emerald-50 text-emerald-600 font-bold border border-emerald-100' 
-                            : 'text-gray-600 hover:bg-gray-50 font-medium'
-                        }`}
-                      >
-                        <div className="flex flex-col">
-                          <span className="text-sm">{store.companyName}</span>
-                          <span className="text-[10px] text-gray-400 font-normal">{store.bizNumber.replace(/(\d{3})(\d{2})(\d{5})/, '$1-$2-$3')}</span>
-                        </div>
-                        {(selectedStoreSeq == store.storeSeq || (!selectedStoreSeq && stores[0].storeSeq === store.storeSeq)) && (
-                          <span className="text-[10px] bg-emerald-500 text-white px-1.5 py-0.5 rounded uppercase">Active</span>
-                        )}
-                      </button>
-                    ))
-                  ) : (
-                    <div className="px-4 py-6 text-center">
-                      <p className="text-xs text-gray-400">등록된 매장이 없습니다.</p>
-                    </div>
-                  )}
-                </div>
-
-                <div className="border-t border-gray-50 pt-2 mt-2">
-                  <button 
-                    onClick={() => { navigate("/business-multiprofile"); setIsProfileOpen(false); }}
-                    className="w-full text-center py-2 text-[11px] font-bold text-emerald-500 hover:bg-emerald-50 rounded-lg transition-all mb-1"
-                  >
-                    + 새 매장 추가하기
-                  </button>
-                  <button 
-                    onClick={handleProfileClick}
-                    className="w-full text-center py-3 text-sm font-black text-gray-700 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all"
-                  >
-                    마이페이지
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-
-          <button onClick={handleLogout} className="text-xs text-gray-400 hover:underline">/로그아웃</button>
-        </div>
-      </header>
       <main className="flex-grow w-full max-w-6xl mx-auto px-4 py-10 flex gap-8">
         {/* 사이드바 */}
         <aside className="w-64 shrink-0 flex flex-col gap-6">
@@ -320,7 +230,6 @@ function BusinessSmartNotificationPage() {
           )}
         </section>
       </main>
-      <MainFooter />
     </div>
   );
 }

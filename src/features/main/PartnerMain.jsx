@@ -18,8 +18,6 @@ import {
   Filler,
 } from 'chart.js';
 import { Bar, Line } from 'react-chartjs-2';
-import MainFooter from '../../components/layout/MainFooter';
-import MainHeader from '../../components/layout/MainHeader';
 import authStore from '../../store/authStore';
 
 // Chart.js 컴포넌트 등록
@@ -91,8 +89,6 @@ function PartnerMain({ setRole }) {
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-800 font-sans flex flex-col">
-      <MainHeader activeMenu="홈" />
-
       <main className="flex-grow max-w-7xl mx-auto px-8 py-8 space-y-8 w-full">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {[
@@ -245,8 +241,6 @@ function PartnerMain({ setRole }) {
            </div>
         </div>
       </main>
-
-      <MainFooter />
     </div>
   );
 }

@@ -1,7 +1,5 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import MainFooter from '../../components/layout/MainFooter';
-import MainHeader from '../../components/layout/MainHeader';
 import { usePartnerOrder } from './hooks/usePartnerOrder';
 
 /**
@@ -73,8 +71,6 @@ function PartnerOrderPage() {
 
   return (
     <div className="min-h-screen bg-[#F8F9FA] text-gray-800 font-sans">
-      <MainHeader activeMenu="발주 관리" />
-
       <main className="max-w-7xl mx-auto px-6 py-10">
         {/* 페이지 타이틀 */}
         <div className="flex justify-between items-start mb-10">
@@ -364,8 +360,6 @@ function PartnerOrderPage() {
           </div>
         </div>
       )}
-
-      <MainFooter />
     </div>
   );
 }
