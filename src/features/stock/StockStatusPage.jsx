@@ -47,32 +47,7 @@ const StockStatusPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
-      {/* 서브 헤더/내비게이션 */}
-      <div className="bg-white border-b border-gray-100 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-8 h-20">
-            <Link 
-              to="/stock" 
-              className={`text-[15px] font-black transition-colors ${
-                location.pathname === '/stock' ? 'text-emerald-600' : 'text-gray-400 hover:text-gray-900'
-              }`}
-            >
-              재고 관리
-            </Link>
-            <Link 
-              to="/stock-status" 
-              className={`text-[15px] font-black transition-colors relative h-full flex items-center ${
-                location.pathname === '/stock-status' ? 'text-gray-900' : 'text-gray-400 hover:text-gray-900'
-              }`}
-            >
-              자동 재고 제어 관리
-              {location.pathname === '/stock-status' && (
-                <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-900 rounded-t-full" />
-              )}
-            </Link>
-          </div>
-        </div>
-      </div>
+      
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         {/* 헤더 섹션 */}
