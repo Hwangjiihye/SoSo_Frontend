@@ -19,7 +19,7 @@ const HistoryModal = ({ isOpen, onClose, data, isLoading, onPageChange }) => {
 
   if (!isOpen) return null;
 
-  const { content, totalPages, number: currentPage } = data;
+  const { historyList, totalPages, currentPage } = data;
 
   const handleOverlayClick = (e) => {
     if (e.target === e.currentTarget) {
@@ -71,8 +71,8 @@ const HistoryModal = ({ isOpen, onClose, data, isLoading, onPageChange }) => {
                     <tr>
                       <td colSpan="7" className="px-6 py-20 text-center text-gray-400 font-medium">데이터를 불러오는 중...</td>
                     </tr>
-                  ) : content && content.length > 0 ? (
-                    content.map((hist) => (
+                  ) : historyList && historyList.length > 0 ? (
+                    historyList.map((hist) => (
                       <tr key={hist.historySeq} className="hover:bg-gray-50/50 transition-colors">
                         <td className="px-4 sm:px-6 py-4 text-[11px] text-gray-400 text-center font-bold uppercase whitespace-nowrap">
                           {hist.createdAt}
@@ -123,22 +123,25 @@ const HistoryModal = ({ isOpen, onClose, data, isLoading, onPageChange }) => {
           </div>
         </div>
 
-        {/* 푸터 (페이지네이션) */}
+       {/* 푸터 (페이지네이션) */}
         <div className="px-6 py-4 sm:px-10 sm:py-6 bg-gray-50/50 border-t border-gray-50 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex gap-2">
-            {[...Array(totalPages || 0)].map((_, i) => (
-              <button
-                key={i}
-                onClick={() => onPageChange(i)}
-                className={`w-8 h-8 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center text-[13px] sm:text-[14px] font-black transition-all ${
-                  currentPage === i 
-                    ? 'bg-emerald-600 text-white shadow-md' 
-                    : 'bg-white text-gray-400 hover:bg-gray-100 border border-gray-200'
-                }`}
-              >
-                {i + 1}
-              </button>
-            ))}
+            {[...Array(totalPages || 0)].map((_, i) => {
+              const pageNum = i + 1; // 🚨 3. 무조건 1부터 시작하도록 계산!
+              return (
+                <button
+                  key={i}
+                  onClick={() => onPageChange(pageNum)} // 🚨 0이 아니라 1, 2, 3을 넘기도록 수정
+                  className={`w-8 h-8 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center text-[13px] sm:text-[14px] font-black transition-all ${
+                    currentPage === pageNum // 🚨 현재 페이지 비교도 pageNum과 일치하는지 확인
+                      ? 'bg-emerald-600 text-white shadow-md' 
+                      : 'bg-white text-gray-400 hover:bg-gray-100 border border-gray-200'
+                  }`}
+                >
+                  {pageNum}
+                </button>
+              );
+            })}
           </div>
 
           <button 
