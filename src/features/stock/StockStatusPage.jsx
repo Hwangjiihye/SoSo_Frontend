@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useStockStatus } from './hooks/useStockStatus';
+import { useStockHistory } from './hooks/useStockHistory';
 import StockAutoRules from './components/StockAutoRules';
-import StockTimeline from './components/StockTimeline';
-import StockAutoHistory from './components/StockAutoHistory';
+import DashboardTimelineFeed from './components/DashboardTimelineFeed';
+import DashboardHistoryTable from './components/DashboardHistoryTable';
+import HistoryModal from './components/HistoryModal';
 import { Link, useLocation } from 'react-router-dom';
 
 /**
@@ -10,8 +12,38 @@ import { Link, useLocation } from 'react-router-dom';
  * @description 재고 상태 관리 신규 페이지 (stock1.png 기반)
  */
 const StockStatusPage = () => {
-  const { autoRules, timeline, history, toggleRule } = useStockStatus();
+  const { autoRules, toggleRule } = useStockStatus();
+  const { 
+    dashboardHistory, 
+    isDashboardLoading, 
+    fetchDashboardHistory,
+    modalHistoryData,
+    isModalLoading,
+    fetchModalHistory
+  } = useStockHistory();
   const location = useLocation();
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // 컴포넌트 마운트 시 대시보드 데이터 로드
+  useEffect(() => {
+    fetchDashboardHistory();
+  }, [fetchDashboardHistory]);
+
+  // 모달 열기/닫기 핸들러
+  const handleOpenModal = () => {
+    setIsModalOpen(true);
+    fetchModalHistory(0, 10); // 모달 오픈 시 0페이지(1페이지) 데이터 페치
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+  };
+
+  // 모달 페이지 변경 핸들러
+  const handlePageChange = (pageIndex) => {
+    fetchModalHistory(pageIndex, 10);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
@@ -64,18 +96,34 @@ const StockStatusPage = () => {
             <div className="flex items-center gap-2 mb-4 ml-2">
               <span className="text-[12px] font-black text-gray-400 uppercase tracking-widest">재고 타임라인 피드</span>
             </div>
-            <StockTimeline timeline={timeline} />
+            <DashboardTimelineFeed 
+              history={dashboardHistory} 
+              isLoading={isDashboardLoading} 
+              onOpenModal={handleOpenModal} 
+            />
           </section>
         </div>
 
         {/* 최근 자동 처리 이력 - 하단 와이드 섹션 */}
         <section>
           <div className="flex items-center gap-2 mb-4 ml-2">
-            <span className="text-[12px] font-black text-gray-400 uppercase tracking-widest">최근 자동 처리 이력</span>
+            <span className="text-[12px] font-black text-gray-400 uppercase tracking-widest">최근 재고 이력</span>
           </div>
-          <StockAutoHistory history={history} />
+          <DashboardHistoryTable 
+            history={dashboardHistory} 
+            isLoading={isDashboardLoading} 
+          />
         </section>
       </div>
+
+      {/* 전체 이력 팝업 모달 */}
+      <HistoryModal 
+        isOpen={isModalOpen} 
+        onClose={handleCloseModal} 
+        data={modalHistoryData} 
+        isLoading={isModalLoading}
+        onPageChange={handlePageChange}
+      />
     </div>
   );
 };

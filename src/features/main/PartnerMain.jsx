@@ -91,7 +91,6 @@ function PartnerMain({ setRole }) {
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-800 font-sans flex flex-col">
-      <PartnerMainHeader activeMenu="홈" />
       <main className="flex-grow max-w-7xl mx-auto px-8 py-8 space-y-8 w-full">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {[

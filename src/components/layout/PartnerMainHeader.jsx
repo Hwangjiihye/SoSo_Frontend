@@ -5,9 +5,9 @@ import authStore from '../../store/authStore';
 import { useStores } from '../../hooks/useStores';
 
 /**
- * @file MainHeader.jsx
- * @description 애플리케이션의 공통 헤더 컴포넌트입니다.
- * 로고, 네비게이션(발주 관리 드롭다운 포함), 프로필 및 매장 전환 기능을 포함합니다.
+ * @file PartnerMainHeader.jsx
+ * @description 파트너용 헤더 컴포넌트입니다.
+ * 로고, 네비게이션(발주 및 재고 관리 드롭다운 포함), 프로필 기능을 포함합니다.
  */
 function PartnerMainHeader({ activeMenu = '홈' }) {
   const { logout, user_type, user_nickname, bizname, selectedStoreSeq, setSelectedStore } = authStore();
@@ -16,6 +16,7 @@ function PartnerMainHeader({ activeMenu = '홈' }) {
 
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isOrderDropdownOpen, setIsOrderDropdownOpen] = useState(false);
+  const [isStockDropdownOpen, setIsStockDropdownOpen] = useState(false);
 
   const handleLogOut = () => {
     logout();
@@ -82,6 +83,30 @@ function PartnerMainHeader({ activeMenu = '홈' }) {
                   발주 신청
                 </Link>
               )}
+            </div>
+          </div>
+        </div>
+
+        {/* 재고 관리 드롭다운 메뉴 */}
+        <div 
+          className="relative"
+          onMouseEnter={() => setIsStockDropdownOpen(true)}
+          onMouseLeave={() => setIsStockDropdownOpen(false)}
+        >
+          <div className={activeMenu === '재고 관리' 
+            ? "px-4 py-1.5 text-sm font-semibold bg-white text-emerald-600 rounded shadow-sm border border-gray-200 cursor-pointer transition-all whitespace-nowrap"
+            : "px-4 py-1.5 text-sm font-medium text-gray-500 hover:text-emerald-600 transition-all cursor-pointer whitespace-nowrap"}>
+            재고 관리
+          </div>
+          
+          <div className={`absolute top-full left-0 w-48 pt-2 z-[60] transition-all duration-200 ${isStockDropdownOpen ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-2'}`}>
+            <div className="bg-white border border-gray-100 rounded-2xl shadow-xl p-2">
+              <Link to="/stock" className="block w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl mb-1">
+                재고 현황 관리
+              </Link>
+              <Link to="/stock-status" className="block w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl mb-1">
+                자동 재고 제어
+              </Link>
             </div>
           </div>
         </div>

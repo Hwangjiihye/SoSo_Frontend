@@ -73,3 +73,24 @@ export const deleteStock = async (stockId) => {
   const response = await axiosInstance.delete(`/api/stocks/${stockId}`);
   return response.data;
 };
+
+// ==========================================
+// 신규 추가: 재고 이력 대시보드 및 모달 전용 API
+// ==========================================
+
+// 메인 대시보드용 API (최신 5건 고정)
+// GET /api/stock-history/dashboard
+export const getStockHistoryDashboard = async () => {
+  const response = await axiosInstance.get('/api/stock-history/dashboard');
+  return response.data; // Expected: StockHistoryDTO[] (최대 5개)
+};
+
+// 전체 이력 팝업 모달용 API (페이징)
+// GET /api/stock-history/modal?page={page}&size={size}
+export const getStockHistoryModal = async (page = 0, size = 10) => {
+  const response = await axiosInstance.get('/api/stock-history/modal', {
+    params: { page, size }
+  });
+  return response.data; // Expected: { content: StockHistoryDTO[], totalPages, totalElements, ... } 페이징 객체
+};
+
