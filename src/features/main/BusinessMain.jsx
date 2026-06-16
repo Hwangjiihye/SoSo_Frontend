@@ -18,8 +18,6 @@ import {
   Filler,
 } from 'chart.js';
 import { Bar, Line } from 'react-chartjs-2';
-import logo from '../../assets/soso로고.png';
-import MainFooter from '../../components/layout/MainFooter';
 import authStore from '../../store/authStore';
 
 // Chart.js 컴포넌트 등록
@@ -39,7 +37,6 @@ import { useStores } from '../../hooks/useStores';
 
 function BusinessMain({ setRole }) {
   // authStore에서 필요한 상태와 매장 전환 함수를 가져옵니다.
-  const { logout, user_type, user_nickname, bizname, selectedStoreSeq, setSelectedStore } = authStore();
   const navigate = useNavigate();
 
   // 🏪 [멀티 프로필] 사장님의 모든 매장 목록을 가져옵니다.
@@ -57,7 +54,7 @@ function BusinessMain({ setRole }) {
     } else {
       alert("사업자 전용 마이페이지입니다.");
     }
-  };
+  
 
   /**
    * 🔄 매장 전환 핸들러
@@ -74,31 +71,32 @@ function BusinessMain({ setRole }) {
     alert("로그아웃 되었습니다.");
     navigate("/");
   };
+}
 
   // --- 차트 데이터 영역 (기존과 동일) ---
   const stockChartData = {
     labels: ['소고기', '돼지고기', '닭고기', '양파', '마늘', '식용유'],
     datasets: [{
-        label: '현재 재고',
-        data: [45, 12, 33, 8, 2, 28],
-        backgroundColor: ['rgba(16, 185, 129, 0.6)', 'rgba(239, 68, 68, 0.6)', 'rgba(16, 185, 129, 0.6)', 'rgba(245, 158, 11, 0.6)', 'rgba(239, 68, 68, 0.6)', 'rgba(16, 185, 129, 0.6)'],
-        borderColor: ['rgb(16, 185, 129)', 'rgb(239, 68, 68)', 'rgb(16, 185, 129)', 'rgb(245, 158, 11)', 'rgb(239, 68, 68)', 'rgb(16, 185, 129)'],
-        borderWidth: 1,
-        borderRadius: 8,
+      label: '현재 재고',
+      data: [45, 12, 33, 8, 2, 28],
+      backgroundColor: ['rgba(16, 185, 129, 0.6)', 'rgba(239, 68, 68, 0.6)', 'rgba(16, 185, 129, 0.6)', 'rgba(245, 158, 11, 0.6)', 'rgba(239, 68, 68, 0.6)', 'rgba(16, 185, 129, 0.6)'],
+      borderColor: ['rgb(16, 185, 129)', 'rgb(239, 68, 68)', 'rgb(16, 185, 129)', 'rgb(245, 158, 11)', 'rgb(239, 68, 68)', 'rgb(16, 185, 129)'],
+      borderWidth: 1,
+      borderRadius: 8,
     }]
   };
 
   const salesChartData = {
     labels: ['1월', '2월', '3월', '4월', '5월', '6월'],
     datasets: [{
-        label: '매출액 (만원)',
-        data: [1200, 1900, 1500, 2100, 2400, 1800],
-        borderColor: 'rgb(16, 185, 129)',
-        backgroundColor: 'rgba(16, 185, 129, 0.1)',
-        fill: true,
-        tension: 0.4,
-        pointRadius: 4,
-        pointBackgroundColor: 'rgb(16, 185, 129)',
+      label: '매출액 (만원)',
+      data: [1200, 1900, 1500, 2100, 2400, 1800],
+      borderColor: 'rgb(16, 185, 129)',
+      backgroundColor: 'rgba(16, 185, 129, 0.1)',
+      fill: true,
+      tension: 0.4,
+      pointRadius: 4,
+      pointBackgroundColor: 'rgb(16, 185, 129)',
     }]
   };
 
@@ -121,134 +119,7 @@ function BusinessMain({ setRole }) {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-800 font-sans">
-      <header className="grid grid-cols-3 items-center py-5 px-6 md:px-12 border-b border-gray-200 bg-white sticky top-0 z-50">
-        <div className="flex items-center gap-1 cursor-pointer" onClick={() => navigate("/")}>
-          <img src={logo} alt="SoSo Logo" className="w-12 h-12 object-contain relative top-[5px]" />
-          <div className="text-[40px] font-black text-[#1d9e75] tracking-tighter leading-none">SoSo</div>
-        </div>
-        
-        <nav className="hidden md:flex justify-center gap-1 border border-gray-100 rounded-lg p-1 bg-gray-50 w-fit mx-auto">
-          <a href="/" className="px-4 py-1.5 text-sm font-semibold bg-white text-gray-900 rounded shadow-sm border border-gray-200">홈</a>
-          <Link to="#" className="px-4 py-1.5 text-sm font-medium text-gray-500 hover:text-emerald-600 transition-colors whitespace-nowrap">발주 관리</Link>
-          <div
-            className="relative"
-            onMouseEnter={() => setIsSettlementMenuOpen(true)}
-            onMouseLeave={() => setIsSettlementMenuOpen(false)}
-          >
-            <div className="cursor-pointer whitespace-nowrap px-4 py-1.5 text-sm font-medium text-gray-500 transition-colors hover:text-emerald-600">
-              수금 관리
-            </div>
-            <div className={`absolute left-0 top-full z-[60] w-40 pt-2 transition-all duration-200 ${
-              isSettlementMenuOpen
-                ? 'visible translate-y-0 opacity-100'
-                : 'invisible -translate-y-2 opacity-0'
-            }`}>
-              <div className="rounded-xl border border-gray-100 bg-white p-2 shadow-xl">
-                {['이체 관리', '비용 카테고리', '지출 요약'].map((sub) => (
-                  <button
-                    key={sub}
-                    type="button"
-                    onClick={() => {
-                      if (sub === '이체 관리') navigate('/transfer-management');
-                      else if (sub === '비용 카테고리') navigate('/expense-category');
-                      else if (sub === '지출 요약') navigate('/settlement');
-                    }}
-                    className="w-full rounded-lg px-3 py-2 text-left text-[11px] font-bold text-gray-600 transition-all hover:bg-emerald-50 hover:text-emerald-600"
-                  >
-                    {sub}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-          {['공동 발주', '업체 홍보', '통계'].map(m => (
-            <a key={m} href="#" className="px-4 py-1.5 text-sm font-medium text-gray-500 hover:text-emerald-600 transition-colors whitespace-nowrap">{m}</a>
-          ))}
-        </nav>
-          
-
-       
-        <div className="flex items-center justify-end gap-4">
-          <button className="text-gray-400 hover:text-emerald-600 relative">
-            <span className="text-xl">🔔</span>
-            <span className="absolute -top-1 -right-1 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"></span>
-          </button>
-          
-          <div className="relative">
-            <div 
-              onClick={() => setIsProfileOpen(!isProfileOpen)}
-              className="flex items-center gap-2 border border-gray-200 rounded-full py-1.5 px-3 bg-white hover:bg-emerald-50 cursor-pointer transition-colors"
-            >
-              <div className="w-6 h-6 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-[10px] font-bold">
-                {user_nickname ? user_nickname.substring(0, 1) : 'G'}
-              </div>
-              <span className="text-sm font-semibold whitespace-nowrap text-gray-700">
-                {user_nickname || '회원님'}
-                <span className="text-xs text-gray-400 font-normal ml-1">
-                  {bizname || '상호명 미등록'}
-                </span>
-              </span>
-            </div>
-
-            {isProfileOpen && (
-              <div className="absolute right-0 mt-2 w-64 bg-white border border-gray-100 rounded-2xl shadow-2xl p-2 z-[60] animate-fade-in-up">
-                <div className="p-3 border-b border-gray-50 flex justify-between items-center">
-                  <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">나의 매장 목록</span>
-                  {isStoresLoading && <span className="text-[10px] text-emerald-500 animate-pulse">로딩 중...</span>}
-                </div>
-                
-                <div className="py-2 max-h-60 overflow-y-auto custom-scrollbar">
-                  {stores.length > 0 ? (
-                    stores.map((store) => (
-                      <button 
-                        key={store.storeSeq}
-                        onClick={() => handleStoreSwitch(store.storeSeq, store.companyName)}
-                        className={`w-full text-left px-4 py-3 rounded-xl mb-1 flex justify-between items-center transition-all ${
-                          // 현재 선택된 매장인지 확인하여 스타일 차별화
-                          (selectedStoreSeq == store.storeSeq || (!selectedStoreSeq && stores[0].storeSeq === store.storeSeq))
-                            ? 'bg-emerald-50 text-emerald-600 font-bold border border-emerald-100' 
-                            : 'text-gray-600 hover:bg-gray-50 font-medium'
-                        }`}
-                      >
-                        <div className="flex flex-col">
-                          <span className="text-sm">{store.companyName}</span>
-                          <span className="text-[10px] text-gray-400 font-normal">{store.bizNumber.replace(/(\d{3})(\d{2})(\d{5})/, '$1-$2-$3')}</span>
-                        </div>
-                        {(selectedStoreSeq == store.storeSeq || (!selectedStoreSeq && stores[0].storeSeq === store.storeSeq)) && (
-                          <span className="text-[10px] bg-emerald-500 text-white px-1.5 py-0.5 rounded uppercase">Active</span>
-                        )}
-                      </button>
-                    ))
-                  ) : (
-                    <div className="px-4 py-6 text-center">
-                      <p className="text-xs text-gray-400">등록된 매장이 없습니다.</p>
-                    </div>
-                  )}
-                </div>
-
-                <div className="border-t border-gray-50 pt-2 mt-2">
-                  <button 
-                    onClick={() => { navigate("/business-multiprofile"); setIsProfileOpen(false); }}
-                    className="w-full text-center py-2 text-[11px] font-bold text-emerald-500 hover:bg-emerald-50 rounded-lg transition-all mb-1"
-                  >
-                    + 새 매장 추가하기
-                  </button>
-                  <button 
-                    onClick={handleProfileClick}
-                    className="w-full text-center py-3 text-sm font-black text-gray-700 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all"
-                  >
-                    마이페이지
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-
-          <button onClick={handleLogOut} className="text-xs text-gray-400 hover:underline">/로그아웃</button>
-        </div>
-      </header>
-
+    <div className="bg-gray-50 text-gray-800 font-sans">
       <main className="max-w-7xl mx-auto px-8 py-8">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           {[
@@ -313,7 +184,7 @@ function BusinessMain({ setRole }) {
               {groupOrders.map(o => (
                 <div key={o.id} className="border border-gray-100 rounded-2xl p-5 hover:border-emerald-200 hover:shadow-md transition-all">
                   <div className="flex justify-between mb-4"><h4 className="text-sm font-bold text-gray-900">{o.title}</h4><span className={`text-[10px] font-black px-2 py-0.5 rounded-full border ${o.status === '모집 중' ? 'text-emerald-600 border-emerald-100 bg-emerald-50' : 'text-red-500 border-red-100 bg-red-50'}`}>{o.status}</span></div>
-                  <div className="w-full bg-gray-50 h-1.5 rounded-full mb-3"><div className={`${o.color} h-full rounded-full`} style={{ width: `${o.progress}%` }}></div></div>
+                  <div className="w-full bg-gray-100 h-1.5 rounded-full mb-3"><div className={`${o.color} h-full rounded-full`} style={{ width: `${o.progress}%` }}></div></div>
                   <div className="flex justify-between items-center mb-6 text-[10px] text-gray-400 font-bold uppercase tracking-tight"><span>참여 {o.current} / {o.min}개</span><span>{o.progress}% · {o.dDay}</span></div>
                   <button className="w-full py-2.5 bg-emerald-50 text-emerald-600 rounded-xl text-xs font-black hover:bg-emerald-500 hover:text-white transition-all shadow-sm shadow-emerald-100/50">{o.btn}</button>
                 </div>
@@ -322,9 +193,8 @@ function BusinessMain({ setRole }) {
           </div>
         </div>
       </main>
-      <MainFooter />
     </div>
   );
-}
+};
 
 export default BusinessMain;

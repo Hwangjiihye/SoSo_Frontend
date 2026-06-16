@@ -18,8 +18,6 @@ import {
   Filler,
 } from 'chart.js';
 import { Bar, Line } from 'react-chartjs-2';
-import logo from '../../assets/soso로고.png';
-import MainFooter from '../../components/layout/MainFooter';
 import authStore from '../../store/authStore';
 
 // Chart.js 컴포넌트 등록
@@ -37,25 +35,7 @@ ChartJS.register(
 
 function PartnerMain({ setRole }) {
   // authStore 훅을 한 번만 호출하여 필요한 상태를 구조분해 할당으로 가져옵니다.
-  const { logout, user_type, member } = authStore();
   const navigate = useNavigate();
-
-  // 프로필 드롭다운 상태
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
-
-  const handleLogOut = () => {
-    logout();
-    alert("로그아웃 되었습니다.");
-    navigate("/");
-  };
-
-  const handleProfileClick = () => {
-    if (user_type === 'BUSINESS') {
-      navigate('/business-mypage');
-    } else {
-      alert("사업자 전용 마이페이지입니다. (현재 권한: " + user_type + ")");
-    }
-  };
 
   // --- 차트 데이터 (기존과 동일) ---
   const trendChartData = {
@@ -109,69 +89,6 @@ function PartnerMain({ setRole }) {
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-800 font-sans flex flex-col">
-      <header className="grid grid-cols-3 items-center py-5 px-6 md:px-12 border-b border-gray-200 bg-white sticky top-0 z-50">
-        <div className="flex items-center gap-1">
-          <img src={logo} alt="SoSo Logo" className="w-12 h-12 object-contain relative top-[5px]" />
-          <div className="text-[40px] font-black text-[#1d9e75] tracking-tighter leading-none">SoSo</div>
-        </div>
-        <nav className="hidden md:flex justify-center gap-1 border border-gray-100 rounded-lg p-1 bg-gray-50 w-fit mx-auto">
-          <a href="#" className="px-4 py-1.5 text-sm font-semibold bg-white text-gray-900 rounded shadow-sm border border-gray-200">홈</a>
-          {['발주 관리', '수금 관리', '공동 발주', '업체 홍보', '통계'].map(m => (
-            <a key={m} href={m === '수금 관리' ? '/collection-management' : '#'} className="px-4 py-1.5 text-sm font-medium text-gray-500 hover:text-emerald-600 transition-colors whitespace-nowrap">{m}</a>
-          ))}
-        </nav>
-        <div className="flex items-center justify-end gap-4">
-          <button className="text-gray-400 hover:text-emerald-600 relative">
-            <span className="text-xl">🔔</span>
-            <span className="absolute -top-1 -right-1 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"></span>
-          </button>
-          
-          <div className="relative">
-            <div 
-              onClick={() => setIsProfileOpen(!isProfileOpen)} 
-              className="flex items-center gap-2 border border-gray-200 rounded-full py-1.5 px-3 bg-white hover:bg-emerald-50 cursor-pointer transition-colors"
-            >
-              <div className="w-6 h-6 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-[10px] font-bold">
-                {member?.nickname ? member.nickname.substring(0, 1) : 'G'}
-              </div>
-              <span className="text-sm font-semibold whitespace-nowrap text-gray-700">
-                {member?.nickname || '회원님'} 
-                <span className="text-xs text-gray-400 font-normal ml-1">
-                  {member?.company_name || '거래처 관리자'}
-                </span>
-              </span>
-            </div>
-
-            {isProfileOpen && (
-              <div className="absolute right-0 mt-2 w-56 bg-white border border-gray-100 rounded-2xl shadow-2xl p-2 z-[60] animate-fade-in-up">
-                <div className="p-3 border-b border-gray-50">
-                  <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">관리 업체</span>
-                </div>
-                <div className="py-2">
-                  <button className="w-full text-left px-4 py-3 text-sm font-bold text-emerald-600 bg-emerald-50 rounded-xl mb-1 flex justify-between items-center">
-                    {member?.company_name || '한빛 식품 유통'}
-                    <span className="text-[10px] bg-emerald-500 text-white px-1.5 py-0.5 rounded uppercase">Main</span>
-                  </button>
-                  <button className="w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-xl transition-colors">
-                    대성 식자재 (더미)
-                  </button>
-                </div>
-                <div className="border-t border-gray-50 pt-2 mt-2">
-                  <button 
-                    onClick={handleProfileClick}
-                    className="w-full text-center py-3 text-sm font-black text-gray-700 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all"
-                  >
-                    마이페이지
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-
-          <button onClick={handleLogOut} className="text-xs text-gray-400 hover:underline">/로그아웃</button>
-        </div>
-      </header>
-
       <main className="flex-grow max-w-7xl mx-auto px-8 py-8 space-y-8 w-full">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {[
@@ -324,8 +241,6 @@ function PartnerMain({ setRole }) {
            </div>
         </div>
       </main>
-
-      <MainFooter />
     </div>
   );
 }

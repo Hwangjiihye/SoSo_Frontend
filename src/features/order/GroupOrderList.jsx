@@ -1,8 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import logo from '../../assets/soso로고.png';
-import MainFooter from '../../components/layout/MainFooter';
-import authStore from '../../store/authStore';
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useGroupOrder } from './hooks/useGroupOrderList';
 
 /**
@@ -12,16 +9,7 @@ import { useGroupOrder } from './hooks/useGroupOrderList';
  */
 function GroupOrderList() {
   const { groupOrders, filterStatus, handleFilterChange } = useGroupOrder();
-  const logout = authStore((state) => state.logout);
   const navigate = useNavigate();
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const [isOrderDropdownOpen, setIsOrderDropdownOpen] = useState(false);
-
-  const handleLogOut = () => {
-    logout();
-    alert("로그아웃 되었습니다.");
-    navigate("/");
-  };
 
   // 상태별 컬러 매핑
   const statusColors = {
@@ -33,70 +21,6 @@ function GroupOrderList() {
 
   return (
     <div className="min-h-screen bg-[#F8F9FA] text-gray-800 font-sans">
-      {/* Header */}
-      <header className="grid grid-cols-3 items-center py-4 px-6 md:px-12 border-b border-gray-200 bg-white sticky top-0 z-50 shadow-sm">
-        <div className="flex items-center gap-1 cursor-pointer" onClick={() => navigate('/')}>
-          <img src={logo} alt="SoSo Logo" className="w-10 h-10 object-contain" />
-          <div className="text-[32px] font-black text-[#1d9e75] tracking-tighter leading-none">SoSo</div>
-        </div>
-        <nav className="hidden md:flex justify-center gap-1 border border-gray-100 rounded-xl p-1 bg-gray-50 w-fit mx-auto relative">
-          <Link to="/" className="px-5 py-2 text-sm font-medium text-gray-500 hover:text-emerald-600 transition-colors whitespace-nowrap">홈</Link>
-          
-          {/* 발주 관리 드롭다운 메뉴 */}
-          <div 
-            className="relative"
-            onMouseEnter={() => setIsOrderDropdownOpen(true)}
-            onMouseLeave={() => setIsOrderDropdownOpen(false)}
-          >
-            <div className={`px-5 py-2 text-sm font-bold rounded-lg shadow-sm border cursor-pointer transition-all whitespace-nowrap ${isOrderDropdownOpen ? 'bg-white text-emerald-600 border-gray-100' : 'bg-white text-emerald-600 border-gray-100'}`}>
-              발주 관리
-            </div>
-            
-            {/* 드롭다운 컨테이너 (투명 브릿지 포함) */}
-            <div className={`absolute top-full left-0 w-48 pt-2 z-[60] transition-all duration-200 ${isOrderDropdownOpen ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-2'}`}>
-              <div className="bg-white border border-gray-100 rounded-2xl shadow-xl p-2">
-                <Link to="/orders" className="block w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl transition-colors">
-                  일반 발주 현황
-                </Link>
-                <Link to="/group-orders" className="block w-full text-left px-4 py-3 text-sm font-bold text-emerald-600 bg-emerald-50 rounded-xl transition-colors">
-                  공동 발주 현황
-                </Link>
-                <Link to="/orders/new" className="block w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl transition-colors">
-                  발주 신청
-                </Link>
-              </div>
-            </div>
-          </div>
-
-          {['수금 관리', '업체 홍보', '통계'].map(m => (
-            <span key={m} className="px-5 py-2 text-sm font-medium text-gray-500 hover:text-emerald-600 transition-colors whitespace-nowrap cursor-pointer">{m}</span>
-          ))}
-        </nav>
-        <div className="flex items-center justify-end gap-5">
-          <div className="flex items-center gap-3">
-            <button className="text-gray-400 hover:text-emerald-600 relative">
-              <span className="text-xl">🔔</span>
-              <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
-            </button>
-          </div>
-          <div className="relative">
-            <div 
-              onClick={() => setIsProfileOpen(!isProfileOpen)} 
-              className="flex items-center gap-2 border border-gray-200 rounded-full py-1.5 px-3 bg-white hover:border-emerald-200 cursor-pointer transition-all"
-            >
-              <div className="w-7 h-7 bg-emerald-500 text-white rounded-full flex items-center justify-center text-xs font-bold">김</div>
-              <span className="text-sm font-bold text-gray-700">김민준</span>
-            </div>
-            {isProfileOpen && (
-              <div className="absolute right-0 mt-3 w-48 bg-white border border-gray-100 rounded-2xl shadow-xl p-2 z-[60]">
-                <button className="w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl transition-colors">마이페이지</button>
-                <button onClick={handleLogOut} className="w-full text-left px-4 py-3 text-sm font-medium text-red-500 hover:bg-red-50 rounded-xl transition-colors">로그아웃</button>
-              </div>
-            )}
-          </div>
-        </div>
-      </header>
-
       <main className="max-w-7xl mx-auto px-6 py-10">
         <div className="flex justify-between items-start mb-10">
           <div>
@@ -161,7 +85,7 @@ function GroupOrderList() {
           </div>
         </div>
 
-        {/* 공동 발주 상세 목록 테이블 - 레이아웃 및 간격 최적화 */}
+        {/* 공동 발주 상세 목록 테이블 */}
         <div className="bg-white rounded-[32px] border border-gray-100 shadow-xl shadow-gray-200/50 overflow-x-auto">
           <table className="w-full text-left border-collapse min-w-[1000px]">
             <thead>
@@ -244,7 +168,6 @@ function GroupOrderList() {
           </div>
         </div>
       </main>
-      <MainFooter />
     </div>
   );
 }

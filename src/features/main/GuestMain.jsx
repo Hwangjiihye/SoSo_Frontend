@@ -14,7 +14,6 @@ import {
 } from 'chart.js';
 import { Bar, Line } from 'react-chartjs-2';
 import logo from '../../assets/soso로고.png';
-import MainFooter from '../../components/layout/MainFooter';
 
 // Chart.js 컴포넌트 등록
 ChartJS.register(
@@ -64,39 +63,6 @@ function GuestMain({ setRole }) {
 
   return (
     <div className="min-h-screen bg-white text-gray-800 font-sans flex flex-col">
-      {/* grid 대신 flex와 justify-between을 사용해서 양 끝으로 배치 */}
-      <header className="flex justify-between items-center py-5 px-6 md:px-12 border-b border-gray-200 bg-white sticky top-0 z-50">
-
-        {/* Left: Logo (왼쪽 끝에 고정) */}
-        <div className="flex items-center gap-1">
-          <img
-            src={logo}
-            alt="SoSo Logo"
-            className="w-12 h-12 object-contain relative top-[5px]"
-          />
-          <div className="text-[40px] font-black text-[#1d9e75] tracking-tighter leading-none">
-            SoSo
-          </div>
-        </div>
-
-        {/* Right: Auth Actions (오른쪽 끝에 고정) */}
-        <div className="flex items-center justify-end gap-3">
-          <button
-            onClick={() => navigate('/login')}
-            className="text-sm font-bold text-gray-500 hover:text-emerald-600 transition-colors cursor-pointer"
-          >
-            로그인
-          </button>
-          <button
-            onClick={() => navigate('/signup')}
-            className="px-6 py-2.5 text-sm font-bold text-white bg-emerald-600 rounded-full hover:bg-emerald-700 transition-all shadow-md active:scale-95 transition-colors cursor-pointer"
-          >
-            회원가입
-          </button>
-        </div>
-
-      </header>
-
       {/* Hero Section */}
       <section className="relative pt-20 pb-10 overflow-hidden bg-gradient-to-b from-emerald-50/50 to-white text-center">
         <div className="max-w-6xl mx-auto px-6">
@@ -311,8 +277,6 @@ function GuestMain({ setRole }) {
           <div className="absolute bottom-20 right-20 w-80 h-80 border-[12px] border-white rounded-full"></div>
         </div>
       </section>
-
-      <MainFooter />
     </div>
   );
 }

@@ -4,8 +4,12 @@
  * '마이페이지 사업자.png' 디자인을 기반으로, 사이드바와 콘텐츠 영역을 구현합니다.
  */
 import React, { useState } from 'react';
+<<<<<<< HEAD
 import { useNavigate, Link } from 'react-router-dom';
 import MainFooter from '../../components/layout/MainFooter';
+=======
+import { useNavigate } from 'react-router-dom';
+>>>>>>> master
 import logo from "../../assets/soso로고.png";
 import authStore from "../../store/authStore";
 import { useBusinessInfo } from './hooks/useBusinessInfo';
@@ -165,6 +169,7 @@ function BusinessMyPage() {
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] flex flex-col font-sans">
+<<<<<<< HEAD
       <header className="grid grid-cols-3 items-center py-5 px-6 md:px-12 border-b border-gray-200 bg-white sticky top-0 z-50">
         <div className="flex items-center gap-1 cursor-pointer" onClick={() => navigate("/")}>
           <img src={logo} alt="SoSo Logo" className="w-12 h-12 object-contain relative top-[5px]" />
@@ -256,6 +261,8 @@ function BusinessMyPage() {
           <button onClick={handleLogout} className="text-xs text-gray-400 hover:underline">/로그아웃</button>
         </div>
       </header>
+=======
+>>>>>>> master
       <main className="flex-grow w-full max-w-6xl mx-auto px-4 py-10 flex gap-8">
         {/* 사이드바 */}
         <aside className="w-64 shrink-0 flex flex-col gap-6">
@@ -304,7 +311,6 @@ function BusinessMyPage() {
           )}
         </section>
       </main>
-      <MainFooter />
     </div>
   );
 }

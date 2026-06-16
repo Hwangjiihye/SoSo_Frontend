@@ -41,3 +41,35 @@ export const webSocketMe = async () => {
     const resp = await maxios.get('/order/me');
     return resp.data;
 }
+
+/**
+ * [거래처 전용] 본인에게 들어온 발주 목록 조회 (검색 및 필터 포함)
+ */
+export const fetchPartnerOrders = async (sellerSeq, keyword = '', status = '') => {
+    const resp = await maxios.get('/api/partner/orders', {
+        params: { 
+            sellerSeq,
+            keyword,
+            status
+        }
+    });
+    return resp.data;
+}
+
+/**
+ * [거래처 전용] 특정 발주의 상세 품목 리스트 조회
+ */
+export const fetchPartnerOrderDetail = async (orderSeq) => {
+    const resp = await maxios.get(`/api/partner/orders/${orderSeq}`);
+    return resp.data;
+}
+
+/**
+ * [거래처 전용] 발주 상태 업데이트 (실시간 웹소켓 알림 포함)
+ */
+export const updatePartnerOrderStatus = async (orderSeq, status) => {
+    const resp = await maxios.put(`/api/partner/orders/${orderSeq}/status`, status, {
+        headers: { 'Content-Type': 'text/plain' }
+    });
+    return resp.data;
+}
