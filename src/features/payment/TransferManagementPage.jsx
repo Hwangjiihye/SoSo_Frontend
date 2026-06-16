@@ -5,7 +5,7 @@ import MainFooter from '../../components/layout/MainFooter';
 import authStore from '../../store/authStore';
 import { useStores } from '../../hooks/useStores';
 import { useTransfer } from './hooks/useTransfer';
-import { insertAccount, accountList, accountDel, getPaymentCards } from '../../apis/account';
+import { insertAccount, accountList, accountDel, getPaymentCards, registerPaymentCard } from '../../apis/account';
 import * as PortOne from "@portone/browser-sdk/v2";
 
 /**
@@ -15,7 +15,7 @@ import * as PortOne from "@portone/browser-sdk/v2";
  */
 const TransferManagementPage = () => {
   const navigate = useNavigate();
-  const { logout, user_nickname, bizname, selectedStoreSeq, setSelectedStore } = authStore();
+  const { logout, user_nickname, bizname, selectedStoreSeq, setSelectedStore, userSeq } = authStore();
   const { stores, isLoading: isStoresLoading } = useStores();
   const { transferData, isLoading, formatCurrency } = useTransfer();
 
@@ -35,6 +35,13 @@ const TransferManagementPage = () => {
     bankName: '', 
     accountNumber: '', 
     accountName: ''
+  });
+  const [isCardRegisterModalOpen, setIsCardRegisterModalOpen] = useState(false);
+
+  const [newCard, setNewCard] = useState({
+    cardCompany: "",
+    cardLast4: "",
+    cardName: "",
   });
 
   // 계좌번호 정규식
@@ -141,11 +148,12 @@ const TransferManagementPage = () => {
 
 ////////////
 const [cards, setCards] = useState([]);
+const [activeCardIndex, setActiveCardIndex] = useState(0);
 
 const fetchCards = async (storeSeq) => {
   try {
     const cardList = await getPaymentCards(storeSeq);
-    setCards(cardList);
+    setCards(cardList ?? []);
     setActiveCardIndex(0);
   } catch (error) {
     console.error("카드 목록 조회 실패:", error);
@@ -167,8 +175,24 @@ const handleRegisterCard = async () => {
       return;
     }
 
-    const billingKeyRequestId = `billing-${currentStoreSeq}-${Date.now()}`;
-    const customerId = `customer-${currentStoreSeq}`;
+    if (!newCard.cardCompany) {
+      alert("카드사를 선택해 주세요.");
+      return;
+    }
+
+    if (!newCard.cardName.trim()) {
+      alert("카드 별칭을 입력해 주세요.");
+      return;
+    }
+
+    if (!/^\d{4}$/.test(newCard.cardLast4)) {
+      alert("카드 끝 4자리는 숫자 4자리로 입력해 주세요.");
+      return;
+    }
+
+    const now = Date.now();
+    const billingKeyRequestId = `billing-${currentStoreSeq}-${now}`;
+    const customerId = `customer-${currentStoreSeq}-${now}`;
 
     const response = await PortOne.requestIssueBillingKey({
       storeId: STORE_ID,
@@ -193,23 +217,34 @@ const handleRegisterCard = async () => {
     }
 
     if (response.code) {
+      console.error("포트원 빌링키 발급 실패:", response);
       alert(`카드 등록 실패: ${response.message}`);
       return;
     }
 
     console.log("빌링키 발급 성공:", response);
-    alert("카드 등록 성공");
-    fetchCards(currentStoreSeq);
 
     await registerPaymentCard({
-      storeSeq: currentStoreSeq,
+      userSeq: Number(userSeq),
+      storeSeq: Number(currentStoreSeq),
       billingKey: response.billingKey,
-      billingKeyRequestId,
-      cardCompany: "KG이니시스 테스트카드",
-      cardNumberMasked: "**** **** **** 0000",
+      cardCompany: newCard.cardCompany,
+      cardNumberMasked: `**** **** **** ${newCard.cardLast4}`,
       cardType: "CARD",
-      cardName: "자동결제 카드",
+      cardName: newCard.cardName.trim(),
     });
+
+    alert("카드 등록 성공");
+
+    setIsCardRegisterModalOpen(false);
+
+    setNewCard({
+      cardCompany: "",
+      cardLast4: "",
+      cardName: "",
+    });
+
+    await fetchCards(currentStoreSeq);
 
   } catch (error) {
     console.error("카드 등록 오류:", error);
@@ -406,8 +441,12 @@ const handleRegisterCard = async () => {
             >
               자동이체 설정
             </button>
-            <button onClick={handleRegisterCard}>
-              카드 등록 테스트
+            <button
+              type="button"
+              onClick={() => setIsCardRegisterModalOpen(true)}
+              className="rounded-2xl border border-emerald-200 bg-white px-6 py-3 text-sm font-black text-emerald-600 shadow-sm transition-all hover:bg-emerald-50"
+            >
+              카드 등록
             </button>
           </div>
         </div>
@@ -461,6 +500,47 @@ const handleRegisterCard = async () => {
           </div>
         </div>
       </div>
+      {/* 보유 카드 여러개 출력 */}
+      {cards.length > 1 && (
+      <div className="mt-8 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
+        {cards.map((card, index) => {
+          const isActive = index === activeCardIndex;
+
+          return (
+            <button
+              key={card.cardSeq}
+              type="button"
+              onClick={() => setActiveCardIndex(index)}
+              className={`rounded-2xl border p-4 text-left transition-all ${
+                isActive
+                  ? "border-emerald-500 bg-emerald-50"
+                  : "border-gray-200 bg-white hover:border-emerald-200 hover:bg-emerald-50/30"
+              }`}
+            >
+              <div className="flex items-center justify-between gap-2">
+                <strong className="text-sm font-black text-gray-900">
+                  {card.cardCompany || "등록 카드"}
+                </strong>
+
+                {isActive && (
+                  <span className="rounded-lg bg-emerald-100 px-2 py-1 text-[10px] font-black text-emerald-700">
+                    선택됨
+                  </span>
+                )}
+              </div>
+
+              <p className="mt-2 text-xs font-bold text-gray-400">
+                {card.cardNumberMasked || "**** **** **** ****"}
+              </p>
+
+              <p className="mt-1 text-xs font-semibold text-gray-400">
+                {card.cardName || "자동결제 카드"}
+              </p>
+            </button>
+          );
+        })}
+      </div>
+    )}
     </section>
             // <section className="rounded-[28px] border border-gray-100 bg-white p-8 text-gray-900 shadow-sm">
             //   <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
@@ -873,7 +953,117 @@ const handleRegisterCard = async () => {
           </div>
         </div>
       )}
+      {isCardRegisterModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <button
+            type="button"
+            aria-label="카드 등록 닫기"
+            onClick={() => setIsCardRegisterModalOpen(false)}
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+          />
 
+          <div className="relative w-full max-w-lg rounded-3xl bg-white p-8 shadow-2xl animate-fade-in-up">
+            <div className="mb-7 flex items-start justify-between gap-4">
+              <div>
+                <h3 className="text-xl font-black text-gray-900">자동결제 카드 등록</h3>
+                <p className="mt-1 text-xs font-medium text-gray-400">
+                  화면에 표시할 카드 정보를 입력한 뒤 포트원 카드 등록을 진행하세요.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsCardRegisterModalOpen(false)}
+                className="text-2xl text-gray-400 transition-colors hover:text-gray-600"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="space-y-5">
+              <div>
+                <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-widest text-gray-400">
+                  카드사
+                </label>
+                <select
+                  value={newCard.cardCompany}
+                  onChange={(e) => setNewCard({ ...newCard, cardCompany: e.target.value })}
+                  className="w-full rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-sm font-bold text-gray-700 outline-none transition-all focus:ring-2 focus:ring-emerald-500/20"
+                >
+                  <option value="">카드사를 선택해 주세요</option>
+                  <option value="신한카드">신한카드</option>
+                  <option value="국민카드">국민카드</option>
+                  <option value="삼성카드">삼성카드</option>
+                  <option value="현대카드">현대카드</option>
+                  <option value="롯데카드">롯데카드</option>
+                  <option value="BC카드">BC카드</option>
+                  <option value="하나카드">하나카드</option>
+                  <option value="우리카드">우리카드</option>
+                  <option value="KG이니시스 테스트카드">KG이니시스 테스트카드</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-widest text-gray-400">
+                  카드 별칭
+                </label>
+                <input
+                  type="text"
+                  value={newCard.cardName}
+                  onChange={(e) => setNewCard({ ...newCard, cardName: e.target.value })}
+                  placeholder="예: 대표 사업자카드, 국민 개인카드"
+                  className="w-full rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-sm font-bold text-gray-700 outline-none transition-all placeholder:font-medium placeholder:text-gray-300 focus:ring-2 focus:ring-emerald-500/20"
+                />
+              </div>
+
+              <div>
+                <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-widest text-gray-400">
+                  카드 끝 4자리
+                </label>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={4}
+                  value={newCard.cardLast4}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/\D/g, "");
+                    setNewCard({ ...newCard, cardLast4: value });
+                  }}
+                  placeholder="예: 1234"
+                  className="w-full rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-sm font-bold text-gray-700 outline-none transition-all placeholder:font-medium placeholder:text-gray-300 focus:ring-2 focus:ring-emerald-500/20"
+                />
+                <p className="mt-2 text-xs font-medium text-gray-400">
+                  실제 카드번호 전체는 저장하지 않고 화면 표시용 끝 4자리만 저장합니다.
+                </p>
+              </div>
+
+              <div className="rounded-2xl border border-emerald-100 bg-emerald-50/50 p-5">
+                <p className="text-xs font-bold leading-6 text-emerald-700">
+                  실제 자동결제는 포트원에서 발급받은 빌링키로 처리됩니다.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-8 flex gap-3">
+              <button
+                type="button"
+                onClick={() => setIsCardRegisterModalOpen(false)}
+                className="flex-1 rounded-2xl bg-gray-100 py-4 text-sm font-black text-gray-600 transition-colors hover:bg-gray-200"
+              >
+                취소
+              </button>
+
+              <button
+                type="button"
+                onClick={handleRegisterCard}
+                className="flex-1 rounded-2xl bg-emerald-600 py-4 text-sm font-black text-white shadow-lg shadow-emerald-200 transition-colors hover:bg-emerald-700"
+              >
+                포트원 카드 등록
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {isAutoTransferModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
           <button
