@@ -87,7 +87,7 @@ export const getStockHistoryDashboard = async () => {
 
 // 전체 이력 팝업 모달용 API (페이징)
 // GET /api/stock-history/modal?page={page}&size={size}
-export const getStockHistoryModal = async (page = 0, size = 10) => {
+export const getStockHistoryModal = async (page, size) => {
   const response = await axiosInstance.get('/api/stock-history/modal', {
     params: { page, size }
   });

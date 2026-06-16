@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { getStockHistoryDashboard, getStockHistoryModal } from '../../../apis/stockApi';
 
 /**
@@ -10,12 +10,12 @@ export const useStockHistory = () => {
   const [dashboardHistory, setDashboardHistory] = useState([]);
   const [isDashboardLoading, setIsDashboardLoading] = useState(false);
 
-  // 모달 (페이징 데이터)
+  // 모달 (페이징 데이터) - 백엔드에서 주는 Key 이름에 정확히 맞춤!
   const [modalHistoryData, setModalHistoryData] = useState({
-    content: [],
+    historyList: [],   // 기존 content -> historyList 로 변경
     totalPages: 0,
-    totalElements: 0,
-    number: 0, // current page
+    totalCount: 0,     // 기존 totalElements -> totalCount 로 변경
+    currentPage: 1,    // 🚨 0이 아니라 1로 변경! (이게 0 에러의 핵심 원인)
   });
   const [isModalLoading, setIsModalLoading] = useState(false);
 
@@ -33,12 +33,20 @@ export const useStockHistory = () => {
   }, []);
 
   // 2. 모달 페이징 데이터 페치
-  const fetchModalHistory = useCallback(async (page = 0, size = 10) => {
+  const fetchModalHistory = useCallback(async (page = 1, size = 10) => {
     setIsModalLoading(true);
+    const safePage = Math.max(1, page);
     try {
-      const data = await getStockHistoryModal(page, size);
-      // Spring Data JPA의 Page 객체 형태를 기준으로 상태 업데이트
-      setModalHistoryData(data || { content: [], totalPages: 0, totalElements: 0, number: 0 });
+      const data = await getStockHistoryModal(safePage, size);
+      console.log(data)
+      
+      // 백엔드 응답(data)이 없으면 안전하게 초기값(1페이지) 세팅
+      setModalHistoryData(data || { 
+        historyList: [], 
+        totalPages: 0, 
+        totalCount: 0, 
+        currentPage: 1 
+      });
     } catch (error) {
       console.error('모달 이력을 불러오는데 실패했습니다.', error);
     } finally {
