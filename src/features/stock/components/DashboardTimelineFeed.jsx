@@ -7,12 +7,16 @@ import React from 'react';
 const DashboardTimelineFeed = ({ history, isLoading, onOpenModal }) => {
   // 아이콘 및 스타일 결정 로직
   const getTimelineStyle = (reason, transactionType) => {
-    if (reason && reason.includes('안전재고 미달')) {
-      return { icon: '❓', color: 'bg-amber-50 text-amber-600 border-amber-200', dot: 'bg-amber-500' };
+    if (transactionType === 'ALERT') {
+      if (reason && (reason.includes('미달') || reason.includes('부족'))) {
+        return { icon: '?', color: 'bg-orange-50 text-orange-600 border-orange-200', dot: 'bg-orange-500' };
+      }
+      if (reason && (reason.includes('임박') || reason.includes('만료'))) {
+        return { icon: '!', color: 'bg-rose-50 text-rose-600 border-rose-200', dot: 'bg-rose-500' };
+      }
+      return { icon: '?', color: 'bg-purple-50 text-purple-600 border-purple-200', dot: 'bg-purple-500' };
     }
-    if (reason && reason.includes('유통기한 만료')) {
-      return { icon: '❗', color: 'bg-rose-50 text-rose-600 border-rose-200', dot: 'bg-rose-500' };
-    }
+    
     if (transactionType === 'INCOMING') {
       return { icon: 'i', color: 'bg-blue-50 text-blue-600 border-blue-200', dot: 'bg-blue-500' };
     }
@@ -29,6 +33,7 @@ const DashboardTimelineFeed = ({ history, isLoading, onOpenModal }) => {
             {history.map((item, index) => {
               const style = getTimelineStyle(item.reason, item.transactionType);
               const isLast = index === history.length - 1;
+              const isAlert = item.transactionType === 'ALERT';
 
               return (
                 <div key={item.historySeq} className="relative flex gap-6">
@@ -48,11 +53,15 @@ const DashboardTimelineFeed = ({ history, isLoading, onOpenModal }) => {
                       <div className="flex items-center gap-2">
                         <span className={`w-2 h-2 rounded-full ${style.dot}`}></span>
                         <h4 className={`text-[16px] font-black ${
-                          style.dot === 'bg-rose-500' || style.dot === 'bg-amber-500' ? 'text-gray-900' : 'text-gray-700'
+                          style.dot === 'bg-rose-500' || style.dot === 'bg-orange-500' ? 'text-gray-900' : 'text-gray-700'
                         }`}>
-                          {item.detailStockName || '이름 없음'}
-                          {item.transactionType === 'INCOMING' ? ' 입고' : 
-                           item.transactionType === 'OUTBOUND' ? ' 출고' : ' 조정'}
+                          {isAlert ? item.reason : (
+                            <>
+                              {item.detailStockName || '이름 없음'}
+                              {item.transactionType === 'INCOMING' ? ' 입고' : 
+                               item.transactionType === 'OUTBOUND' ? ' 출고' : ' 조정'}
+                            </>
+                          )}
                         </h4>
                       </div>
                       <span className="text-[12px] font-bold text-gray-400 bg-gray-50 px-2 py-1 rounded-md">
@@ -60,10 +69,16 @@ const DashboardTimelineFeed = ({ history, isLoading, onOpenModal }) => {
                       </span>
                     </div>
                     <p className="text-[14px] font-medium text-gray-500 mb-2 leading-relaxed">
-                      {item.reason || '사유 없음'}
-                      <span className="ml-2 font-black text-gray-900">
-                        {item.transactionType === 'INCOMING' ? `+${item.changeQuantity}` : item.changeQuantity}개
-                      </span>
+                      {isAlert ? (
+                        <span className="text-gray-900 font-bold">{item.detailStockName}</span>
+                      ) : (
+                        <>
+                          {item.reason || '사유 없음'}
+                          <span className="ml-2 font-black text-gray-900">
+                            {item.transactionType === 'INCOMING' ? `+${item.changeQuantity}` : item.changeQuantity}개
+                          </span>
+                        </>
+                      )}
                     </p>
                     {item.memo && (
                       <div className="bg-gray-50 rounded-xl p-3 border border-gray-100/50">

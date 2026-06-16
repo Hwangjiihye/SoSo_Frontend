@@ -81,10 +81,12 @@ const HistoryModal = ({ isOpen, onClose, data, isLoading, onPageChange }) => {
                           <span className={`px-2 sm:px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${
                             hist.transactionType === 'INCOMING' ? 'bg-blue-50 text-blue-600 border-blue-100' :
                             hist.transactionType === 'OUTBOUND' ? 'bg-rose-50 text-rose-600 border-rose-100' :
+                            hist.transactionType === 'ALERT' ? 'bg-purple-50 text-purple-600 border-purple-100' :
                             'bg-amber-50 text-amber-600 border-amber-100'
                           }`}>
                             {hist.transactionType === 'INCOMING' ? '입고' : 
-                             hist.transactionType === 'OUTBOUND' ? '출고' : '조정'}
+                             hist.transactionType === 'OUTBOUND' ? '출고' : 
+                             hist.transactionType === 'ALERT' ? '알림' : '조정'}
                           </span>
                         </td>
                         <td className="px-4 sm:px-6 py-4 text-[13px] sm:text-sm text-gray-900 text-center font-bold whitespace-nowrap">
@@ -92,10 +94,11 @@ const HistoryModal = ({ isOpen, onClose, data, isLoading, onPageChange }) => {
                         </td>
                         <td className={`px-4 sm:px-6 py-4 text-center font-black whitespace-nowrap ${
                           hist.transactionType === 'INCOMING' ? 'text-blue-600' : 
-                          hist.transactionType === 'OUTBOUND' ? 'text-rose-500' : 'text-amber-500'
+                          hist.transactionType === 'OUTBOUND' ? 'text-rose-500' : 
+                          hist.transactionType === 'ALERT' ? 'text-gray-300' : 'text-amber-500'
                         }`}>
                           <span className="text-[14px] sm:text-[16px]">
-                            {hist.transactionType === 'INCOMING' ? `+${hist.changeQuantity}` : hist.changeQuantity}
+                            {hist.transactionType === 'ALERT' ? '-' : (hist.transactionType === 'INCOMING' ? `+${hist.changeQuantity}` : hist.changeQuantity)}
                           </span>
                         </td>
                         <td className="px-4 sm:px-6 py-4 text-[14px] sm:text-[16px] font-black text-gray-900 text-center whitespace-nowrap">
