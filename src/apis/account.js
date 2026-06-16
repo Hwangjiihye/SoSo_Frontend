@@ -26,3 +26,40 @@ export const autoSchedule = async (storeSeq) => {
         params : {storeSeq}
     });
 };
+
+
+// 카드 저장
+// 포트원에서 발급받은 billingKey를 우리 DB에 저장
+export const registerPaymentCard = async (cardData) => {
+  const response = await axiosInstance.post("/api/payment/cards", cardData);
+  return response.data;
+};
+
+// 카드 목록 조회
+// 선택된 사업장(storeSeq)에 등록된 카드 목록 조회
+export const getPaymentCards = async (storeSeq) => {
+  const response = await axiosInstance.get("/api/payment/cards", {
+    params: { storeSeq },
+  });
+  return response.data;
+};
+
+// 카드 삭제
+// 백엔드에서는 실제 삭제보다 is_active = 'N' 처리 추천
+export const deletePaymentCard = async (cardSeq) => {
+  const response = await axiosInstance.delete(`/api/payment/cards/${cardSeq}`);
+  return response.data;
+};
+
+// 대표 카드 설정
+// 같은 사업장의 기존 대표카드는 해제하고 선택 카드만 대표로 설정
+export const setDefaultPaymentCard = async (storeSeq, cardSeq) => {
+  const response = await axiosInstance.patch(
+    `/api/payment/cards/${cardSeq}/default`,
+    null,
+    {
+      params: { storeSeq },
+    }
+  );
+  return response.data;
+};

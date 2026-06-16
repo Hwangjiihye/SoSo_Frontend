@@ -5,7 +5,7 @@ import MainFooter from '../../components/layout/MainFooter';
 import authStore from '../../store/authStore';
 import { useStores } from '../../hooks/useStores';
 import { useTransfer } from './hooks/useTransfer';
-import { insertAccount, accountList, accountDel } from '../../apis/account';
+import { insertAccount, accountList, accountDel, getPaymentCards } from '../../apis/account';
 import * as PortOne from "@portone/browser-sdk/v2";
 
 /**
@@ -102,10 +102,24 @@ const TransferManagementPage = () => {
   // 예금주명 정규식
   const accountNameRegex = /^[가-힣a-zA-Z0-9\s]{2,30}$/;
 
-  // 등록된 계좌 출력
+
+  // 등록된 카드 출력
   useEffect(() => {
-    fetchAccountList();
+    const currentStoreSeq = selectedStoreSeq ?? stores?.[0]?.storeSeq;
+
+    if (currentStoreSeq) {
+      fetchCards(currentStoreSeq);
+    }
   }, [selectedStoreSeq, stores]);
+
+
+
+
+
+  // 등록된 계좌 출력
+  // useEffect(() => {
+  //   fetchAccountList();
+  // }, [selectedStoreSeq, stores]);
 
   // 등록된 계좌 조회
   const fetchAccountList = async () => {
@@ -125,9 +139,22 @@ const TransferManagementPage = () => {
   }
 };
 
+////////////
+const [cards, setCards] = useState([]);
+
+const fetchCards = async (storeSeq) => {
+  try {
+    const cardList = await getPaymentCards(storeSeq);
+    setCards(cardList);
+    setActiveCardIndex(0);
+  } catch (error) {
+    console.error("카드 목록 조회 실패:", error);
+  }
+};
 
 
-// 포트원
+
+// 포트원 : 카드 등록/빌링키 발급 코드
 const STORE_ID = "store-d07c8343-3eda-4b37-b1b1-d59c24f3d02d";
 const CHANNEL_KEY = "channel-key-3ac881ab-bc4c-4016-b0d0-3c6eb420b83c";
 
@@ -149,7 +176,7 @@ const handleRegisterCard = async () => {
       billingKeyMethod: "CARD",
       billingKeyRequestId,
       issueId: billingKeyRequestId,
-      issueName: "SOSO카드결제 테스트",
+      issueName: "SOSO카드 등록",
       customer: {
         id: customerId,
         fullName: user_nickname || "테스트사업자",
@@ -172,6 +199,17 @@ const handleRegisterCard = async () => {
 
     console.log("빌링키 발급 성공:", response);
     alert("카드 등록 성공");
+    fetchCards(currentStoreSeq);
+
+    await registerPaymentCard({
+      storeSeq: currentStoreSeq,
+      billingKey: response.billingKey,
+      billingKeyRequestId,
+      cardCompany: "KG이니시스 테스트카드",
+      cardNumberMasked: "**** **** **** 0000",
+      cardType: "CARD",
+      cardName: "자동결제 카드",
+    });
 
   } catch (error) {
     console.error("카드 등록 오류:", error);
@@ -338,74 +376,6 @@ const handleRegisterCard = async () => {
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-800 font-sans">
-      <header className="grid grid-cols-3 items-center py-5 px-6 md:px-12 border-b border-gray-200 bg-white sticky top-0 z-50">
-        <div className="flex items-center gap-1 cursor-pointer" onClick={() => navigate("/")}>
-          <img src={logo} alt="SoSo Logo" className="w-12 h-12 object-contain relative top-[5px]" />
-          <div className="text-[40px] font-black text-[#1d9e75] tracking-tighter leading-none">SoSo</div>
-        </div>
-        
-        <nav className="hidden md:flex justify-center gap-1 border border-gray-100 rounded-lg p-1 bg-gray-50 w-fit mx-auto relative">
-          <Link to="/" className="px-4 py-1.5 text-sm font-medium text-gray-500 hover:text-emerald-600 transition-colors whitespace-nowrap">홈</Link>
-          <a href="#" className="px-4 py-1.5 text-sm font-medium text-gray-500 hover:text-emerald-600 transition-colors whitespace-nowrap">발주 관리</a>
-          
-          <div 
-            className="relative"
-            onMouseEnter={() => setIsSettlementMenuOpen(true)}
-            onMouseLeave={() => setIsSettlementMenuOpen(false)}
-          >
-            <div 
-              className={`px-4 py-1.5 text-sm font-bold rounded shadow-sm border cursor-pointer transition-all whitespace-nowrap ${isSettlementMenuOpen ? 'bg-white text-emerald-600 border-gray-100' : 'bg-white text-emerald-600 border-gray-200'}`}
-            >
-              수금 관리
-            </div>
-            
-            <div className={`absolute top-full left-0 w-40 pt-2 z-[60] transition-all duration-200 ${isSettlementMenuOpen ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-2'}`}>
-              <div className="bg-white border border-gray-100 rounded-xl shadow-xl p-2">
-                {['이체 관리', '비용 카테고리', '지출 요약'].map((sub) => (
-                  <button 
-                    key={sub} 
-                    onClick={() => {
-                      if (sub === '이체 관리') navigate("/transfer-management");
-                      else if (sub === '비용 카테고리') navigate("/expense-category");
-                      else if (sub === '지출 요약') navigate("/settlement");
-                    }}
-                    className={`w-full text-left px-3 py-2 text-[11px] font-bold rounded-lg transition-all ${sub === '이체 관리' ? 'bg-emerald-50 text-emerald-600' : 'text-gray-600 hover:bg-emerald-50 hover:text-emerald-600'}`}
-                  >
-                    {sub}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <a href="#" className="px-4 py-1.5 text-sm font-medium text-gray-500 hover:text-emerald-600 transition-colors whitespace-nowrap">공동 발주</a>
-          <a href="#" className="px-4 py-1.5 text-sm font-medium text-gray-500 hover:text-emerald-600 transition-colors whitespace-nowrap">업체 홍보</a>
-          <a href="#" className="px-4 py-1.5 text-sm font-medium text-gray-500 hover:text-emerald-600 transition-colors whitespace-nowrap">통계</a>
-        </nav>
-
-        <div className="flex items-center justify-end gap-4">
-          <button className="text-gray-400 hover:text-emerald-600 relative">
-            <span className="text-xl">🔔</span>
-            <span className="absolute -top-1 -right-1 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"></span>
-          </button>
-          
-          <div className="relative">
-            <div 
-              onClick={() => setIsProfileOpen(!isProfileOpen)}
-              className="flex items-center gap-2 border border-gray-200 rounded-full py-1.5 px-3 bg-white hover:bg-emerald-50 cursor-pointer transition-colors"
-            >
-              <div className="w-6 h-6 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-[10px] font-bold">
-                {user_nickname ? user_nickname.substring(0, 1) : 'G'}
-              </div>
-              <span className="text-sm font-semibold whitespace-nowrap text-gray-700">
-                {user_nickname || '회원님'}
-              </span>
-            </div>
-          </div>
-          <button onClick={handleLogOut} className="text-xs text-gray-400 hover:underline">/로그아웃</button>
-        </div>
-      </header>
-
       <main className="max-w-7xl mx-auto px-8 py-8">
         <div className="flex justify-between items-end mb-8">
           <div>
@@ -443,30 +413,78 @@ const handleRegisterCard = async () => {
         </div>
 
         <div className="space-y-7">
-          {accounts.length > 0 ? (
+          {cards.length > 0 ? (
             <section className="rounded-[28px] border border-gray-100 bg-white p-8 text-gray-900 shadow-sm">
-              <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
-                <div className="flex items-center gap-5">
-                  <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-lg font-black text-emerald-700">
-                    {accounts[activeAccountIndex]?.bankName.substring(0, 2)}
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-3">
-                      <h3 className="text-2xl font-black">{accounts[activeAccountIndex]?.bankName}</h3>
-                      {accounts[activeAccountIndex]?.isMain && (
-                        <span className="rounded-lg bg-emerald-50 px-3 py-1 text-xs font-black text-emerald-700">대표</span>
-                      )}
-                    </div>
-                    <p className="mt-2 text-base font-semibold text-gray-400">{accounts[activeAccountIndex]?.accountNumber}</p>
-                  </div>
-                </div>
+      <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
+        
+        {/* 카드 정보 */}
+        <div className="flex items-center gap-5">
+          <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-lg font-black text-emerald-700">
+            {cards[activeCardIndex]?.cardCompany?.substring(0, 2) || "카드"}
+          </div>
 
-                <div className="text-left lg:text-right">
-                  <span className="text-sm font-bold text-gray-400">현재 잔액</span>
-                  <div className="mt-1 text-4xl font-black tracking-tight">{formatCurrency(accounts[activeAccountIndex]?.testBalance ?? 0)}</div>
-                </div>
-              </div>
-            </section>
+          <div>
+            <div className="flex items-center gap-3">
+              <h3 className="text-2xl font-black">
+                {cards[activeCardIndex]?.cardCompany || "등록 카드"}
+              </h3>
+
+              {cards[activeCardIndex]?.isDefault === "Y" && (
+                <span className="rounded-lg bg-emerald-50 px-3 py-1 text-xs font-black text-emerald-700">
+                  대표
+                </span>
+              )}
+            </div>
+
+            <p className="mt-2 text-base font-semibold text-gray-400">
+              {cards[activeCardIndex]?.cardNumberMasked || "**** **** **** ****"}
+            </p>
+
+            <p className="mt-1 text-sm font-semibold text-gray-400">
+              {cards[activeCardIndex]?.cardName || "자동결제 카드"}
+            </p>
+          </div>
+        </div>
+
+        {/* 카드 상태 */}
+        <div className="text-left lg:text-right">
+          <span className="text-sm font-bold text-gray-400">결제수단 상태</span>
+
+          <div className="mt-2 flex flex-col items-start gap-2 lg:items-end">
+            <span className="rounded-xl bg-emerald-50 px-4 py-2 text-sm font-black text-emerald-700">
+              자동결제 사용 가능
+            </span>
+
+            <span className="text-sm font-bold text-gray-400">
+              {cards[activeCardIndex]?.cardType || "CARD"}
+            </span>
+          </div>
+        </div>
+      </div>
+    </section>
+            // <section className="rounded-[28px] border border-gray-100 bg-white p-8 text-gray-900 shadow-sm">
+            //   <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
+            //     <div className="flex items-center gap-5">
+            //       <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-lg font-black text-emerald-700">
+            //         {accounts[activeAccountIndex]?.bankName.substring(0, 2)}
+            //       </div>
+            //       <div>
+            //         <div className="flex items-center gap-3">
+            //           <h3 className="text-2xl font-black">{accounts[activeAccountIndex]?.bankName}</h3>
+            //           {accounts[activeAccountIndex]?.isMain && (
+            //             <span className="rounded-lg bg-emerald-50 px-3 py-1 text-xs font-black text-emerald-700">대표</span>
+            //           )}
+            //         </div>
+            //         <p className="mt-2 text-base font-semibold text-gray-400">{accounts[activeAccountIndex]?.accountNumber}</p>
+            //       </div>
+            //     </div>
+
+            //     <div className="text-left lg:text-right">
+            //       <span className="text-sm font-bold text-gray-400">현재 잔액</span>
+            //       <div className="mt-1 text-4xl font-black tracking-tight">{formatCurrency(accounts[activeAccountIndex]?.testBalance ?? 0)}</div>
+            //     </div>
+            //   </div>
+            // </section>
           ) : (
             <div className="rounded-[28px] border border-dashed border-gray-300 bg-white p-12 text-center font-bold text-gray-400">
               등록된 결제 계좌가 없습니다. 새 계좌를 추가해 주세요.
