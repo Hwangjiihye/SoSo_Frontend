@@ -1,7 +1,7 @@
 import React from 'react';
 import { useStockStatus } from './hooks/useStockStatus';
 import StockAutoRules from './components/StockAutoRules';
-import StockNotifications from './components/StockNotifications';
+import StockTimeline from './components/StockTimeline';
 import StockAutoHistory from './components/StockAutoHistory';
 import { Link, useLocation } from 'react-router-dom';
 
@@ -10,7 +10,7 @@ import { Link, useLocation } from 'react-router-dom';
  * @description 재고 상태 관리 신규 페이지 (stock1.png 기반)
  */
 const StockStatusPage = () => {
-  const { autoRules, notifications, history, toggleRule } = useStockStatus();
+  const { autoRules, timeline, history, toggleRule } = useStockStatus();
   const location = useLocation();
 
   return (
@@ -46,7 +46,7 @@ const StockStatusPage = () => {
         {/* 헤더 섹션 */}
         <div className="mb-12">
           <h1 className="text-4xl font-black text-gray-900 tracking-tight mb-3">자동 재고 제어 관리</h1>
-          <p className="text-[15px] text-gray-400 font-medium">자동 차감, 자동 발주 연동, 실시간 변동 알림</p>
+          <p className="text-[15px] text-gray-400 font-medium">자동 차감, 자동 발주 연동, 실시간 변동 타임라인</p>
         </div>
 
         {/* 상단 2컬럼 그리드 */}
@@ -59,12 +59,12 @@ const StockStatusPage = () => {
             <StockAutoRules rules={autoRules} onToggle={toggleRule} />
           </section>
 
-          {/* 재고 변동 알림 */}
+          {/* 재고 타임라인 피드 */}
           <section>
             <div className="flex items-center gap-2 mb-4 ml-2">
-              <span className="text-[12px] font-black text-gray-400 uppercase tracking-widest">재고 변동 알림</span>
+              <span className="text-[12px] font-black text-gray-400 uppercase tracking-widest">재고 타임라인 피드</span>
             </div>
-            <StockNotifications notifications={notifications} />
+            <StockTimeline timeline={timeline} />
           </section>
         </div>
 

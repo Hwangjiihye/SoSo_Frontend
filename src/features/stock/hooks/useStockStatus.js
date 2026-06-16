@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 
 /**
  * @file useStockStatus.js
- * @description 재고 상태 관리 페이지(자동 규칙, 알림, 이력) 비즈니스 로직
+ * @description 재고 상태 관리 페이지(자동 규칙, 타임라인, 이력) 비즈니스 로직
  */
 export const useStockStatus = () => {
   const [autoRules, setAutoRules] = useState([
@@ -33,11 +33,12 @@ export const useStockStatus = () => {
     },
   ]);
 
-  const [notifications, setNotifications] = useState([
+  const [timeline, setTimeline] = useState([
     { id: 1, type: 'CRITICAL', title: '우유 품절 처리됨', message: '유통기한 만료로 자동 차감, 발주 필요', time: '14:32 방금', dotColor: 'bg-rose-500' },
     { id: 2, type: 'WARNING', title: '대파 재고 부족', message: '현재 3단 - 안전 재고(10단) 미만', time: '11:20 오늘', dotColor: 'bg-amber-500' },
     { id: 3, type: 'CRITICAL', title: '닭가슴살 유통기한 D-2', message: '2026-05-26 만료 예정, 확인 필요', time: '09:00 오늘', dotColor: 'bg-rose-500' },
     { id: 4, type: 'INFO', title: '한우 등심 입고 완료', message: '발주 완료 → 10kg 자동 추가', time: '09:15 어제', dotColor: 'bg-blue-500' },
+    { id: 5, type: 'INFO', title: '식용유 재고 조정', message: '재고 실사 결과 반영 (+1병)', time: '18:20 05-22', dotColor: 'bg-emerald-500' },
   ]);
 
   const [history, setHistory] = useState([
@@ -77,26 +78,10 @@ export const useStockStatus = () => {
     setAutoRules(prev => prev.map(rule => 
       rule.id === id ? { ...rule, enabled: !rule.enabled } : rule
     ));
-    // TODO: API 연동하여 서버에 규칙 변경 저장
-    // updateStockAutoRule(id, !currentEnabled);
   };
 
   const fetchStatusData = useCallback(async () => {
     // API 연동 시 실제 데이터 로드 로직
-    /*
-    try {
-      const [rules, notes, hist] = await Promise.all([
-        getStockAutoRules(),
-        getStockNotifications(),
-        getStockAutoHistory()
-      ]);
-      setAutoRules(rules);
-      setNotifications(notes);
-      setHistory(hist);
-    } catch (err) {
-      console.error(err);
-    }
-    */
   }, []);
 
   useEffect(() => {
@@ -105,7 +90,7 @@ export const useStockStatus = () => {
 
   return {
     autoRules,
-    notifications,
+    timeline,
     history,
     toggleRule,
     fetchStatusData
