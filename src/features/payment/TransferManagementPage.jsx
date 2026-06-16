@@ -37,6 +37,9 @@ const TransferManagementPage = () => {
     accountName: ''
   });
   const [isCardRegisterModalOpen, setIsCardRegisterModalOpen] = useState(false);
+  const [isOrderPaymentModalOpen, setIsOrderPaymentModalOpen] = useState(false);
+  const [selectedPartnerId, setSelectedPartnerId] = useState("");
+  const [selectedOrderIds, setSelectedOrderIds] = useState([]);
 
   const [newCard, setNewCard] = useState({
     cardCompany: "",
@@ -108,6 +111,47 @@ const TransferManagementPage = () => {
 
   // 예금주명 정규식
   const accountNameRegex = /^[가-힣a-zA-Z0-9\s]{2,30}$/;
+
+  const orderPaymentPartners = [
+    {
+      id: "daebak",
+      name: "(주)대박식자재",
+      orders: [
+        { id: "PO-20260617-001", title: "냉장 육류 외 4건", dueDate: "2026-06-20", amount: 1280000 },
+        { id: "PO-20260615-004", title: "소스/양념 정기 발주", dueDate: "2026-06-22", amount: 342000 },
+      ],
+    },
+    {
+      id: "daesung",
+      name: "대성농산",
+      orders: [
+        { id: "PO-20260616-002", title: "채소류 주간 발주", dueDate: "2026-06-21", amount: 568000 },
+        { id: "PO-20260614-006", title: "과일류 추가 발주", dueDate: "2026-06-24", amount: 216000 },
+      ],
+    },
+    {
+      id: "woojin",
+      name: "우진주류",
+      orders: [
+        { id: "PO-20260613-003", title: "주류 정기 발주", dueDate: "2026-06-25", amount: 892000 },
+      ],
+    },
+  ];
+
+  const selectedPartner = orderPaymentPartners.find((partner) => partner.id === selectedPartnerId);
+  const selectedOrders = selectedPartner?.orders.filter((order) => selectedOrderIds.includes(order.id)) ?? [];
+  const selectedOrderTotal = selectedOrders.reduce((total, order) => total + order.amount, 0);
+
+  const handlePartnerChange = (partnerId) => {
+    setSelectedPartnerId(partnerId);
+    setSelectedOrderIds([]);
+  };
+
+  const handleOrderPaymentToggle = (orderId) => {
+    setSelectedOrderIds((prev) =>
+      prev.includes(orderId) ? prev.filter((id) => id !== orderId) : [...prev, orderId]
+    );
+  };
 
 
   // 등록된 카드 출력
@@ -447,6 +491,13 @@ const handleRegisterCard = async () => {
               className="rounded-2xl border border-emerald-200 bg-white px-6 py-3 text-sm font-black text-emerald-600 shadow-sm transition-all hover:bg-emerald-50"
             >
               카드 등록
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsOrderPaymentModalOpen(true)}
+              className="rounded-2xl bg-emerald-600 px-6 py-3 text-sm font-black text-white shadow-lg shadow-emerald-200 transition-all hover:bg-emerald-700"
+            >
+              발주 결제하기
             </button>
           </div>
         </div>
@@ -948,6 +999,171 @@ const handleRegisterCard = async () => {
                 className="flex-1 rounded-2xl bg-emerald-600 py-4 text-sm font-black text-white shadow-lg shadow-emerald-200 transition-colors hover:bg-emerald-700"
               >
                 이체하기
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {isOrderPaymentModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <button
+            type="button"
+            aria-label="발주 결제 닫기"
+            onClick={() => setIsOrderPaymentModalOpen(false)}
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+          />
+
+          <div className="relative max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-3xl bg-white p-8 shadow-2xl animate-fade-in-up">
+            <div className="mb-7 flex items-start justify-between gap-4">
+              <div>
+                <h3 className="text-xl font-black text-gray-900">발주 결제하기</h3>
+                <p className="mt-1 text-xs font-medium text-gray-400">
+                  거래처를 선택하고 미결제 발주를 확인한 뒤 등록된 카드로 결제하세요.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsOrderPaymentModalOpen(false)}
+                className="text-2xl text-gray-400 transition-colors hover:text-gray-600"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="space-y-6">
+              <div>
+                <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-widest text-gray-400">
+                  거래처
+                </label>
+                <select
+                  value={selectedPartnerId}
+                  onChange={(e) => handlePartnerChange(e.target.value)}
+                  className="w-full rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-sm font-bold text-gray-700 outline-none transition-all focus:ring-2 focus:ring-emerald-500/20"
+                >
+                  <option value="">거래처를 선택해 주세요</option>
+                  {orderPaymentPartners.map((partner) => (
+                    <option key={partner.id} value={partner.id}>
+                      {partner.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <div className="mb-3 flex items-center justify-between">
+                  <h4 className="text-sm font-black text-gray-900">미결제 발주 목록</h4>
+                  <span className="text-xs font-bold text-gray-400">
+                    {selectedPartner ? `${selectedPartner.orders.length}건` : "거래처 선택 필요"}
+                  </span>
+                </div>
+
+                {selectedPartner ? (
+                  <div className="space-y-3">
+                    {selectedPartner.orders.map((order) => {
+                      const isSelected = selectedOrderIds.includes(order.id);
+
+                      return (
+                        <button
+                          key={order.id}
+                          type="button"
+                          onClick={() => handleOrderPaymentToggle(order.id)}
+                          className={`w-full rounded-2xl border p-5 text-left transition-all ${
+                            isSelected
+                              ? "border-emerald-500 bg-emerald-50"
+                              : "border-gray-100 bg-white hover:border-emerald-200 hover:bg-emerald-50/40"
+                          }`}
+                        >
+                          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                            <div className="flex items-start gap-3">
+                              <span
+                                className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md border text-xs font-black ${
+                                  isSelected
+                                    ? "border-emerald-600 bg-emerald-600 text-white"
+                                    : "border-gray-200 bg-white text-white"
+                                }`}
+                              >
+                                ✓
+                              </span>
+                              <div>
+                                <strong className="block text-sm font-black text-gray-900">
+                                  {order.title}
+                                </strong>
+                                <span className="mt-1 block text-xs font-bold text-gray-400">
+                                  {order.id} · 결제 예정일 {order.dueDate}
+                                </span>
+                              </div>
+                            </div>
+
+                            <strong className="text-base font-black text-gray-900">
+                              {formatCurrency(order.amount)}
+                            </strong>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-5 py-8 text-center">
+                    <p className="text-sm font-bold text-gray-400">
+                      거래처를 선택하면 미결제 발주 목록이 표시됩니다.
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              <div className="grid gap-4 lg:grid-cols-[1fr_1.1fr]">
+                <div className="rounded-2xl border border-gray-100 bg-gray-50 p-5">
+                  <span className="block text-[10px] font-bold uppercase tracking-widest text-gray-400">
+                    등록된 결제 카드
+                  </span>
+                  <strong className="mt-3 block text-base font-black text-gray-900">
+                    {cards[activeCardIndex]?.cardCompany || "등록된 카드 없음"}
+                  </strong>
+                  <span className="mt-1 block text-sm font-semibold text-gray-400">
+                    {cards[activeCardIndex]?.cardNumberMasked || "카드 등록 후 결제할 수 있습니다."}
+                  </span>
+                </div>
+
+                <div className="rounded-2xl border border-emerald-100 bg-emerald-50/60 p-5">
+                  <div className="flex items-center justify-between gap-4">
+                    <div>
+                      <span className="block text-[10px] font-bold uppercase tracking-widest text-emerald-700">
+                        결제 선택
+                      </span>
+                      <strong className="mt-3 block text-sm font-black text-gray-900">
+                        {selectedOrders.length}건 선택
+                      </strong>
+                    </div>
+                    <div className="text-right">
+                      <span className="block text-xs font-bold text-emerald-700">총 결제 금액</span>
+                      <strong className="mt-1 block text-2xl font-black text-emerald-700">
+                        {formatCurrency(selectedOrderTotal)}
+                      </strong>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-8 flex gap-3">
+              <button
+                type="button"
+                onClick={() => setIsOrderPaymentModalOpen(false)}
+                className="flex-1 rounded-2xl bg-gray-100 py-4 text-sm font-black text-gray-600 transition-colors hover:bg-gray-200"
+              >
+                취소
+              </button>
+              <button
+                type="button"
+                disabled={selectedOrderIds.length === 0 || cards.length === 0}
+                className={`flex-1 rounded-2xl py-4 text-sm font-black transition-colors ${
+                  selectedOrderIds.length === 0 || cards.length === 0
+                    ? "cursor-not-allowed bg-gray-200 text-gray-400"
+                    : "bg-emerald-600 text-white shadow-lg shadow-emerald-200 hover:bg-emerald-700"
+                }`}
+              >
+                등록된 카드로 결제
               </button>
             </div>
           </div>
