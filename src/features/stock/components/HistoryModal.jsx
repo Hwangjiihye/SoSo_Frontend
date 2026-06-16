@@ -75,7 +75,7 @@ const HistoryModal = ({ isOpen, onClose, data, isLoading, onPageChange }) => {
                     historyList.map((hist) => (
                       <tr key={hist.historySeq} className="hover:bg-gray-50/50 transition-colors">
                         <td className="px-4 sm:px-6 py-4 text-[11px] text-gray-400 text-center font-bold uppercase whitespace-nowrap">
-                          {hist.createdAt}
+                          {hist.createdAt?.replace('T', ' ')}
                         </td>
                         <td className="px-4 sm:px-6 py-4 text-center whitespace-nowrap">
                           <span className={`px-2 sm:px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${

@@ -65,7 +65,7 @@ const DashboardTimelineFeed = ({ history, isLoading, onOpenModal }) => {
                         </h4>
                       </div>
                       <span className="text-[12px] font-bold text-gray-400 bg-gray-50 px-2 py-1 rounded-md">
-                        {item.createdAt}
+                        {item.createdAt?.replace('T', ' ')}
                       </span>
                     </div>
                     <p className="text-[14px] font-medium text-gray-500 mb-2 leading-relaxed">

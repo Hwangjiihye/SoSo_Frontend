@@ -31,7 +31,7 @@ const StockAutoHistory = ({ history }) => {
             {history.map((hist) => (
               <tr key={hist.id} className="group hover:bg-emerald-50/10 transition-colors">
                 <td className="px-6 py-5 text-[11px] font-bold text-gray-400 text-center uppercase tracking-tighter">
-                  {hist.createdAt}
+                  {hist.createdAt?.replace('T', ' ')}
                 </td>
                 <td className="px-6 py-5 text-center">
                   <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${

@@ -124,7 +124,7 @@ const StockHistoryModal = ({ isOpen, onClose, stock, fetchDetailData }) => {
                   ) : data.histories.length > 0 ? (
                     data.histories.map((hist, idx) => (
                       <tr key={idx} className="hover:bg-gray-50/50 transition-colors">
-                        <td className="px-6 py-4 text-[11px] text-gray-400 text-center font-bold uppercase">{hist.createdAt}</td>
+                        <td className="px-6 py-4 text-[11px] text-gray-400 text-center font-bold uppercase">{hist.createdAt?.replace('T', ' ')}</td>
                         <td className="px-6 py-4 text-center">
                           <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${
                             hist.transactionType === 'INCOMING' ? 'bg-blue-50 text-blue-600 border-blue-100' :

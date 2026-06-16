@@ -30,7 +30,7 @@ const StockNotifications = ({ notifications }) => {
                     {note.title}
                   </h4>
                   <span className="text-[11px] font-bold text-gray-300 whitespace-nowrap">
-                    {note.time}
+                    {note.time?.replace('T', ' ')}
                   </span>
                 </div>
                 <p className="text-[12px] text-gray-500 font-medium leading-relaxed">

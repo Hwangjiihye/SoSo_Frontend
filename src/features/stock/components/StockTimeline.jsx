@@ -34,7 +34,7 @@ const StockTimeline = ({ timeline }) => {
                   {event.title}
                 </h4>
                 <span className="text-[11px] font-bold text-gray-400 whitespace-nowrap bg-white px-2 py-1 rounded-lg border border-gray-100">
-                  {event.time}
+                  {event.time?.replace('T', ' ')}
                 </span>
               </div>
               <p className="text-[13px] text-gray-500 font-medium leading-relaxed">
