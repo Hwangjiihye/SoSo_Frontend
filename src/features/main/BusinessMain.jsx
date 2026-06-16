@@ -18,8 +18,6 @@ import {
   Filler,
 } from 'chart.js';
 import { Bar, Line } from 'react-chartjs-2';
-import MainFooter from '../../components/layout/MainFooter';
-import MainHeader from '../../components/layout/MainHeader';
 import authStore from '../../store/authStore';
 
 // Chart.js 컴포넌트 등록
@@ -87,9 +85,7 @@ function BusinessMain({ setRole }) {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-800 font-sans">
-      <MainHeader activeMenu="홈" />
-
+    <div className="bg-gray-50 text-gray-800 font-sans">
       <main className="max-w-7xl mx-auto px-8 py-8">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           {[
@@ -154,7 +150,7 @@ function BusinessMain({ setRole }) {
               {groupOrders.map(o => (
                 <div key={o.id} className="border border-gray-100 rounded-2xl p-5 hover:border-emerald-200 hover:shadow-md transition-all">
                   <div className="flex justify-between mb-4"><h4 className="text-sm font-bold text-gray-900">{o.title}</h4><span className={`text-[10px] font-black px-2 py-0.5 rounded-full border ${o.status === '모집 중' ? 'text-emerald-600 border-emerald-100 bg-emerald-50' : 'text-red-500 border-red-100 bg-red-50'}`}>{o.status}</span></div>
-                  <div className="w-full bg-gray-50 h-1.5 rounded-full mb-3"><div className={`${o.color} h-full rounded-full`} style={{ width: `${o.progress}%` }}></div></div>
+                  <div className="w-full bg-gray-100 h-1.5 rounded-full mb-3"><div className={`${o.color} h-full rounded-full`} style={{ width: `${o.progress}%` }}></div></div>
                   <div className="flex justify-between items-center mb-6 text-[10px] text-gray-400 font-bold uppercase tracking-tight"><span>참여 {o.current} / {o.min}개</span><span>{o.progress}% · {o.dDay}</span></div>
                   <button className="w-full py-2.5 bg-emerald-50 text-emerald-600 rounded-xl text-xs font-black hover:bg-emerald-500 hover:text-white transition-all shadow-sm shadow-emerald-100/50">{o.btn}</button>
                 </div>
@@ -163,7 +159,6 @@ function BusinessMain({ setRole }) {
           </div>
         </div>
       </main>
-      <MainFooter />
     </div>
   );
 }
