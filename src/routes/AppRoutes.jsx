@@ -16,12 +16,9 @@ import RootLayout from '../components/layout/RootLayout';
 import memberRoutes from './memberRoutes';
 import mypageRoutes from './mypageRoutes';
 import orderRoutes from './orders';
-<<<<<<< HEAD
 import settlementRoutes from './settlementRoutes';
-=======
 import communityRoutes from './communityRoutes';
 import accountRoutes from './accountRoutes';
->>>>>>> master
 
 /**
  * @file AppRoutes.jsx
@@ -60,12 +57,9 @@ const router = createBrowserRouter([
       ...memberRoutes,
       ...mypageRoutes,
       ...orderRoutes,
-<<<<<<< HEAD
       ...settlementRoutes,
-=======
       ...communityRoutes,
       ...accountRoutes,
->>>>>>> master
     ],
   },
 ]);
