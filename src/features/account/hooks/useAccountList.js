@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getRegisteredAccounts, deletePartnerAccount } from '../../../apis/accountApi';
+import { getRegisteredAccounts, deletePartnerAccount, getFirstStoreSeq } from '../../../apis/accountApi';
 import authStore from '../../../store/authStore';
 
 /**
@@ -13,16 +13,28 @@ export const useAccountList = () => {
 
   useEffect(() => {
     const fetchAccounts = async () => {
-      // business_seq 결정 (selectedStoreSeq가 있으면 그것으로, 없으면 user_seq)
-      const businessSeq = selectedStoreSeq || user_seq;
-
-      if (!businessSeq) {
+      if (!user_seq && !selectedStoreSeq) {
         setIsLoading(false);
         return;
       }
 
       setIsLoading(true);
       try {
+        let businessSeq = selectedStoreSeq;
+
+        // selectedStoreSeq가 없으면 서버에 요청하여 첫 번째 store_seq를 가져옴
+        if (!businessSeq) {
+          const firstStoreData = await getFirstStoreSeq(user_seq);
+          if (firstStoreData && firstStoreData.storeSeq) {
+            businessSeq = firstStoreData.storeSeq;
+          } else {
+            // 매장이 아예 없는 경우
+            setAccounts([]);
+            setIsLoading(false);
+            return;
+          }
+        }
+
         const data = await getRegisteredAccounts(parseInt(businessSeq));
         // 백엔드 데이터 매핑
         const formattedAccounts = data.results.map(item => ({

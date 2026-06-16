@@ -99,3 +99,18 @@ export const deletePartnerAccount = async (relationSeq) => {
     throw error;
   }
 };
+
+/**
+ * 특정 유저의 첫 번째 매장 시퀀스 조회 API 호출
+ * @param {number} userSeq 유저 고유 번호
+ * @returns {Promise} 첫 번째 매장 시퀀스
+ */
+export const getFirstStoreSeq = async (userSeq) => {
+  try {
+    const response = await axiosInstance.get(`/api/account/first-store/${userSeq}`);
+    return response.data; // { storeSeq: X }
+  } catch (error) {
+    console.error('첫 번째 매장 시퀀스 조회 중 오류 발생:', error);
+    throw error;
+  }
+};
