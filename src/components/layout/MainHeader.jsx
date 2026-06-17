@@ -37,7 +37,7 @@ function MainHeader({ activeMenu = '홈' }) {
 
   const handleStoreSwitch = (storeSeq, companyName) => {
     setSelectedStore(storeSeq, companyName);
-    navigate('/business-mypage');
+    // navigate('/business-mypage');
     setIsProfileOpen(false);
   };
 
@@ -143,12 +143,14 @@ function MainHeader({ activeMenu = '홈' }) {
         {['공동발주', '커뮤니티'].map(m => (
           <Link 
             key={m} 
-            to="#" 
+            to={m === '커뮤니티' ? "/community" : "#"} 
             className={getNavStyle(m)}
           >
             {m}
           </Link>
         ))}
+
+        <Link to="/lookup" className={getNavStyle('조회/기록')}>조회/기록</Link>
 
         {/* 고객지원 드롭다운 메뉴 */}
         <div 

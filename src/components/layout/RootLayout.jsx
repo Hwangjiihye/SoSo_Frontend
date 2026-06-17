@@ -17,6 +17,7 @@ const RootLayout = () => {
     if (path.startsWith('/orders') || path.startsWith('/group-orders')) return '발주 관리';
     if (path.startsWith('/account')) return '거래처 관리';
     if (path.startsWith('/community')) return '커뮤니티';
+    if (path.startsWith('/lookup')) return '조회/기록';
     if (path.startsWith('/support')) return '고객지원';
     // 추가적인 경로에 따른 매칭 로직을 여기에 작성합니다.
     return '홈';

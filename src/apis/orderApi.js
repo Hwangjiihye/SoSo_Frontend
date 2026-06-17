@@ -1,4 +1,4 @@
-import maxios from './axiosConfig';
+import maxios from './axiosConfig.js';
 
 // 발주 신청시, 내 재고 품목과 거래처 품목 대조
 export const check = async (itemName) => {
