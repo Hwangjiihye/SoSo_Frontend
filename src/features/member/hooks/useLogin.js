@@ -121,7 +121,7 @@ export const useLogin = () => {
         const user_seq = resp.data.user_seq;
         const user_nickname = resp.data.user_nickname;
         const bizname = resp.data.company_name;
-
+        const selectedStoreSeq = resp.data.selectedStoreSeq;
         console.log("token:", token);
         console.log("user_type:", user_type);
         console.log("user_seq:", user_seq);
@@ -140,7 +140,8 @@ export const useLogin = () => {
           user_seq: user_seq,
           user_type: user_type,
           user_nickname: user_nickname,
-          bizname: bizname
+          bizname: bizname,
+          selectedStoreSeq: selectedStoreSeq
         });
 
         // 3. 성공했으니 메인 화면으로 이동
