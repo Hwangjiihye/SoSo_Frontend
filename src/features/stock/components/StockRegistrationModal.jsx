@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState ,useEffect} from 'react';
+import { getCategories } from '../../../apis/stockApi';
 
 /**
  * @file StockRegistrationModal.jsx
@@ -12,15 +13,25 @@ const StockRegistrationModal = ({ isOpen, onClose, onRegister }) => {
     safetyStock: '',
     defaultExpiryDays: '',
   };
-
+const [categories, setCategories] = useState([]);
   const [formData, setFormData] = useState(initialFormState);
 
-  // 모달이 닫힐 때 데이터 초기화
-  React.useEffect(() => {
-    if (!isOpen) {
+  useEffect(() => {
+    if (isOpen) {
+      // 카테고리 목록을 가져오는 API (백엔드에 GET /api/categories 가 있다고 가정)
+      getCategories().then(response => {
+        console.log(response)
+          setCategories(response); // 예: [{ category_seq: 1, category_name: '육류' }, ...]
+        })
+        .catch(error => {
+          console.error('카테고리 목록을 불러오는데 실패했습니다.', error);
+        });
+    } else {
+      // 모달 닫힐 때 폼 초기화 (기존 로직)
       setFormData(initialFormState);
     }
   }, [isOpen]);
+ 
 
   if (!isOpen) return null;
 
@@ -92,12 +103,11 @@ const StockRegistrationModal = ({ isOpen, onClose, onRegister }) => {
                 required
               >
                 <option value="">선택하세요</option>
-                <option value="육류">🍖 육류</option>
-                <option value="채소">🥬 채소</option>
-                <option value="소스/오일">🍯 소스/오일</option>
-                <option value="가공식품">🍱 가공식품</option>
-                <option value="유제품">🥛 유제품</option>
-                <option value="기타">📦 기타</option>
+                {categories.map((cat) => (
+      <option key={cat.categorySeq} value={cat.categorySeq}>
+        {cat.categoryName}
+      </option>
+    ))}
               </select>
             </div>
             <div>

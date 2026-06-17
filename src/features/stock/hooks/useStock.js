@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import authStore from '../../../store/authStore';
 import { 
   getStockList, 
   createStockMaster, 
@@ -6,7 +7,8 @@ import {
   getStockHistories,
   deleteStock,
   updateStock,
-  getStockExpiringSoonCountApi
+  getStockExpiringSoonCountApi,
+  getCategories
 } from '../../../apis/stockApi';
 
 /**
@@ -14,7 +16,9 @@ import {
  * @description 재고 관리 비즈니스 로직 및 상태 관리 커스텀 훅
  */
 export const useStock = () => {
+  const selectedStoreSeq = authStore(state => state.selectedStoreSeq);
   const [stocks, setStocks] = useState([]);
+  const [categories, setCategories] = useState([]); // 카테고리 목록 상태 추가
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [filters, setFilters] = useState({
@@ -23,13 +27,22 @@ export const useStock = () => {
     status: 'ALL', // ALL, NORMAL, LACK, OUT_OF_STOCK, EXPIRING_SOON
   });
 
+  // 카테고리 목록 조회
+  const fetchCategories = useCallback(async () => {
+    try {
+      const data = await getCategories();
+      setCategories(data || []);
+    } catch (err) {
+      console.error('Fetch Categories Error:', err);
+    }
+  }, []);
+
   // 1. 재고 목록 조회
-  const fetchStocks = useCallback(async () => {
+  const fetchStocks = useCallback(async (searchFilters = filters) => {
     setIsLoading(true);
     try {
-      // 백엔드 API 호출 시 필터 파라미터 전달
-      // 백엔드에서 모든 필터링이 완료된 데이터를 반환하므로 그대로 사용
-      const data = await getStockList(filters);
+      // Axios Interceptor에서 storeSeq가 자동으로 주입됨
+      const data = await getStockList(searchFilters);
       setStocks(data || []);
       setError(null);
     } catch (err) {
@@ -38,14 +51,18 @@ export const useStock = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [filters]);
+  }, [filters, selectedStoreSeq]);
 
   // 2. 품목 마스터 등록 (수량 제외)
   const registerStock = async (stockData) => {
     setIsLoading(true);
     try {
-      // stockData: { stockName, category, unit, safetyStock, defaultExpiryDays }
-      await createStockMaster(stockData);
+      // @RequestBody StockDTO 대응: 페이로드 내부에 storeSeq 명시적 추가
+      const payload = {
+        ...stockData,
+        storeSeq: selectedStoreSeq
+      };
+      await createStockMaster(payload);
       alert('새 품목이 등록되었습니다.');
       await fetchStocks();
       return true;
@@ -123,22 +140,40 @@ export const useStock = () => {
       console.error('Calculate Expiry Error:', err);
       return 0;
     }
-  }, []);
+  }, [selectedStoreSeq]);
 
   useEffect(() => {
-    fetchStocks();
-  }, [fetchStocks]);
+    // 초기 로딩 및 매장 전환 시에만 자동 호출
+    if (selectedStoreSeq) {
+      fetchStocks();
+      fetchCategories();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedStoreSeq, fetchCategories]); 
 
   const handleFilterChange = (name, value) => {
-    setFilters(prev => ({ ...prev, [name]: value }));
+    setFilters(prev => {
+      const nextFilters = { ...prev, [name]: value };
+      
+      // 카테고리나 상태 변경 시에는 즉시 검색 수행 (UX 향상)
+      if (name === 'category' || name === 'status') {
+        fetchStocks(nextFilters);
+      }
+      
+      return nextFilters;
+    });
   };
 
-  const handleSearch = () => {
-    fetchStocks();
+  const handleSearch = (keyword) => {
+    // keyword가 인자로 넘어오면 그것을 사용, 아니면 현재 filters.search 사용
+    const searchKeyword = keyword !== undefined ? keyword : filters.search;
+    const latestFilters = { ...filters, search: searchKeyword };
+    fetchStocks(latestFilters);
   };
 
   return {
     stocks,
+    categories, // 카테고리 목록 추가
     isLoading,
     error,
     filters,
