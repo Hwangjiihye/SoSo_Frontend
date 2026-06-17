@@ -26,7 +26,9 @@ const DashboardHistoryTable = ({ history, isLoading }) => {
                 <td colSpan="7" className="px-6 py-10 text-center text-gray-400 font-medium">데이터를 불러오는 중...</td>
               </tr>
             ) : history && history.length > 0 ? (
-              history.map((hist) => (
+              history
+                .filter((hist) => hist.transactionType !== 'ALERT') // 🚨 ALERT 타입 제외
+                .map((hist) => (
                 <tr key={hist.historySeq} className="hover:bg-gray-50/50 transition-colors">
                   <td className="px-6 py-4 text-[11px] text-gray-400 text-center font-bold uppercase whitespace-nowrap">
                     {hist.createdAt?.replace('T', ' ')}
