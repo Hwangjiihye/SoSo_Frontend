@@ -94,3 +94,9 @@ export const getStockHistoryModal = async (page, size, stockSeq, transactionType
   return response.data; // Expected: { historyList: StockHistoryDTO[], totalPages, totalCount, ... }
 };
 
+export const getCategories = async () => {
+  const response = await axiosInstance.get('/api/categories');
+  console.log(response.data)
+  return response.data;
+};
+
