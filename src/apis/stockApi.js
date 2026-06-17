@@ -94,3 +94,9 @@ export const getStockHistoryModal = async (page, size) => {
   return response.data; // Expected: { content: StockHistoryDTO[], totalPages, totalElements, ... } 페이징 객체
 };
 
+export const getCategories = async () => {
+  const response = await axiosInstance.get('/api/categories');
+  console.log(response.data)
+  return response.data;
+};
+
