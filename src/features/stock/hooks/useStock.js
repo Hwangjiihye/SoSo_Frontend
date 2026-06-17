@@ -7,7 +7,8 @@ import {
   getStockHistories,
   deleteStock,
   updateStock,
-  getStockExpiringSoonCountApi
+  getStockExpiringSoonCountApi,
+  getCategories
 } from '../../../apis/stockApi';
 
 /**
@@ -17,6 +18,7 @@ import {
 export const useStock = () => {
   const selectedStoreSeq = authStore(state => state.selectedStoreSeq);
   const [stocks, setStocks] = useState([]);
+  const [categories, setCategories] = useState([]); // 카테고리 목록 상태 추가
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [filters, setFilters] = useState({
@@ -24,6 +26,16 @@ export const useStock = () => {
     category: 'ALL',
     status: 'ALL', // ALL, NORMAL, LACK, OUT_OF_STOCK, EXPIRING_SOON
   });
+
+  // 카테고리 목록 조회
+  const fetchCategories = useCallback(async () => {
+    try {
+      const data = await getCategories();
+      setCategories(data || []);
+    } catch (err) {
+      console.error('Fetch Categories Error:', err);
+    }
+  }, []);
 
   // 1. 재고 목록 조회
   const fetchStocks = useCallback(async (searchFilters = filters) => {
@@ -132,12 +144,12 @@ export const useStock = () => {
 
   useEffect(() => {
     // 초기 로딩 및 매장 전환 시에만 자동 호출
-    // 실시간 검색(filters 변경) 시에는 자동 호출되지 않도록 의존성 배열에서 제외
     if (selectedStoreSeq) {
       fetchStocks();
+      fetchCategories();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedStoreSeq]); 
+  }, [selectedStoreSeq, fetchCategories]); 
 
   const handleFilterChange = (name, value) => {
     setFilters(prev => {
@@ -161,6 +173,7 @@ export const useStock = () => {
 
   return {
     stocks,
+    categories, // 카테고리 목록 추가
     isLoading,
     error,
     filters,

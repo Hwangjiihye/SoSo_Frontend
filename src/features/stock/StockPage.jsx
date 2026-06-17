@@ -16,6 +16,7 @@ import StockEditModal from './components/StockEditModal';
 const StockPage = () => {
   const {
     stocks,
+    categories, // 카테고리 목록 추가
     isLoading,
     filters,
     handleFilterChange,
@@ -143,7 +144,12 @@ const StockPage = () => {
           </div>
         </div>
 
-        <StockFilter filters={filters} onFilterChange={handleFilterChange} onSearch={handleSearch} />
+        <StockFilter 
+          filters={filters} 
+          categories={categories} // 전달
+          onFilterChange={handleFilterChange} 
+          onSearch={handleSearch} 
+        />
         <StockTable 
           stocks={stocks} 
           isLoading={isLoading} 
