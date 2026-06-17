@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { getCategories } from '../../../apis/stockApi';
 
 /**
  * @file StockEditModal.jsx
@@ -14,13 +15,19 @@ const StockEditModal = ({ isOpen, onClose, stock, onEdit }) => {
   };
 
   const [formData, setFormData] = useState(initialFormState);
+  const [categories, setCategories] = useState([]);
 
   // 모달 상태에 따른 데이터 관리
   useEffect(() => {
     if (isOpen && stock) {
+      // 카테고리 목록 가져오기
+      getCategories().then(response => {
+        setCategories(response);
+      }).catch(err => console.error('카테고리 로드 실패:', err));
+
       setFormData({
         stockName: stock.stockName || '',
-        category: stock.category || '',
+        category: stock.categorySeq || '', // 시퀀스 번호 기반으로 변경
         unit: stock.unit || '',
         safetyStock: stock.safetyStock || 0,
         defaultExpiryDays: stock.defaultExpiryDays || 0,
@@ -88,12 +95,12 @@ const StockEditModal = ({ isOpen, onClose, stock, onEdit }) => {
                 className={inputStyle}
                 required
               >
-                <option value="육류">🍖 육류</option>
-                <option value="채소">🥬 채소</option>
-                <option value="소스/오일">🍯 소스/오일</option>
-                <option value="가공식품">🍱 가공식품</option>
-                <option value="유제품">🥛 유제품</option>
-                <option value="기타">📦 기타</option>
+                <option value="">선택하세요</option>
+                {categories.map((cat) => (
+                  <option key={cat.categorySeq} value={cat.categorySeq}>
+                    {cat.categoryName}
+                  </option>
+                ))}
               </select>
             </div>
             <div>
