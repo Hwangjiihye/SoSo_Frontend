@@ -18,7 +18,9 @@ import {
   Filler,
 } from 'chart.js';
 import { Bar, Line } from 'react-chartjs-2';
+import MainFooter from '../../components/layout/MainFooter';
 import authStore from '../../store/authStore';
+import PartnerMainHeader from '../../components/layout/PartnerMainHeader';
 
 // Chart.js 컴포넌트 등록
 ChartJS.register(

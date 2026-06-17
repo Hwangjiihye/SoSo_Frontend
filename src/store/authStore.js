@@ -22,13 +22,14 @@ const authStore = create(set => ({
         sessionStorage.setItem("user_type", result.user_type);
         sessionStorage.setItem("user_nickname", result.user_nickname);
         sessionStorage.setItem("bizname", result.bizname);
-
+        sessionStorage.setItem("selectedStoreSeq",result.selectedStoreSeq);
         set({
             token: result.token,
             user_seq: result.user_seq,
             user_type: result.user_type,
             user_nickname: result.user_nickname,
             bizname: result.bizname,
+            selectedStoreSeq:result.selectedStoreSeq
         });
     },
 
