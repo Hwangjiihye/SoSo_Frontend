@@ -6,12 +6,14 @@ import DashboardTimelineFeed from './components/DashboardTimelineFeed';
 import DashboardHistoryTable from './components/DashboardHistoryTable';
 import HistoryModal from './components/HistoryModal';
 import { Link, useLocation } from 'react-router-dom';
+import authStore from '../../store/authStore';
 
 /**
  * @file StockStatusPage.jsx
  * @description 재고 상태 관리 신규 페이지 (stock1.png 기반)
  */
 const StockStatusPage = () => {
+  const bizname = authStore(state => state.bizname);
   const { autoRules, toggleRule } = useStockStatus();
   const { 
     dashboardHistory, 
@@ -33,7 +35,7 @@ const StockStatusPage = () => {
   // 모달 열기/닫기 핸들러
   const handleOpenModal = () => {
     setIsModalOpen(true);
-    fetchModalHistory(0, 10); // 모달 오픈 시 0페이지(1페이지) 데이터 페치
+    fetchModalHistory(1, 10); // 🚨 useStockHistory 수정에 맞춰 1페이지부터 시작
   };
 
   const handleCloseModal = () => {
@@ -52,12 +54,17 @@ const StockStatusPage = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         {/* 헤더 섹션 */}
         <div className="mb-12">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="px-3 py-1 bg-emerald-100 text-emerald-700 text-[10px] font-black uppercase tracking-widest rounded-full">
+              현재 매장: {bizname || '상호명 미등록'}
+            </span>
+          </div>
           <h1 className="text-4xl font-black text-gray-900 tracking-tight mb-3">자동 재고 제어 관리</h1>
           <p className="text-[15px] text-gray-400 font-medium">자동 차감, 자동 발주 연동, 실시간 변동 타임라인</p>
         </div>
 
         {/* 상단 2컬럼 그리드 */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-16">
           {/* 자동 재고 관리 규칙 */}
           <section>
             <div className="flex items-center gap-2 mb-4 ml-2">

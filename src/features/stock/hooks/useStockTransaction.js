@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import authStore from '../../../store/authStore';
 import { 
   createIncomingStock, 
   createOutboundStock, 
@@ -11,10 +12,12 @@ import {
  * @description 재고 거래(입고/출고/조정) 비즈니스 로직 처리 커스텀 훅
  */
 export const useStockTransaction = (selectedStock, onClose, onSuccess) => {
+  const selectedStoreSeq = authStore(state => state.selectedStoreSeq);
   const [activeTab, setActiveTab] = useState('INBOUND'); // INBOUND, OUTBOUND, ADJUST
   const [isLoading, setIsLoading] = useState(false);
   const [batches, setBatches] = useState([]); // 조정 시 선택할 배치 목록
 
+  // ... (폼 상태 정의 생략되지 않음)
   // 1. 입고 폼 상태
   const [inboundForm, setInboundForm] = useState({
     detailStockName: '',
@@ -40,7 +43,7 @@ export const useStockTransaction = (selectedStock, onClose, onSuccess) => {
 
   // 초기 데이터 설정 및 배치 목록 로드
   useEffect(() => {
-    if (selectedStock) {
+    if (selectedStock && selectedStoreSeq) {
       setInboundForm(prev => ({
         ...prev,
         detailStockName: selectedStock.stockName || ''
@@ -57,7 +60,7 @@ export const useStockTransaction = (selectedStock, onClose, onSuccess) => {
       };
       fetchBatches();
     }
-  }, [selectedStock]);
+  }, [selectedStock, selectedStoreSeq]);
 
   const handleTabChange = (tab) => setActiveTab(tab);
 
@@ -78,7 +81,10 @@ export const useStockTransaction = (selectedStock, onClose, onSuccess) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!selectedStock) return;
+    if (!selectedStock || !selectedStoreSeq) {
+      alert("매장 및 품목 정보가 유효하지 않습니다.");
+      return;
+    }
 
     setIsLoading(true);
     try {
@@ -90,6 +96,7 @@ export const useStockTransaction = (selectedStock, onClose, onSuccess) => {
         }
         await createIncomingStock({ 
           stockSeq: stockSeq,
+          storeSeq: selectedStoreSeq, // @RequestBody 대응 명시적 추가
           detailStockName: inboundForm.detailStockName,
           quantity: Number(inboundForm.quantity),
           incomingPrice: Number(inboundForm.incomingPrice),
@@ -104,7 +111,11 @@ export const useStockTransaction = (selectedStock, onClose, onSuccess) => {
         if (Number(outboundForm.quantity) > selectedStock.currentStock) {
           throw new Error('출고 수량이 현재 재고보다 많을 수 없습니다.');
         }
-        await createOutboundStock({ stockSeq: stockSeq, ...outboundForm });
+        await createOutboundStock({ 
+          stockSeq: stockSeq, 
+          storeSeq: selectedStoreSeq, // 명시적 추가
+          ...outboundForm 
+        });
       } else if (activeTab === 'ADJUST') {
         if (!adjustmentForm.quantity || !adjustmentForm.reason) {
           throw new Error('필수 입력 항목을 확인해주세요.');
@@ -125,6 +136,7 @@ export const useStockTransaction = (selectedStock, onClose, onSuccess) => {
         // 백엔드 StockAdjustRequest 사양에 맞춰 changeQuantity로 전달
         await createAdjustStock({ 
           stockSeq: stockSeq, 
+          storeSeq: selectedStoreSeq, // 명시적 추가
           batchSeq: adjustmentForm.batchSeq ? Number(adjustmentForm.batchSeq) : null,
           changeQuantity: changeQty,
           reason: adjustmentForm.reason,
