@@ -36,6 +36,12 @@ export const orderList = async (keyword = '') => {
     return resp.data;
 }
 
+// 발주서 상세 조회
+export const getOrderDetail = async (orderSeq) => {
+    const resp = await maxios.get(`/order/list/${orderSeq}`);
+    return resp.data;
+}
+
 // 웹소켓 사용자 확인
 export const webSocketMe = async () => {
     const resp = await maxios.get('/order/me');

@@ -9,6 +9,7 @@ import authStore from '../../../store/authStore.js';
 export const useOrderLookup = () => {
   const [orders, setOrders] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [orderDetail, setOrderDetail] = useState(null);
   const { selectedStoreSeq } = authStore();
 
   const fetchOrders = useCallback(async (params) => {
@@ -25,9 +26,21 @@ export const useOrderLookup = () => {
     }
   }, [selectedStoreSeq]);
 
+  const fetchOrderDetail = useCallback(async (orderSeq) => {
+    try {
+      const response = await axiosInstance.get(`/order/list/${orderSeq}`);
+      setOrderDetail(response.data);
+    } catch (error) {
+      console.error('발주 상세 정보를 불러오는데 실패했습니다.', error);
+    }
+  }, []);
+
   return {
     orders,
     isLoading,
+    orderDetail,
+    setOrderDetail,
     fetchOrders,
+    fetchOrderDetail,
   };
 };

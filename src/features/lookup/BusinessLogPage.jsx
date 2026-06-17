@@ -76,24 +76,24 @@ const BusinessLogPage = () => {
       {viewMode === 'list' ? (
         <>
           {/* 필터 섹션 */}
-          <div className="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm mb-8 grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
-            <div>
+          <div className="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm mb-8 grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
+            <div className="md:col-span-2">
               <label className="block text-[11px] font-black text-gray-400 uppercase tracking-wider mb-2 ml-1">조회 기간</label>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3">
                 <input 
                   type="date" 
-                  className="w-full bg-gray-50 border-none rounded-xl px-4 py-3 text-sm font-bold text-gray-700 focus:ring-2 focus:ring-amber-500"
+                  className="flex-1 bg-gray-50 border-none rounded-xl px-4 py-3 text-sm font-bold text-gray-700 focus:ring-2 focus:ring-amber-500 min-w-[130px]"
                   onChange={(e) => setParams(prev => ({ ...prev, startDate: e.target.value }))}
                 />
-                <span className="text-gray-300">~</span>
+                <span className="text-gray-300 shrink-0 font-bold">~</span>
                 <input 
                   type="date" 
-                  className="w-full bg-gray-50 border-none rounded-xl px-4 py-3 text-sm font-bold text-gray-700 focus:ring-2 focus:ring-amber-500"
+                  className="flex-1 bg-gray-50 border-none rounded-xl px-4 py-3 text-sm font-bold text-gray-700 focus:ring-2 focus:ring-amber-500 min-w-[130px]"
                   onChange={(e) => setParams(prev => ({ ...prev, endDate: e.target.value }))}
                 />
               </div>
             </div>
-            <div>
+            <div className="md:col-span-1">
               <label className="block text-[11px] font-black text-gray-400 uppercase tracking-wider mb-2 ml-1">구분</label>
               <select 
                 className="w-full bg-gray-50 border-none rounded-xl px-4 py-3 text-sm font-bold text-gray-700 focus:ring-2 focus:ring-amber-500 appearance-none"

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useOrderLookup } from './hooks/useOrderLookup';
+import OrderDetailModal from './components/OrderDetailModal';
 
 /**
  * @file OrderLookupPage.jsx
@@ -13,7 +14,7 @@ const OrderLookupPage = () => {
     keyword: ''
   });
 
-  const { orders, isLoading, fetchOrders } = useOrderLookup();
+  const { orders, isLoading, orderDetail, setOrderDetail, fetchOrders, fetchOrderDetail } = useOrderLookup();
 
   useEffect(() => {
     fetchOrders(params);
@@ -22,6 +23,10 @@ const OrderLookupPage = () => {
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
     setParams(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleOrderClick = (orderSeq) => {
+    fetchOrderDetail(orderSeq);
   };
 
   return (
@@ -38,28 +43,28 @@ const OrderLookupPage = () => {
       </header>
 
       {/* 필터 섹션 */}
-      <div className="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm mb-8 grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
-        <div>
+      <div className="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm mb-8 grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
+        <div className="md:col-span-2">
           <label className="block text-[11px] font-black text-gray-400 uppercase tracking-wider mb-2 ml-1">조회 기간</label>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <input 
               type="date" 
               name="startDate"
               value={params.startDate}
               onChange={handleFilterChange}
-              className="w-full bg-gray-50 border-none rounded-xl px-4 py-3 text-sm font-bold text-gray-700 focus:ring-2 focus:ring-emerald-500"
+              className="flex-1 bg-gray-50 border-none rounded-xl px-4 py-3 text-sm font-bold text-gray-700 focus:ring-2 focus:ring-emerald-500 min-w-[130px]"
             />
-            <span className="text-gray-300">~</span>
+            <span className="text-gray-300 shrink-0 font-bold">~</span>
             <input 
               type="date" 
               name="endDate"
               value={params.endDate}
               onChange={handleFilterChange}
-              className="w-full bg-gray-50 border-none rounded-xl px-4 py-3 text-sm font-bold text-gray-700 focus:ring-2 focus:ring-emerald-500"
+              className="flex-1 bg-gray-50 border-none rounded-xl px-4 py-3 text-sm font-bold text-gray-700 focus:ring-2 focus:ring-emerald-500 min-w-[130px]"
             />
           </div>
         </div>
-        <div>
+        <div className="md:col-span-1">
           <label className="block text-[11px] font-black text-gray-400 uppercase tracking-wider mb-2 ml-1">발주 상태</label>
           <select 
             name="status"
@@ -95,7 +100,11 @@ const OrderLookupPage = () => {
           <div className="bg-white p-20 rounded-[3rem] text-center text-gray-400 font-bold animate-pulse">발주 내역을 불러오는 중...</div>
         ) : orders.length > 0 ? (
           orders.map((order) => (
-            <div key={order.orderSeq} className="group bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm hover:shadow-xl hover:shadow-emerald-100/30 transition-all flex items-center justify-between">
+            <div 
+              key={order.orderSeq} 
+              onClick={() => handleOrderClick(order.orderSeq)}
+              className="group bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm hover:shadow-xl hover:shadow-emerald-100/30 transition-all flex items-center justify-between cursor-pointer"
+            >
               <div className="flex items-center gap-8">
                 <div className="w-16 h-16 rounded-2xl bg-gray-50 flex flex-col items-center justify-center">
                   <span className="text-[10px] font-black text-gray-300 uppercase leading-none mb-1">Status</span>
@@ -138,6 +147,13 @@ const OrderLookupPage = () => {
           </div>
         )}
       </div>
+
+      {/* 상세 모달 */}
+      <OrderDetailModal 
+        isOpen={!!orderDetail} 
+        onClose={() => setOrderDetail(null)} 
+        detail={orderDetail} 
+      />
     </div>
   );
 };
