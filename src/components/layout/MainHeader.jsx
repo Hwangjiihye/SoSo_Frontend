@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import logo from '../../assets/soso로고.png';
 import authStore from '../../store/authStore';
@@ -16,7 +16,24 @@ function MainHeader({ activeMenu = '홈' }) {
 
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isOrderDropdownOpen, setIsOrderDropdownOpen] = useState(false);
+  const [isSettlementDropdownOpen, setIsSettlementDropdownOpen] = useState(false);
   const [isAccountDropdownOpen, setIsAccountDropdownOpen] = useState(false);
+
+  useEffect(() => {
+    if (!stores || stores.length === 0) return;
+
+    const savedStoreSeq = localStorage.getItem("storeSeq");
+
+    // localStorage에 매장 정보가 없으면 첫 번째 매장을 기본 선택으로 저장
+    if (!savedStoreSeq) {
+      const firstStore = stores[0];
+
+      setSelectedStore(firstStore.storeSeq, firstStore.companyName);
+
+      localStorage.setItem("storeSeq", firstStore.storeSeq);
+      localStorage.setItem("storeName", firstStore.companyName);
+    }
+  }, [stores]);
 
   const handleLogOut = () => {
     logout();
@@ -35,6 +52,12 @@ function MainHeader({ activeMenu = '홈' }) {
 
   const handleStoreSwitch = (storeSeq, companyName) => {
     setSelectedStore(storeSeq, companyName);
+
+    localStorage.setItem("storeSeq", storeSeq);
+    localStorage.setItem("storeName", companyName);
+
+    setIsProfileOpen(false);
+
     navigate('/business-mypage');
     setIsProfileOpen(false);
   };
@@ -85,7 +108,35 @@ function MainHeader({ activeMenu = '홈' }) {
           </div>
         </div>
 
-        <Link to="#" className={getNavStyle('이체/수금 관리')}>이체/수금 관리</Link>
+        {/* 이체/수금 관리 드롭다운 메뉴 */}
+        <div 
+          className="relative"
+          onMouseEnter={() => setIsSettlementDropdownOpen(true)}
+          onMouseLeave={() => setIsSettlementDropdownOpen(false)}
+        >
+          <div className={activeMenu === '이체/수금 관리' 
+            ? "px-4 py-1.5 text-sm font-semibold bg-white text-emerald-600 rounded shadow-sm border border-gray-200 cursor-pointer transition-all whitespace-nowrap"
+            : "px-4 py-1.5 text-sm font-medium text-gray-500 hover:text-emerald-600 transition-all cursor-pointer whitespace-nowrap"}>
+            이체/수금 관리
+          </div>
+          
+          <div className={`absolute top-full left-0 w-48 pt-2 z-[60] transition-all duration-200 ${isSettlementDropdownOpen ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-2'}`}>
+            <div className="bg-white border border-gray-100 rounded-2xl shadow-xl p-2">
+              <Link to="/transfer-management" className="block w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl mb-1">
+                이체 관리
+              </Link>
+              <Link to="/collection-management" className="block w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl mb-1">
+                수금 관리
+              </Link>
+              <Link to="/expense-category" className="block w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl mb-1">
+                비용 카테고리
+              </Link>
+              <Link to="/settlement" className="block w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl">
+                지출 요약
+              </Link>
+            </div>
+          </div>
+        </div>
 
         {/* 거래처 관리 드롭다운 메뉴 */}
         <div 

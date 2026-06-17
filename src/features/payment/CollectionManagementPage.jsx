@@ -1,7 +1,4 @@
-import { Link, useNavigate } from 'react-router-dom';
-import logo from '../../assets/soso로고.png';
 import MainFooter from '../../components/layout/MainFooter';
-import authStore from '../../store/authStore';
 
 const summaryCards = [
   {
@@ -97,56 +94,8 @@ const cardStyles = {
 };
 
 function CollectionManagementPage() {
-  const navigate = useNavigate();
-  const { logout, member, user_nickname } = authStore();
-  const displayName = member?.nickname || user_nickname || '거래처 담당자';
-
-  const handleLogout = () => {
-    logout();
-    navigate('/');
-  };
-
   return (
     <div className="flex min-h-screen flex-col bg-slate-50 text-slate-800">
-      <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur">
-        <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-5 lg:px-8">
-          <button type="button" onClick={() => navigate('/')} className="flex items-center gap-1">
-            <img src={logo} alt="" className="h-10 w-10 object-contain" />
-            <span className="text-3xl font-black tracking-tight text-emerald-600">SoSo</span>
-          </button>
-
-          <nav className="hidden items-center gap-1 rounded-xl bg-slate-50 p-1 md:flex">
-            <Link to="/" className="rounded-lg px-4 py-2 text-sm font-semibold text-slate-500 hover:text-emerald-600">
-              홈
-            </Link>
-            <button type="button" className="rounded-lg px-4 py-2 text-sm font-semibold text-slate-500 hover:text-emerald-600">
-              발주 관리
-            </button>
-            <span className="rounded-lg bg-white px-4 py-2 text-sm font-bold text-emerald-600 shadow-sm ring-1 ring-slate-200">
-              수금 관리
-            </span>
-            <button type="button" className="rounded-lg px-4 py-2 text-sm font-semibold text-slate-500 hover:text-emerald-600">
-              공동 발주
-            </button>
-            <button type="button" className="rounded-lg px-4 py-2 text-sm font-semibold text-slate-500 hover:text-emerald-600">
-              통계
-            </button>
-          </nav>
-
-          <div className="flex items-center gap-3">
-            <div className="hidden items-center gap-2 rounded-full border border-slate-200 px-3 py-2 sm:flex">
-              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-100 text-xs font-black text-emerald-700">
-                {displayName.slice(0, 1)}
-              </span>
-              <span className="text-sm font-bold text-slate-700">{displayName}</span>
-            </div>
-            <button type="button" onClick={handleLogout} className="text-xs font-medium text-slate-400 hover:text-slate-700">
-              로그아웃
-            </button>
-          </div>
-        </div>
-      </header>
-
       <main className="mx-auto w-full max-w-7xl flex-1 space-y-8 px-5 py-8 lg:px-8">
         <section className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div>

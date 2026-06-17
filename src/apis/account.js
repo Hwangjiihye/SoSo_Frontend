@@ -64,3 +64,39 @@ export const setDefaultPaymentCard = async (storeSeq, cardSeq) => {
   );
   return response.data;
 };
+
+// 지출 비용 등록
+export const insertExpense = async (storeSeq, data) => {
+  const response = await axiosInstance.post(`/expense/${storeSeq}`, data)
+  return response.data;
+}
+
+// 월별 지출 출력
+export const getExpenseTotal = async (storeSeq, month) => {
+  const response = await axiosInstance.get(`/expense/${storeSeq}/total`, {
+    params: { month },
+  });
+
+  return response.data;
+};
+
+// 월별 카테고리별 지출 출력
+export const categoryCost = async (storeSeq, month) => {
+  const response = await axiosInstance.get(`/expense/${storeSeq}/categoryCost`, {
+    params: { month },
+  });
+
+  return response.data;
+}
+
+// 카테고리별 상세 내역 출력
+export const ExpenseDetails = async (storeSeq, month, categorySeq) => {
+  const response = await axiosInstance.get(`/expense/${storeSeq}/details`, {
+    params: {
+      month,
+      categorySeq,
+    },
+  });
+
+  return response.data;
+};

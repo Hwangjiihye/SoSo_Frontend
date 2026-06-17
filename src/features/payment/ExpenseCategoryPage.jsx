@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
 import {
   Chart as ChartJS,
   ArcElement,
@@ -9,11 +8,9 @@ import {
   LinearScale,
 } from 'chart.js';
 import { Doughnut } from 'react-chartjs-2';
-import logo from '../../assets/soso로고.png';
 import MainFooter from '../../components/layout/MainFooter';
-import authStore from '../../store/authStore';
-import { useStores } from '../../hooks/useStores';
 import { useExpenseCategory } from './hooks/useExpenseCategory';
+import { insertExpense, getExpenseTotal, categoryCost, ExpenseDetails } from "../../apis/account";
 
 // Chart.js 컴포넌트 등록
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale);
@@ -24,35 +21,19 @@ ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale);
  * '카테고리1.jpg' 디자인 참고 반영 및 지출 분포 차트 추가
  */
 const ExpenseCategoryPage = () => {
-  const navigate = useNavigate();
-  const { logout, user_nickname, bizname, selectedStoreSeq, setSelectedStore } = authStore();
-  const { stores, isLoading: isStoresLoading } = useStores();
   const { categories, isLoading, formatCurrency } = useExpenseCategory();
 
   const [localCategories, setLocalCategories] = useState([]);
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const [isSettlementMenuOpen, setIsSettlementMenuOpen] = useState(false);
   const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false); // 비용 등록 모달 상태
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false); // 지출 상세 모달 상태 추가
   const [selectedCategory, setSelectedCategory] = useState(null); // 선택된 카테고리 상태 추가
   const [ingredientOrderType, setIngredientOrderType] = useState('general');
+  const [totalAmount, setTotalAmount] = useState(0);
+  const [expenseCategoryTotals, setExpenseCategoryTotals] = useState([]);
 
   // 지출 내역 예시 데이터 상태
-  const [expenses, setExpenses] = useState([
-    { id: 1, categoryId: 1, date: '2026-06-10', title: '양파 및 대파 대량 도매 구매', amount: 120000, memo: '신선 청과물 시장 지출' },
-    { id: 2, categoryId: 1, date: '2026-06-08', title: '냉동 삼겹살 및 정육 원육 구매', amount: 3200000, memo: '동원 유통 정육 발주' },
-    { id: 3, categoryId: 1, date: '2026-06-05', title: '소스 및 기본 식자재 조미료 납부', amount: 1180000, memo: '하나 식자재 마트' },
-    { id: 4, categoryId: 2, date: '2026-06-01', title: '6월 본사 상가 임대료 정기 납부', amount: 2500000, memo: '건물주 계좌 자동 이체' },
-    { id: 5, categoryId: 3, date: '2026-06-10', title: '주말 아르바이트 직원 3인 주급 정산', amount: 800000, memo: '철수, 영희, 민수' },
-    { id: 6, categoryId: 3, date: '2026-06-05', title: '5월 정직원 급여 일괄 지급', amount: 7600000, memo: '총 3명 급여 대장' },
-    { id: 7, categoryId: 4, date: '2026-06-07', title: '5월 매장 전력 전기요금 납부', amount: 620000, memo: '한국전력공사 지출' },
-    { id: 8, categoryId: 4, date: '2026-06-07', title: '5월 매장 상하수도요금 납부', amount: 230000, memo: '상수도사업본부 지출' },
-    { id: 9, categoryId: 5, date: '2026-06-09', title: '인스타그램 인근 상권 스폰서 광고', amount: 350000, memo: '메타 광고 집행' },
-    { id: 10, categoryId: 5, date: '2026-06-02', title: '매장 홍보용 전단지 디자인 및 인쇄 제작', amount: 850000, memo: '나래 디자인' },
-    { id: 11, categoryId: 6, date: '2026-06-08', title: '매장 청소 세제 및 화장지 위생 비품 구입', amount: 150000, memo: '이마트 트레이더스' },
-    { id: 12, categoryId: 6, date: '2026-06-03', title: '정수기 및 식기세척기 렌탈 관리비 납부', amount: 300000, memo: '코웨이 렌탈 지출' },
-  ]);
+  const [expenses, setExpenses] = useState([]);
 
   const ingredientTransactionDetails = {
     1: {
@@ -88,11 +69,99 @@ const ExpenseCategoryPage = () => {
   // 비용 등록 폼 상태
   const [expenseForm, setExpenseForm] = useState({
     date: new Date().toISOString().substring(0, 10),
-    categoryId: '',
+    categorySeq: '',
     amount: '',
     title: '',
     memo: ''
   });
+
+  // 월 별 지출 확인
+  const [selectedMonth, setSelectedMonth] = useState(
+    new Date().toISOString().substring(0, 7)
+  );
+
+  const fetchExpenseTotal = async () => {
+  const storeSeq = Number(localStorage.getItem("storeSeq"));
+
+  if (!storeSeq) {
+    console.log("선택된 매장 없음");
+    return;
+  }
+
+  try {
+    // 전체 월 지출
+    const monthlyTotal = await getExpenseTotal(storeSeq, selectedMonth);
+    console.log("전체 월 지출 응답:", monthlyTotal);
+
+    setTotalAmount(
+      typeof monthlyTotal === "object"
+        ? Number(monthlyTotal.totalAmount || monthlyTotal.TOTALAMOUNT || 0)
+        : Number(monthlyTotal || 0)
+    );
+
+    // 카테고리별 월 지출
+    const categoryResult = await categoryCost(storeSeq, selectedMonth);
+    console.log("카테고리별 지출 응답:", categoryResult);
+
+    const safeCategoryResult = Array.isArray(categoryResult)
+      ? categoryResult
+      : [];
+
+    const mergedCategories = categories.map((cat) => {
+      const categorySeq = cat.categorySeq ?? cat.id;
+      const categoryName = cat.categoryName ?? cat.name;
+
+      const matched = safeCategoryResult.find((item) => {
+        const itemCategorySeq =
+          item.categorySeq ??
+          item.category_seq ??
+          item.CATEGORYSEQ ??
+          item.CATEGORY_SEQ;
+
+        return Number(itemCategorySeq) === Number(categorySeq);
+      });
+
+      const totalAmount =
+        matched?.totalAmount ??
+        matched?.total_amount ??
+        matched?.TOTALAMOUNT ??
+        matched?.TOTAL_AMOUNT ??
+        0;
+
+      const count =
+        matched?.count ??
+        matched?.COUNT ??
+        0;
+
+      return {
+        ...cat,
+        categorySeq,
+        categoryName,
+        totalAmount: Number(totalAmount || 0),
+        count: Number(count || 0),
+      };
+    });
+
+    console.log("합쳐진 카테고리:", mergedCategories);
+
+    setExpenseCategoryTotals(safeCategoryResult);
+    setLocalCategories(mergedCategories);
+  } catch (error) {
+    console.error(error);
+
+    const fallbackCategories = categories.map((cat) => ({
+      ...cat,
+      categorySeq: cat.categorySeq ?? cat.id,
+      categoryName: cat.categoryName ?? cat.name,
+      totalAmount: 0,
+      count: 0,
+    }));
+
+    setLocalCategories(fallbackCategories);
+    setTotalAmount(0);
+  }
+};
+
   const [selectedSupplier, setSelectedSupplier] = useState('');
   const [selectedPurchaseOrder, setSelectedPurchaseOrder] = useState('');
   const [selectedGroupPurchase, setSelectedGroupPurchase] = useState('');
@@ -103,20 +172,18 @@ const ExpenseCategoryPage = () => {
   // 초기 데이터 연동
   useEffect(() => {
     if (categories && categories.length > 0) {
-      setLocalCategories(categories);
+      const baseCategories = categories.map((cat) => ({
+        ...cat,
+        categorySeq: cat.categorySeq ?? cat.id,
+        categoryName: cat.categoryName ?? cat.name,
+        totalAmount: 0,
+        count: 0,
+      }));
+
+      setLocalCategories(baseCategories);
+      fetchExpenseTotal();
     }
-  }, [categories]);
-
-  const handleLogOut = () => {
-    logout();
-    alert("로그아웃 되었습니다.");
-    navigate("/");
-  };
-
-  const handleStoreSwitch = (storeSeq, companyName) => {
-    setSelectedStore(storeSeq, companyName);
-    setIsProfileOpen(false);
-  };
+  }, [categories, selectedMonth]);
 
   const getColorClass = (color) => {
     const classes = {
@@ -143,68 +210,111 @@ const ExpenseCategoryPage = () => {
   };
 
   // 비용 등록 핸들러 (지출 비용 입력 폼 저장 로직)
-  const handleAddExpense = (e) => {
-    e.preventDefault();
-    if (!expenseForm.categoryId) {
-      alert("지출 카테고리를 선택해 주세요.");
-      return;
-    }
-    if (!expenseForm.amount || Number(expenseForm.amount) <= 0) {
-      alert("올바른 지출 금액을 입력해 주세요.");
-      return;
-    }
-    if (!expenseForm.title) {
-      alert("지출 내역을 입력해 주세요.");
-      return;
-    }
+  const handleAddExpense = async (e) => {
+  e.preventDefault();
 
-    const updated = localCategories.map(cat => {
-      if (cat.id === Number(expenseForm.categoryId)) {
-        return {
-          ...cat,
-          amount: cat.amount + Number(expenseForm.amount),
-          count: cat.count + 1
-        };
-      }
-      return cat;
-    });
+  if (!expenseForm.categorySeq) {
+    alert("지출 카테고리를 선택해 주세요.");
+    return;
+  }
 
-    // 지출 세부 내역 상태에 항목 추가
-    const newExpenseItem = {
-      id: expenses.length > 0 ? Math.max(...expenses.map(exp => exp.id)) + 1 : 1,
-      categoryId: Number(expenseForm.categoryId),
-      date: expenseForm.date,
+  if (!expenseForm.amount || Number(expenseForm.amount) <= 0) {
+    alert("올바른 지출 금액을 입력해 주세요.");
+    return;
+  }
+
+  if (!expenseForm.title) {
+    alert("지출 내역을 입력해 주세요.");
+    return;
+  }
+
+  try {
+    const storeSeq = Number(localStorage.getItem("storeSeq"));
+
+    if (!storeSeq) {
+      alert("선택된 매장 정보가 없습니다. 상단에서 매장을 선택해 주세요.");
+      return;
+}
+
+    const requestData = {
+      categorySeq: Number(expenseForm.categorySeq),
+      expenseDate: expenseForm.date,
       title: expenseForm.title,
       amount: Number(expenseForm.amount),
-      memo: expenseForm.memo || '-'
+      memo: expenseForm.memo || "",
+      paymentMethod: "card",
+      supplierName: selectedSupplier || "",
+      refType: null,
+      refSeq: null,
     };
-    setExpenses([newExpenseItem, ...expenses]);
 
-    setLocalCategories(updated);
-    setIsExpenseModalOpen(false);
-    
-    // 폼 초기화
-    setExpenseForm({
-      date: new Date().toISOString().substring(0, 10),
-      categoryId: '',
-      amount: '',
-      title: '',
-      memo: ''
-    });
-    alert("지출 비용이 성공적으로 등록되었습니다!");
-  };
+    const result = await insertExpense(storeSeq, requestData);
 
-  const handleOpenDetails = (cat) => {
+    if (result.success) {
+      alert(result.message);
+
+      await fetchExpenseTotal();
+      setIsExpenseModalOpen(false);
+
+      setExpenseForm({
+        date: new Date().toISOString().substring(0, 10),
+        categorySeq: "",
+        amount: "",
+        title: "",
+        memo: "",
+      });
+
+      setSelectedSupplier("");
+      setSelectedPurchaseOrder("");
+      setSelectedGroupPurchase("");
+      setSelectedGroupPurchaseOrder("");
+      setSelectedDirectPurchaseItems([]);
+      setIngredientExpenseType("general");
+
+      // insert 후 화면 새로고침용
+      // 아직 조회 API 없으면 일단 주석 처리
+      // fetchExpenseCategories();
+    } else {
+      alert(result.message || "등록 실패");
+    }
+  } catch (error) {
+    console.error(error);
+    alert("지출 비용 등록 중 오류가 발생했습니다.");
+  }
+};
+
+  // 지출 내역 상세보기 출력
+  const handleOpenDetails = async (cat) => {
+  const storeSeq = Number(localStorage.getItem("storeSeq"));
+
+  if (!storeSeq) {
+    alert("선택된 매장 정보가 없습니다.");
+    return;
+  }
+
+  try {
     setSelectedCategory(cat);
-    setIngredientOrderType('general');
+    setIngredientOrderType("general");
+
+    const result = await ExpenseDetails(
+      storeSeq,
+      selectedMonth,
+      cat.categorySeq
+    );
+
+    setExpenses(result);
     setIsDetailsModalOpen(true);
-  };
+  } catch (error) {
+    console.error(error);
+    alert("지출 상세 내역을 불러오는 중 오류가 발생했습니다.");
+  }
+};
 
   const chartData = {
-    labels: localCategories.map(c => c.name),
+    labels: localCategories.map(c => c.categoryName),
     datasets: [
       {
-        data: localCategories.map(c => c.amount),
+        data: localCategories.map(c => Number(c.totalAmount || 0)),
         backgroundColor: localCategories.map(c => getChartColors(c.color)),
         borderWidth: 0,
         hoverOffset: 0
@@ -235,78 +345,13 @@ const ExpenseCategoryPage = () => {
     maintainAspectRatio: false
   };
 
-  const totalExpense = localCategories.reduce((acc, cat) => acc + cat.amount, 0);
+  const totalExpense = localCategories.reduce(
+  (acc, cat) => acc + Number(cat.totalAmount || 0),
+  0
+);
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-800 font-sans">
-      <header className="grid grid-cols-3 items-center py-5 px-6 md:px-12 border-b border-gray-200 bg-white sticky top-0 z-50">
-        <div className="flex items-center gap-1 cursor-pointer" onClick={() => navigate("/")}>
-          <img src={logo} alt="SoSo Logo" className="w-12 h-12 object-contain relative top-[5px]" />
-          <div className="text-[40px] font-black text-[#1d9e75] tracking-tighter leading-none">SoSo</div>
-        </div>
-        
-        <nav className="hidden md:flex justify-center gap-1 border border-gray-100 rounded-lg p-1 bg-gray-50 w-fit mx-auto relative">
-          <Link to="/" className="px-4 py-1.5 text-sm font-medium text-gray-500 hover:text-emerald-600 transition-colors whitespace-nowrap">홈</Link>
-          <a href="#" className="px-4 py-1.5 text-sm font-medium text-gray-500 hover:text-emerald-600 transition-colors whitespace-nowrap">발주 관리</a>
-          
-          <div 
-            className="relative"
-            onMouseEnter={() => setIsSettlementMenuOpen(true)}
-            onMouseLeave={() => setIsSettlementMenuOpen(false)}
-          >
-            <div 
-              className={`px-4 py-1.5 text-sm font-bold rounded shadow-sm border cursor-pointer transition-all whitespace-nowrap ${isSettlementMenuOpen ? 'bg-white text-emerald-600 border-gray-100' : 'bg-white text-emerald-600 border-gray-200'}`}
-            >
-              수금 관리
-            </div>
-            
-            <div className={`absolute top-full left-0 w-40 pt-2 z-[60] transition-all duration-200 ${isSettlementMenuOpen ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-2'}`}>
-              <div className="bg-white border border-gray-100 rounded-xl shadow-xl p-2">
-                {['이체 관리', '비용 카테고리', '지출 요약'].map((sub) => (
-                  <button 
-                    key={sub} 
-                    onClick={() => {
-                      if (sub === '이체 관리') navigate("/transfer-management");
-                      else if (sub === '비용 카테고리') navigate("/expense-category");
-                      else if (sub === '지출 요약') navigate("/settlement");
-                    }}
-                    className={`w-full text-left px-3 py-2 text-[11px] font-bold rounded-lg transition-all ${sub === '비용 카테고리' ? 'bg-emerald-50 text-emerald-600' : 'text-gray-600 hover:bg-emerald-50 hover:text-emerald-600'}`}
-                  >
-                    {sub}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <a href="#" className="px-4 py-1.5 text-sm font-medium text-gray-500 hover:text-emerald-600 transition-colors whitespace-nowrap">공동 발주</a>
-          <a href="#" className="px-4 py-1.5 text-sm font-medium text-gray-500 hover:text-emerald-600 transition-colors whitespace-nowrap">업체 홍보</a>
-          <a href="#" className="px-4 py-1.5 text-sm font-medium text-gray-500 hover:text-emerald-600 transition-colors whitespace-nowrap">통계</a>
-        </nav>
-
-        <div className="flex items-center justify-end gap-4">
-          <button className="text-gray-400 hover:text-emerald-600 relative">
-            <span className="text-xl">🔔</span>
-            <span className="absolute -top-1 -right-1 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"></span>
-          </button>
-          
-          <div className="relative">
-            <div 
-              onClick={() => setIsProfileOpen(!isProfileOpen)}
-              className="flex items-center gap-2 border border-gray-200 rounded-full py-1.5 px-3 bg-white hover:bg-emerald-50 cursor-pointer transition-colors"
-            >
-              <div className="w-6 h-6 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-[10px] font-bold">
-                {user_nickname ? user_nickname.substring(0, 1) : 'G'}
-              </div>
-              <span className="text-sm font-semibold whitespace-nowrap text-gray-700">
-                {user_nickname || '회원님'}
-              </span>
-            </div>
-          </div>
-          <button onClick={handleLogOut} className="text-xs text-gray-400 hover:underline">/로그아웃</button>
-        </div>
-      </header>
-
       <main className="max-w-7xl mx-auto px-8 py-8">
         <div className="flex justify-between items-end mb-8">
           <div>
@@ -355,12 +400,20 @@ const ExpenseCategoryPage = () => {
           
           <div className="grid w-full flex-grow grid-cols-2 gap-8 sm:grid-cols-3">
             {localCategories.map((cat) => (
-              <div key={cat.id} className="flex items-center gap-4">
-                <div className="h-4 w-4 shrink-0 rounded-full" style={{ backgroundColor: getChartColors(cat.color) }}></div>
+              <div key={cat.categorySeq} className="flex items-center gap-4">
+                <div
+                  className="h-4 w-4 shrink-0 rounded-full"
+                  style={{ backgroundColor: getChartColors(cat.color) }}
+                ></div>
                 <div>
-                  <div className="text-sm font-bold text-gray-700">{cat.name}</div>
+                  <div className="text-sm font-bold text-gray-700">
+                    {cat.categoryName}
+                  </div>
                   <div className="mt-0.5 text-xs font-medium text-gray-400">
-                    {totalExpense > 0 ? ((cat.amount / totalExpense) * 100).toFixed(1) : '0.0'}%
+                    {totalExpense > 0
+                      ? ((Number(cat.totalAmount || 0) / totalExpense) * 100).toFixed(1)
+                      : '0.0'}
+                    %
                   </div>
                 </div>
               </div>
@@ -368,21 +421,26 @@ const ExpenseCategoryPage = () => {
           </div>
         </div>
 
+
+        <input
+          type="month"
+          value={selectedMonth}
+          onChange={(e) => setSelectedMonth(e.target.value)}
+          className="rounded-xl border border-gray-200 px-4 py-2 text-sm font-bold"/>
         {/* 카테고리 그리드 (디자인 참고) */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {localCategories.map((cat) => (
-            <div key={cat.id} className="bg-white rounded-3xl border border-gray-100 p-8 shadow-sm hover:shadow-md hover:border-emerald-100 transition-all group cursor-pointer">
+            <div key={cat.categorySeq} className="bg-white rounded-3xl border border-gray-100 p-8 shadow-sm hover:shadow-md hover:border-emerald-100 transition-all group cursor-pointer">
               <div className="flex justify-between items-start mb-6">
                 <div className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${getColorClass(cat.color)}`}>
-                  {cat.name}
+                  {cat.categoryName}
                 </div>
               </div>
               <div className="mb-6">
-                <div className="text-3xl font-black text-gray-900 group-hover:text-emerald-600 transition-colors">{formatCurrency(cat.amount)}</div>
-                <div className="text-xs font-bold text-gray-400 mt-1">이번 달 누적 지출 · {cat.count}건</div>
+                <div className="text-3xl font-black text-gray-900 group-hover:text-emerald-600 transition-colors">{Number(cat.totalAmount || 0).toLocaleString()}원</div>
+                <div className="text-xs font-bold text-gray-400 mt-1">이번 달 누적 지출 · {cat.count || 0}건</div>
               </div>
               <div className="pt-6 border-t border-gray-50 flex justify-between items-center">
-                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">전월 대비 +4.2%</span>
                 <button 
                   onClick={() => handleOpenDetails(cat)}
                   className="text-xs font-black text-emerald-600 group-hover:underline flex items-center gap-1"
@@ -416,7 +474,8 @@ const ExpenseCategoryPage = () => {
         <div className="fixed inset-0 z-[100] flex items-center justify-center overflow-hidden p-4">
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setIsExpenseModalOpen(false)}></div>
           <div className={`relative w-full overflow-hidden rounded-3xl bg-white px-8 py-5 shadow-2xl animate-fade-in-up ${
-            localCategories.find(cat => cat.id === Number(expenseForm.categoryId))?.name === '식자재비'
+            localCategories.find(cat => cat.id === Number(expenseForm.categorySeq
+            ))?.name === '식자재비'
               ? 'max-w-3xl'
               : 'max-w-lg'
           }`}>
@@ -444,9 +503,9 @@ const ExpenseCategoryPage = () => {
                 <label className="block text-[10px] font-bold text-gray-400 mb-1.5 uppercase tracking-widest">지출 카테고리</label>
                 <select 
                   className="w-full px-4 py-2.5 bg-gray-50 border border-gray-100 rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all"
-                  value={expenseForm.categoryId}
+                  value={expenseForm.categorySeq}
                   onChange={(e) => {
-                    setExpenseForm({...expenseForm, categoryId: e.target.value});
+                    setExpenseForm({...expenseForm, categorySeq: e.target.value});
                     setSelectedSupplier('');
                     setSelectedPurchaseOrder('');
                     setSelectedGroupPurchase('');
@@ -463,7 +522,7 @@ const ExpenseCategoryPage = () => {
                 </select>
               </div>
 
-              {localCategories.find(cat => cat.id === Number(expenseForm.categoryId))?.name === '식자재비' && (
+              {localCategories.find(cat => cat.id === Number(expenseForm.categorySeq))?.name === '식자재비' && (
                 <div className="space-y-3 rounded-2xl border border-emerald-100 bg-emerald-50/40 p-4">
                   <div className="flex items-start justify-between gap-4">
                     <div>
@@ -800,7 +859,7 @@ const ExpenseCategoryPage = () => {
                 </div>
               )}
 
-              {localCategories.find(cat => cat.id === Number(expenseForm.categoryId))?.name !== '식자재비' && (
+              {localCategories.find(cat => cat.id === Number(expenseForm.categorySeq))?.name !== '식자재비' && (
                 <div>
                   <label className="block text-[10px] font-bold text-gray-400 mb-1.5 uppercase tracking-widest">지출 금액 (원)</label>
                   <input 
@@ -878,7 +937,7 @@ const ExpenseCategoryPage = () => {
               <div className="flex items-start justify-between gap-6">
                 <div className="min-w-0">
                   <div className={`mb-3 inline-flex rounded-full border px-3 py-1 text-[11px] font-black tracking-wider ${getColorClass(selectedCategory.color)}`}>
-                    {selectedCategory.name}
+                    {selectedCategory.categoryName}
                   </div>
                   <h3 id="expense-detail-title" className="text-xl font-black tracking-tight text-gray-900 sm:text-2xl">
                     지출 상세 내역
@@ -904,18 +963,18 @@ const ExpenseCategoryPage = () => {
                 <div className="rounded-2xl border border-gray-100 bg-gray-50 px-5 py-4">
                   <span className="block text-[11px] font-bold text-gray-400">총 지출 건수</span>
                   <strong className="mt-1 block text-xl font-black text-gray-900">
-                    {expenses.filter(exp => exp.categoryId === selectedCategory.id).length}건
+                    {selectedCategory.count || 0}건
                   </strong>
                 </div>
                 <div className="rounded-2xl border border-emerald-100 bg-emerald-50/70 px-5 py-4">
                   <span className="block text-[11px] font-bold text-emerald-600/70">누적 지출 금액</span>
                   <strong className="mt-1 block truncate text-xl font-black text-emerald-700">
-                    {formatCurrency(selectedCategory.amount)}
+                    {formatCurrency(selectedCategory.totalAmount || 0)}
                   </strong>
                 </div>
               </div>
 
-              {selectedCategory.name === '식자재비' && (
+              {selectedCategory.categoryName === '식자재비' && (
                 <div className="mt-4 grid grid-cols-3 rounded-2xl bg-gray-100 p-1.5">
                   {[
                     { value: 'general', label: '일반 발주' },
@@ -923,7 +982,7 @@ const ExpenseCategoryPage = () => {
                     { value: 'personal', label: '개인 구매' },
                   ].map((orderType) => {
                     const matchingExpenses = expenses.filter(
-                      exp => exp.categoryId === selectedCategory.id
+                      exp => exp.categorySeq === selectedCategory.id
                         && ingredientTransactionDetails[exp.id]?.orderType === orderType.value
                     );
                     const matchingAmount = matchingExpenses.reduce((total, exp) => total + exp.amount, 0);
@@ -961,23 +1020,9 @@ const ExpenseCategoryPage = () => {
             </header>
 
             <div className="flex-1 overflow-y-auto bg-gray-50/70 px-4 py-4 sm:px-8 sm:py-6">
-              {expenses.filter(
-                exp => exp.categoryId === selectedCategory.id
-                  && (
-                    selectedCategory.name !== '식자재비'
-                    || ingredientTransactionDetails[exp.id]?.orderType === ingredientOrderType
-                  )
-              ).length > 0 ? (
+              {expenses.length > 0 ? (
                 <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white">
-                  {expenses
-                    .filter(
-                      exp => exp.categoryId === selectedCategory.id
-                        && (
-                          selectedCategory.name !== '식자재비'
-                          || ingredientTransactionDetails[exp.id]?.orderType === ingredientOrderType
-                        )
-                    )
-                    .map((item, index, filteredItems) => (
+                  {expenses.map((item, index, filteredItems) => (
                       <article
                         key={item.id}
                         className={`p-5 transition-colors hover:bg-gray-50/70 sm:p-6 ${
@@ -988,10 +1033,10 @@ const ExpenseCategoryPage = () => {
                           <div className="flex min-w-0 gap-4">
                             <div className="flex h-12 w-12 shrink-0 flex-col items-center justify-center rounded-xl bg-gray-900 text-white">
                               <span className="text-[9px] font-bold leading-none text-gray-300">
-                                {item.date.split('-')[1]}월
+                                {item.expenseDate.split('-')[1]}월
                               </span>
                               <span className="mt-1 text-lg font-black leading-none">
-                                {item.date.split('-')[2]}
+                                {item.expenseDate.split('-')[2]}
                               </span>
                             </div>
                             <div className="min-w-0">
@@ -999,7 +1044,7 @@ const ExpenseCategoryPage = () => {
                                 {item.title}
                               </h4>
                               <p className="mt-1 text-xs font-semibold text-gray-400">
-                                {item.date.replaceAll('-', '.')}
+                                {item.expenseDate.replaceAll('-', '.')}
                               </p>
                             </div>
                           </div>
@@ -1033,7 +1078,7 @@ const ExpenseCategoryPage = () => {
                           </div>
                         </div>
 
-                        {selectedCategory.name === '식자재비' && ingredientTransactionDetails[item.id] && (
+                        {selectedCategory.categoryName === '식자재비' && ingredientTransactionDetails[item.id] && (
                           <div className="mt-4 grid gap-3 rounded-xl border border-emerald-100 bg-emerald-50/50 p-4 sm:grid-cols-[180px_1fr]">
                             <div>
                               <span className="block text-[10px] font-bold text-emerald-600/70">거래처명</span>
@@ -1133,7 +1178,7 @@ const ExpenseCategoryPage = () => {
               <div className="h-8 w-[1px] bg-gray-100"></div>
               <div>
                 <div className={`w-fit px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-widest border mb-1 ${getColorClass(selectedCategory.color)}`}>
-                  {selectedCategory.name}
+                  {selectedCategory.categoryName}
                 </div>
                 <h3 className="text-2xl font-black text-gray-900 tracking-tight">상세 지출 내역 리포트</h3>
               </div>
@@ -1147,7 +1192,7 @@ const ExpenseCategoryPage = () => {
               <div className="w-[1px] h-6 bg-gray-200"></div>
               <div className="flex flex-col">
                 <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">누적 합계 금액</span>
-                <span className="text-2xl font-black text-emerald-600">{formatCurrency(selectedCategory.amount)}</span>
+                <span className="text-2xl font-black text-emerald-600">{formatCurrency(selectedCategory.totalAmount)}</span>
               </div>
             </div>
           </header>
@@ -1156,9 +1201,9 @@ const ExpenseCategoryPage = () => {
           <div className="flex-1 overflow-y-auto custom-scrollbar bg-gray-50/50">
             <div className="max-w-6xl mx-auto px-8 py-12">
               <div className="grid grid-cols-1 gap-8">
-                {expenses.filter(exp => exp.categoryId === selectedCategory.id).length > 0 ? (
+                {expenses.filter(exp => exp.categorySeq === selectedCategory.id).length > 0 ? (
                   expenses
-                    .filter(exp => exp.categoryId === selectedCategory.id)
+                    .filter(exp => exp.categorySeq === selectedCategory.id)
                     .map((item) => (
                       <div 
                         key={item.id} 
@@ -1170,10 +1215,10 @@ const ExpenseCategoryPage = () => {
                             <div className="flex items-center gap-5">
                               <div className="bg-emerald-600 text-white rounded-2xl px-6 py-3 text-center shadow-lg shadow-emerald-100">
                                 <div className="text-xs font-bold opacity-80 uppercase tracking-tighter mb-0.5">
-                                  {item.date.split('-')[0]}년 {item.date.split('-')[1]}월
+                                  {item.expenseDate.split('-')[0]}년 {item.expenseDate.split('-')[1]}월
                                 </div>
                                 <div className="text-3xl font-black leading-none">
-                                  {item.date.split('-')[2]}일
+                                  {item.expenseDate.split('-')[2]}일
                                 </div>
                               </div>
                               <div>
