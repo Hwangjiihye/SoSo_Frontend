@@ -45,6 +45,8 @@ function BusinessMain({ setRole }) {
   // 프로필 드롭다운 상태
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isSettlementMenuOpen, setIsSettlementMenuOpen] = useState(false);
+  const [isChatbotOpen, setIsChatbotOpen] = useState(false);
+  const [chatbotMessage, setChatbotMessage] = useState('');
 
   // 마이페이지 이동 핸들러
   const handleProfileClick = () => {
@@ -193,6 +195,114 @@ function BusinessMain({ setRole }) {
           </div>
         </div>
       </main>
+
+      <aside className="fixed bottom-6 right-6 z-40 flex items-end gap-5 max-lg:right-4 max-lg:bottom-4 max-sm:left-4 max-sm:right-4 max-sm:flex-col-reverse max-sm:items-end">
+        <button
+          type="button"
+          onClick={() => setIsChatbotOpen((prev) => !prev)}
+          className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500 via-emerald-600 to-teal-700 shadow-2xl shadow-emerald-900/30 transition-transform hover:-translate-y-1"
+          aria-label={isChatbotOpen ? '챗봇 닫기' : '챗봇 열기'}
+        >
+          <div className="relative flex h-11 w-11 items-center justify-center rounded-full bg-white/95 shadow-inner">
+            <span className="relative flex h-7 w-8 items-center justify-center rounded-full bg-white">
+              <span className="absolute -bottom-1 left-1.5 h-2 w-2 -skew-x-12 bg-white"></span>
+              <span className="relative z-10 flex gap-1">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-700"></span>
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-700"></span>
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-700"></span>
+              </span>
+            </span>
+          </div>
+        </button>
+
+        {isChatbotOpen && (
+        <section className="w-[430px] overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-2xl shadow-gray-900/15 max-sm:w-full">
+          <div className="flex items-center justify-between bg-emerald-700 px-5 py-4 text-white">
+            <div className="flex items-center gap-3">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white/95">
+                <div className="relative flex h-8 w-8 items-center justify-center rounded-full bg-emerald-50">
+                  <span className="relative flex h-6 w-7 items-center justify-center rounded-lg bg-emerald-600">
+                    <span className="absolute -top-1 h-1.5 w-1 rounded-full bg-emerald-600"></span>
+                    <span className="flex h-4 w-5 items-center justify-center gap-1 rounded-md bg-white">
+                      <span className="h-1 w-1 rounded-full bg-emerald-700"></span>
+                      <span className="h-1 w-1 rounded-full bg-emerald-700"></span>
+                    </span>
+                  </span>
+                </div>
+              </div>
+              <div>
+                <h2 className="text-xl font-black leading-tight">SoSo 챗봇</h2>
+              </div>
+            </div>
+            <div className="flex items-center text-3xl font-light leading-none">
+              <button type="button" onClick={() => setIsChatbotOpen(false)} aria-label="챗봇 닫기" className="leading-none text-white">
+                ×
+              </button>
+            </div>
+          </div>
+
+          <div className="flex h-[520px] flex-col bg-white px-5 py-5 max-sm:h-[460px]">
+            <div className="flex-1 space-y-5 overflow-hidden">
+              <div className="flex items-start gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-emerald-100 bg-emerald-50">
+                  <span className="relative flex h-6 w-7 items-center justify-center rounded-lg bg-emerald-600">
+                    <span className="absolute -top-1 h-1.5 w-1 rounded-full bg-emerald-600"></span>
+                    <span className="flex h-4 w-5 items-center justify-center gap-1 rounded-md bg-white">
+                      <span className="h-1 w-1 rounded-full bg-emerald-700"></span>
+                      <span className="h-1 w-1 rounded-full bg-emerald-700"></span>
+                    </span>
+                  </span>
+                </div>
+                <div className="max-w-[280px] rounded-2xl rounded-tl-md border border-gray-200 bg-white px-4 py-3 shadow-sm">
+                  <p className="text-sm leading-7 text-gray-900">안녕하세요! 👋<br />SoSo 업무 도우미입니다.<br />무엇을 도와드릴까요?</p>
+                  <p className="mt-2 text-right text-xs text-gray-400">오후 2:30</p>
+                </div>
+              </div>
+
+              <div className="flex justify-end">
+                <div className="rounded-2xl rounded-tr-md bg-emerald-700 px-4 py-3 text-sm font-bold text-white shadow-sm">최근 발주 내역 알려줘</div>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-emerald-100 bg-emerald-50">
+                  <span className="relative flex h-6 w-7 items-center justify-center rounded-lg bg-emerald-600">
+                    <span className="absolute -top-1 h-1.5 w-1 rounded-full bg-emerald-600"></span>
+                    <span className="flex h-4 w-5 items-center justify-center gap-1 rounded-md bg-white">
+                      <span className="h-1 w-1 rounded-full bg-emerald-700"></span>
+                      <span className="h-1 w-1 rounded-full bg-emerald-700"></span>
+                    </span>
+                  </span>
+                </div>
+                <div className="max-w-[310px] rounded-2xl rounded-tl-md border border-gray-200 bg-white px-4 py-3 shadow-sm">
+                  <p className="text-sm leading-7 text-gray-900">최근 발주 내역은 총 3건입니다.</p>
+                  <ul className="mt-2 space-y-1 text-sm leading-6 text-gray-900">
+                    <li>· 2024-06-18 신선식품 350,000원</li>
+                    <li>· 2024-06-17 대한유통 180,000원</li>
+                    <li>· 2024-06-16 푸드상사 250,000원</li>
+                  </ul>
+                  <p className="mt-2 text-right text-xs text-gray-400">오후 2:30</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-5 flex items-center gap-3 rounded-2xl border border-gray-200 bg-white px-4 py-3 shadow-sm">
+              <input
+                type="text"
+                value={chatbotMessage}
+                onChange={(event) => setChatbotMessage(event.target.value)}
+                placeholder="질문을 입력하세요..."
+                className="min-w-0 flex-1 bg-transparent text-sm font-medium text-gray-700 placeholder:text-gray-400 focus:outline-none"
+              />
+              <button type="button" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-emerald-700 text-white shadow-lg shadow-emerald-900/20" aria-label="챗봇 메시지 전송">
+                <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path d="M3.4 20.4 21.6 12 3.4 3.6 3 10l10 2-10 2 .4 6.4Z" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </section>
+        )}
+      </aside>
     </div>
   );
 };
