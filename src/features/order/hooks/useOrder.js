@@ -36,17 +36,25 @@ export const useOrder = () => {
   }, [])
 
   const fetchOrderList = async (searchKeyword = '') => {
-     try {
-      const data = await orderList(searchKeyword);
+  try {
+    const storeSeq = Number(localStorage.getItem('storeSeq'));
 
-      console.log('발주 목록 조회 결과:', data);
-
-      setOrders(data);
-    } catch (error) {
-      console.error('발주 목록 조회 실패:', error);
+    if (!storeSeq) {
+      console.log('storeSeq 없음');
       setOrders([]);
+      return;
     }
-  };
+
+    const data = await orderList(storeSeq, searchKeyword);
+
+    console.log('발주 목록 조회 결과:', data);
+
+    setOrders(data);
+  } catch (error) {
+    console.error('발주 목록 조회 실패:', error);
+    setOrders([]);
+  }
+};
 
   // 필터링 로직
   const filteredOrders = orders.filter((order) => {
@@ -63,7 +71,7 @@ export const useOrder = () => {
     setDateRange(range);
   }, []);
 
-  return {
+    return {
     orders: filteredOrders,
     setOrders,
     filterStatus,
@@ -73,7 +81,6 @@ export const useOrder = () => {
     fetchSearch,
     keyword,
     handleKeywordChange,
-    fetchSearch,
     reset
   };
 };

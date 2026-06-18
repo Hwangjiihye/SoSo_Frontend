@@ -25,12 +25,13 @@ function OrderApplyPage() {
     handleItemChange,
     addSelectedItem,
     removeItem,
-    handleSubmit
+    handleSubmit,
+    deliveryNotes
   } = useOrderApply();
 
-// 공급업체 seq를 이름으로 찾기
+// 선택한 공급업체 찾기
 const supplierRealName = suppliers.find(
-  (supplier) => String(supplier.userSeq) === String(orderInfo.supplier)
+  (supplier) => String(supplier.storeSeq) === String(orderInfo.supplier)
 );
 
   // 재고랑 발주랑 맞는지 확인 후 선택
@@ -38,7 +39,14 @@ const supplierRealName = suppliers.find(
   console.log('선택한 품목:', item);
   
   try {
+    const storeSeq = Number(localStorage.getItem('storeSeq'));
+
+    if (!storeSeq) {
+      alert('선택된 매장이 없습니다.');
+      return;
+    }
     const result = await check(item.itemName);
+
     console.log('재고 추천 응답:', result);
     setRecommendedStocks(result);
     addSelectedItem(item);
@@ -99,18 +107,26 @@ const handleCloseModal = () => {
                 </div>
                 <div>
                   <label className="block text-[14px] font-black text-gray-600 mb-2 uppercase tracking-tighter">공급업체</label>
-                  <select 
-                    value={orderInfo.supplier}
-                    onChange={(e) => handleInfoChange('supplier', e.target.value)}
+                  <select
+                    value={String(orderInfo.supplier || '')}
+                    onChange={(e) => {
+                      const selectedValue = e.target.value;
+                      console.log('진짜 선택된 공급업체 value:', selectedValue);
+                      handleInfoChange('supplier', selectedValue);
+                    }}
                     className="w-full bg-gray-50 border-none rounded-2xl py-4 px-4 text-sm font-bold focus:ring-2 focus:ring-emerald-500/20 outline-none"
                   >
                     <option value="">공급업체 선택</option>
-                      {suppliers.map((supplier) => (
-                        <option key={supplier.userSeq} value={supplier.userSeq}>
-                          {supplier.partnerName}
-                        </option>
-                      ))}
-                  </select>
+
+                    {suppliers.map((supplier) => (
+                      <option
+                        key={supplier.storeSeq}
+                        value={String(supplier.storeSeq)}
+                      >
+                        {supplier.partnerName}
+                      </option>
+                    ))}
+                </select>
                 </div>
                 <div>
                   <label className="block text-[14px] font-black text-gray-600 mb-2 uppercase tracking-tighter">사업자명</label>
@@ -322,7 +338,7 @@ const handleCloseModal = () => {
                           {stock.stock}
                         </p>
                         <p className="text-xs font-bold text-gray-500 mt-1">
-                          현재 수량: {stock.quantity} / 안전재고: {stock.safety_stock}
+                          현재 수량: {stock.quantity} / 안전재고: {stock.safetyStock}
                         </p>
                       </div>
             <button className="px-4 py-2 bg-emerald-600 text-white text-xs font-black rounded-xl hover:bg-emerald-700 transition-all" onClick={handleCloseModal}>
