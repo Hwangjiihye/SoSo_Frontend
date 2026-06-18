@@ -19,6 +19,7 @@ import stockRoutes from './stockRoutes';
 import orderRoutes from './orders';
 import communityRoutes from './communityRoutes';
 import accountRoutes from './accountRoutes';
+import groupBuyRoutes from './groupBuyRoutes';
 
 /**
  * @file AppRoutes.jsx
@@ -60,6 +61,7 @@ const router = createBrowserRouter([
       ...orderRoutes,
       ...communityRoutes,
       ...accountRoutes,
+      ...groupBuyRoutes,
     ],
   },
 ]);

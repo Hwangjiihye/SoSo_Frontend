@@ -3,6 +3,7 @@ import mainRoutes from './mainRoutes';
 import memberRoutes from './memberRoutes';
 import stockRoutes from './stockRoutes';
 import orderRoutes from './orders';
+import groupBuyRoutes from './groupBuyRoutes';
 /**
  * @file index.jsx (Router)
  * @description 도메인별로 분리된 라우트들을 하나로 통합하여 
@@ -13,6 +14,7 @@ const router = createBrowserRouter([
   ...memberRoutes, // 회원 관련 주소 합치기
   ...stockRoutes,  // 재고 관리 관련 주소 합치기
   ...orderRoutes,  // 발주 관련 주소 합치기
+  ...groupBuyRoutes, // 공동구매 관련 주소 합치기
 ]);
 
 export default router;
