@@ -3,7 +3,7 @@
  * @description '사업자' 대시보드 메인 페이지입니다.
  * authStore에서 실제 회원 정보를 가져와 프로필 영역에 표시하며, 훅 사용을 최적화했습니다.
  */
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import {
   Chart as ChartJS,
@@ -19,6 +19,8 @@ import {
 } from 'chart.js';
 import { Bar, Line } from 'react-chartjs-2';
 import authStore from '../../store/authStore';
+import useNotificationStore from '../../store/notificationStore';
+import useNotificationSocket from '../../hooks/useNotificationSocket';
 
 // Chart.js 컴포넌트 등록
 ChartJS.register(
@@ -36,8 +38,19 @@ ChartJS.register(
 import { useStores } from '../../hooks/useStores';
 
 function BusinessMain({ setRole }) {
-  // authStore에서 필요한 상태와 매장 전환 함수를 가져옵니다.
   const navigate = useNavigate();
+  const { user_seq } = authStore();
+  const { notifications, fetchNotifications, markAsRead } = useNotificationStore();
+
+  // 1. 실시간 소켓 연결
+  useNotificationSocket(user_seq);
+
+  // 2. 초기 알림 로드
+  useEffect(() => {
+    if (user_seq) {
+      fetchNotifications(user_seq);
+    }
+  }, [user_seq, fetchNotifications]);
 
   // --- 차트 데이터 영역 (기존과 동일) ---
   const stockChartData = {
@@ -73,16 +86,24 @@ function BusinessMain({ setRole }) {
     scales: { y: { beginAtZero: true, grid: { color: '#f3f4f6' } }, x: { grid: { display: false } } }
   };
 
-  const notifications = [
-    { id: 1, title: '부족 재고 - 냉동삼겹살 1kg', desc: '현재 재고 3개 · 안전 재고 기준 20개 미달', time: '방금 전', color: 'bg-red-500' },
-    { id: 2, title: '유통기한 임박 - 두부 (면두부)', desc: 'D-3 · 12개 남음 · 즉시 처리 권장', time: '8분 전', color: 'bg-orange-500' },
-    { id: 3, title: '발주 도착 예정 - 식용유 18L X 6', desc: '오늘 오후 2시~4시 배송 예정', time: '34분 전', color: 'bg-emerald-500' },
-  ];
-
   const groupOrders = [
     { id: 1, title: '참치캔 (동원 150g X 48)', status: '모집 중', progress: 72, color: 'bg-emerald-500', current: 18, min: 25, dDay: 'D-1', btn: '참여하기' },
     { id: 2, title: '냉동만두 (비비고 2kg X 12)', status: '모집 중', progress: 48, color: 'bg-emerald-500', current: 12, min: 25, dDay: 'D-4', btn: '참여하기' },
   ];
+
+  // 시간 포맷팅 헬퍼
+  const formatTime = (dateString) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffMin = Math.floor(diffMs / 60000);
+    const diffHour = Math.floor(diffMin / 60);
+
+    if (diffMin < 1) return '방금 전';
+    if (diffMin < 60) return `${diffMin}분 전`;
+    if (diffHour < 24) return `${diffHour}시간 전`;
+    return date.toLocaleDateString();
+  };
 
   return (
     <div className="bg-gray-50 text-gray-800 font-sans">
@@ -132,16 +153,34 @@ function BusinessMain({ setRole }) {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
             <h3 className="font-bold mb-6 text-gray-700">실시간 알림</h3>
-            <div className="space-y-6">
-              {notifications.map(n => (
-                <div key={n.id} className="flex gap-4 group cursor-pointer">
-                  <div className={`w-1.5 h-1.5 rounded-full mt-1.5 ${n.color}`}></div>
-                  <div className="flex-grow border-b border-gray-50 pb-4 group-last:border-0">
-                    <div className="flex justify-between items-start mb-0.5"><h4 className="text-sm font-bold text-gray-800">{n.title}</h4><span className="text-[10px] text-gray-300 font-bold">{n.time}</span></div>
-                    <p className="text-xs text-gray-400 leading-relaxed">{n.desc}</p>
+            {/* 알림 리스트 영역: 5개 정도 높이 고정 후 스크롤 */}
+            <div className="space-y-6 max-h-[420px] overflow-y-auto pr-2 custom-scrollbar">
+              {notifications.length > 0 ? (
+                notifications.map(n => (
+                  <div 
+                    key={n.notificationId} 
+                    className={`flex gap-4 group cursor-pointer transition-opacity ${n.isRead ? 'opacity-40' : 'opacity-100'}`}
+                    onClick={() => markAsRead(n.notificationId)}
+                  >
+                    <div className={`w-1.5 h-1.5 rounded-full mt-1.5 shrink-0 ${
+                      n.type === 'STOCK' ? 'bg-red-500' : 
+                      n.type === 'EXPIRY' ? 'bg-orange-500' : 'bg-emerald-500'
+                    }`}></div>
+                    <div className="flex-grow border-b border-gray-50 pb-4 group-last:border-0">
+                      <div className="flex justify-between items-start mb-0.5">
+                        <h4 className="text-sm font-bold text-gray-800">
+                          {n.storeName && <span className="text-emerald-600 mr-1">[{n.storeName}]</span>}
+                          {n.title}
+                        </h4>
+                        <span className="text-[10px] text-gray-300 font-bold whitespace-nowrap ml-2">{formatTime(n.createdAt)}</span>
+                      </div>
+                      <p className="text-xs text-gray-400 leading-relaxed">{n.message}</p>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))
+              ) : (
+                <div className="py-20 text-center text-gray-400 text-sm">새로운 알림이 없습니다.</div>
+              )}
             </div>
           </div>
           <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">

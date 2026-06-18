@@ -3,7 +3,7 @@
  * @description '거래처' 대시보드 페이지입니다. 
  * Chart.js를 사용하여 매출, 수금 및 미수금 현황을 시각화하며, 훅 사용을 최적화했습니다.
  */
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Chart as ChartJS,
@@ -21,6 +21,8 @@ import { Bar, Line } from 'react-chartjs-2';
 import MainFooter from '../../components/layout/MainFooter';
 import authStore from '../../store/authStore';
 import PartnerMainHeader from '../../components/layout/PartnerMainHeader';
+import useNotificationStore from '../../store/notificationStore';
+import useNotificationSocket from '../../hooks/useNotificationSocket';
 
 // Chart.js 컴포넌트 등록
 ChartJS.register(
@@ -36,8 +38,33 @@ ChartJS.register(
 );
 
 function PartnerMain({ setRole }) {
-  // authStore 훅을 한 번만 호출하여 필요한 상태를 구조분해 할당으로 가져옵니다.
   const navigate = useNavigate();
+  const { user_seq } = authStore();
+  const { notifications, fetchNotifications, markAsRead } = useNotificationStore();
+
+  // 1. 실시간 소켓 연결
+  useNotificationSocket(user_seq);
+
+  // 2. 초기 알림 로드
+  useEffect(() => {
+    if (user_seq) {
+      fetchNotifications(user_seq);
+    }
+  }, [user_seq, fetchNotifications]);
+
+  // 시간 포맷팅 헬퍼
+  const formatTime = (dateString) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffMin = Math.floor(diffMs / 60000);
+    const diffHour = Math.floor(diffMin / 60);
+
+    if (diffMin < 1) return '방금 전';
+    if (diffMin < 60) return `${diffMin}분 전`;
+    if (diffHour < 24) return `${diffHour}시간 전`;
+    return date.toLocaleDateString();
+  };
 
   // --- 차트 데이터 (기존과 동일) ---
   const trendChartData = {
@@ -67,14 +94,6 @@ function PartnerMain({ setRole }) {
       pointRadius: 4,
     }]
   };
-
-  const notifications = [
-    { id: 1, title: '신규 발주 접수 - 강남 본점', desc: '냉동삼겹살 10kg x 5 총 37만원', time: '방금 전', color: 'bg-red-500' },
-    { id: 2, title: '미수금 결제 완료 - 홍대 2호점', desc: '210만원 입금 확인, 잔액 0원', time: '8분 전', color: 'bg-emerald-500' },
-    { id: 3, title: '재고 임박 - 참치캔 150g', desc: '잔여 재고 30개, 평균 소진 3일', time: '34분 전', color: 'bg-orange-500' },
-    { id: 4, title: '납품 예정일 - 신촌 3호점', desc: '내일 오전 10시, 건어물류 4종', time: '1시간 전', color: 'bg-blue-500' },
-    { id: 5, title: '미수금 연체 - 이태원 직영점', desc: 'D+15, 840만원, 독촉 알림 발송', time: '2시간 전', color: 'bg-yellow-400' }
-  ];
 
   const businessSales = [
     { name: '강남 본점', desc: '이번 달 12건, 미수금 없음', amount: '1,240만', trend: '↑ +8.2%', progress: 100, color: 'bg-emerald-500' },
@@ -226,19 +245,33 @@ function PartnerMain({ setRole }) {
                 실시간 알림
                 <span className="text-xs text-gray-400 font-bold cursor-pointer hover:text-emerald-600 transition-colors uppercase tracking-widest">View All &gt;</span>
               </h3>
-              <div className="space-y-6">
-                {notifications.map(n => (
-                  <div key={n.id} className="flex gap-4 items-start group cursor-pointer border-b border-gray-50 pb-5 last:border-0 last:pb-0">
-                    <div className={`w-2 h-2 rounded-full mt-2 shrink-0 ${n.color}`}></div>
-                    <div className="flex-grow">
-                      <div className="flex justify-between items-start mb-1">
-                        <h4 className="text-sm font-black text-gray-800 group-hover:text-emerald-600 transition-colors leading-tight">{n.title}</h4>
-                        <span className="text-[10px] text-gray-300 font-bold uppercase tracking-tighter whitespace-nowrap ml-2">{n.time}</span>
+              <div className="space-y-6 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
+                {notifications.length > 0 ? (
+                  notifications.map(n => (
+                    <div 
+                      key={n.notificationId} 
+                      className={`flex gap-4 items-start group cursor-pointer border-b border-gray-50 pb-5 last:border-0 last:pb-0 transition-opacity ${n.isRead ? 'opacity-40' : 'opacity-100'}`}
+                      onClick={() => markAsRead(n.notificationId)}
+                    >
+                      <div className={`w-2 h-2 rounded-full mt-2 shrink-0 ${
+                        n.type === 'STOCK' ? 'bg-red-500' : 
+                        n.type === 'EXPIRY' ? 'bg-orange-500' : 'bg-emerald-500'
+                      }`}></div>
+                      <div className="flex-grow">
+                        <div className="flex justify-between items-start mb-1">
+                          <h4 className="text-sm font-black text-gray-800 group-hover:text-emerald-600 transition-colors leading-tight">
+                            {n.storeName && <span className="text-emerald-600 mr-1">[{n.storeName}]</span>}
+                            {n.title}
+                          </h4>
+                          <span className="text-[10px] text-gray-300 font-bold uppercase tracking-tighter whitespace-nowrap ml-2">{formatTime(n.createdAt)}</span>
+                        </div>
+                        <p className="text-xs text-gray-400 font-medium leading-relaxed">{n.message}</p>
                       </div>
-                      <p className="text-xs text-gray-400 font-medium leading-relaxed">{n.desc}</p>
                     </div>
-                  </div>
-                ))}
+                  ))
+                ) : (
+                  <div className="py-20 text-center text-gray-400 text-sm font-bold">새로운 알림이 없습니다.</div>
+                )}
               </div>
            </div>
         </div>
