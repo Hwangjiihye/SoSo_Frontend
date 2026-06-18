@@ -26,6 +26,8 @@ const GroupBuyCreateModal = ({ onClose, onSubmit, isPartner }) => {
     target_participants: 1,
     total_amount: 0,
     deadline: '',
+    pickup_location: '', // 픽업 장소 추가
+    pickup_time: '',     // 픽업 가능 시간 추가
     delivery_note: '',
   });
 
@@ -78,119 +80,160 @@ const GroupBuyCreateModal = ({ onClose, onSubmit, isPartner }) => {
         </div>
         
         <form onSubmit={handleSubmit} className="p-10 space-y-8 max-h-[75vh] overflow-y-auto custom-scrollbar">
-          {/* 품목 선택 (요구사항: 선택 시 총금액 반영) */}
-          <div className="space-y-3">
-            <label className="text-[10px] font-black text-emerald-600 uppercase tracking-[0.2em] ml-1">품목 템플릿 선택</label>
-            <select
-              value={selectedTemplateIndex}
-              onChange={(e) => setSelectedTemplateIndex(e.target.value)}
-              className="w-full bg-gray-50 border-2 border-gray-50 rounded-2xl px-6 py-4 text-sm focus:border-emerald-500 focus:bg-white outline-none font-bold transition-all appearance-none"
-            >
-              <option value="">직접 입력 또는 템플릿 선택</option>
-              {itemTemplates.map((item, idx) => (
-                <option key={idx} value={idx}>{item.name} ({item.quantity})</option>
-              ))}
-            </select>
-          </div>
-
-          {/* 품목명 & 수량 (요구사항 추가) */}
-          <div className="grid grid-cols-2 gap-5">
-            <div className="space-y-3">
-              <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">품목명</label>
-              <input
-                required
-                name="title"
-                value={formData.title}
-                onChange={handleChange}
-                className="w-full bg-gray-50 border-2 border-gray-50 rounded-2xl px-6 py-4 text-sm focus:border-emerald-500 focus:bg-white outline-none font-black transition-all"
-                placeholder="품목명 입력"
-              />
+          {/* 상품 정보 섹션 */}
+          <section className="space-y-6">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="w-1 h-3 bg-emerald-500 rounded-full"></span>
+              <h4 className="text-sm font-black text-gray-900 uppercase">상품 및 모집 정보</h4>
             </div>
+            
             <div className="space-y-3">
-              <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">수량</label>
-              <input
-                required
-                name="quantity"
-                value={formData.quantity}
-                onChange={handleChange}
-                className="w-full bg-gray-50 border-2 border-gray-50 rounded-2xl px-6 py-4 text-sm focus:border-emerald-500 focus:bg-white outline-none font-black transition-all"
-                placeholder="예: 10kg, 5박스"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-5">
-            <div className="space-y-3">
-              <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">카테고리</label>
+              <label className="text-[10px] font-black text-emerald-600 uppercase tracking-[0.2em] ml-1">품목 템플릿 선택</label>
               <select
-                required
-                name="category"
-                value={formData.category}
-                onChange={handleChange}
-                className="w-full bg-gray-50 border-2 border-gray-50 rounded-2xl px-6 py-4 text-sm focus:border-emerald-500 focus:bg-white outline-none font-black transition-all appearance-none"
+                value={selectedTemplateIndex}
+                onChange={(e) => setSelectedTemplateIndex(e.target.value)}
+                className="w-full bg-gray-50 border-2 border-gray-50 rounded-2xl px-6 py-4 text-sm focus:border-emerald-500 focus:bg-white outline-none font-bold transition-all appearance-none"
               >
-                <option value="">선택</option>
-                <option value="육류">육류</option>
-                <option value="채소류">채소류</option>
-                <option value="가공식품">가공식품</option>
-                <option value="기타">기타</option>
+                <option value="">직접 입력 또는 템플릿 선택</option>
+                {itemTemplates.map((item, idx) => (
+                  <option key={idx} value={idx}>{item.name} ({item.quantity})</option>
+                ))}
               </select>
             </div>
+
+            <div className="grid grid-cols-2 gap-5">
+              <div className="space-y-3">
+                <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">품목명</label>
+                <input
+                  required
+                  name="title"
+                  value={formData.title}
+                  onChange={handleChange}
+                  className="w-full bg-gray-50 border-2 border-gray-50 rounded-2xl px-6 py-4 text-sm focus:border-emerald-500 focus:bg-white outline-none font-black transition-all"
+                  placeholder="품목명 입력"
+                />
+              </div>
+              <div className="space-y-3">
+                <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">수량</label>
+                <input
+                  required
+                  name="quantity"
+                  value={formData.quantity}
+                  onChange={handleChange}
+                  className="w-full bg-gray-50 border-2 border-gray-50 rounded-2xl px-6 py-4 text-sm focus:border-emerald-500 focus:bg-white outline-none font-black transition-all"
+                  placeholder="예: 10kg, 5박스"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-5">
+              <div className="space-y-3">
+                <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">카테고리</label>
+                <select
+                  required
+                  name="category"
+                  value={formData.category}
+                  onChange={handleChange}
+                  className="w-full bg-gray-50 border-2 border-gray-50 rounded-2xl px-6 py-4 text-sm focus:border-emerald-500 focus:bg-white outline-none font-black transition-all appearance-none"
+                >
+                  <option value="">선택</option>
+                  <option value="육류">육류</option>
+                  <option value="채소류">채소류</option>
+                  <option value="가공식품">가공식품</option>
+                  <option value="기타">기타</option>
+                </select>
+              </div>
+              <div className="space-y-3">
+                <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">모집인원 (명)</label>
+                <input
+                  required
+                  type="number"
+                  name="target_participants"
+                  value={formData.target_participants}
+                  onChange={handleChange}
+                  min="1"
+                  className="w-full bg-gray-50 border-2 border-gray-50 rounded-2xl px-6 py-4 text-sm focus:border-emerald-500 focus:bg-white outline-none font-black transition-all"
+                />
+              </div>
+            </div>
+
             <div className="space-y-3">
-              <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">모집인원 (명)</label>
+              <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">총 결제 금액 (₩)</label>
+              <div className="relative">
+                <input
+                  required
+                  type="number"
+                  name="total_amount"
+                  value={formData.total_amount}
+                  onChange={handleChange}
+                  className="w-full bg-gray-50 border-2 border-gray-50 rounded-[20px] px-6 py-5 text-xl focus:border-emerald-500 focus:bg-white outline-none font-black transition-all pl-12"
+                  placeholder="0"
+                />
+                <span className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-300 font-black text-xl">₩</span>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">마감 기한</label>
               <input
                 required
-                type="number"
-                name="target_participants"
-                value={formData.target_participants}
+                type="date"
+                name="deadline"
+                value={formData.deadline}
                 onChange={handleChange}
-                min="1"
                 className="w-full bg-gray-50 border-2 border-gray-50 rounded-2xl px-6 py-4 text-sm focus:border-emerald-500 focus:bg-white outline-none font-black transition-all"
               />
             </div>
-          </div>
+          </section>
 
-          {/* 총 금액 (요구사항: 1인당 금액 -> 총금액) */}
-          <div className="space-y-3">
-            <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">총 결제 금액 (₩)</label>
-            <div className="relative">
-              <input
-                required
-                type="number"
-                name="total_amount"
-                value={formData.total_amount}
-                onChange={handleChange}
-                className="w-full bg-gray-50 border-2 border-gray-50 rounded-[20px] px-6 py-5 text-xl focus:border-emerald-500 focus:bg-white outline-none font-black transition-all pl-12"
-                placeholder="0"
-              />
-              <span className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-300 font-black text-xl">₩</span>
+          {/* 픽업 정보 섹션 (c1.png 반영) */}
+          <section className="space-y-6 pt-6 border-t border-gray-50">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="w-1 h-3 bg-blue-500 rounded-full"></span>
+              <h4 className="text-sm font-black text-gray-900 uppercase">픽업 및 배송 정보</h4>
             </div>
-            <p className="text-[10px] font-bold text-gray-400 ml-1">모집 달성 시 최종 결제될 전체 금액입니다.</p>
-          </div>
 
-          <div className="space-y-3">
-            <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">마감 기한</label>
-            <input
-              required
-              type="date"
-              name="deadline"
-              value={formData.deadline}
-              onChange={handleChange}
-              className="w-full bg-gray-50 border-2 border-gray-50 rounded-2xl px-6 py-4 text-sm focus:border-emerald-500 focus:bg-white outline-none font-black transition-all"
-            />
-          </div>
+            <div className="space-y-3">
+              <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">픽업 장소</label>
+              <div className="relative">
+                <input
+                  required
+                  name="pickup_location"
+                  value={formData.pickup_location}
+                  onChange={handleChange}
+                  className="w-full bg-gray-50 border-2 border-gray-50 rounded-2xl px-6 py-4 text-sm focus:border-emerald-500 focus:bg-white outline-none font-bold transition-all pl-12"
+                  placeholder="픽업할 정확한 주소 또는 장소를 입력하세요."
+                />
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-lg">📍</span>
+              </div>
+            </div>
 
-          {/* 배송 유의사항 (요구사항: 픽업장소 대체) */}
-          <div className="space-y-3">
-            <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">배송 유의사항</label>
-            <textarea
-              name="delivery_note"
-              value={formData.delivery_note}
-              onChange={handleChange}
-              className="w-full bg-gray-50 border-2 border-gray-50 rounded-[28px] px-6 py-5 text-sm focus:border-emerald-500 focus:bg-white outline-none font-bold h-32 resize-none transition-all"
-              placeholder="참여자들에게 전달할 배송/픽업 주의사항을 상세히 입력해 주세요."
-            />
-          </div>
+            <div className="space-y-3">
+              <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">픽업 가능 시간</label>
+              <div className="relative">
+                <input
+                  required
+                  name="pickup_time"
+                  value={formData.pickup_time}
+                  onChange={handleChange}
+                  className="w-full bg-gray-50 border-2 border-gray-50 rounded-2xl px-6 py-4 text-sm focus:border-emerald-500 focus:bg-white outline-none font-bold transition-all pl-12"
+                  placeholder="예: 매일 14:00 ~ 18:00"
+                />
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-lg">⏰</span>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">배송 유의사항</label>
+              <textarea
+                name="delivery_note"
+                value={formData.delivery_note}
+                onChange={handleChange}
+                className="w-full bg-gray-50 border-2 border-gray-50 rounded-[28px] px-6 py-5 text-sm focus:border-emerald-500 focus:bg-white outline-none font-bold h-32 resize-none transition-all"
+                placeholder="참여자들에게 전달할 추가 안내사항을 입력해 주세요."
+              />
+            </div>
+          </section>
 
           <div className="pt-6">
             <button
