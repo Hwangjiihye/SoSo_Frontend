@@ -41,12 +41,14 @@ export const useGroupBuy = () => {
           price: 380000,
           status: '모집중',
           category: '육류',
-          is_joined: false
+          is_joined: false,
+          creator_type: 'PARTNER', // 거래처가 주최한 공동구매
+          is_owner: false
         },
         {
           seq: 2,
           title: '친환경 양파 (20kg 망)',
-          supplier_name: '산지 직송',
+          supplier_name: '강남 김치찌개 (사업자)',
           deadline: '2024-06-20',
           d_day: 'D-2',
           current_participants: 30,
@@ -54,7 +56,9 @@ export const useGroupBuy = () => {
           price: 28000,
           status: '모집완료',
           category: '채소류',
-          is_joined: true
+          is_joined: true,
+          creator_type: 'BUSINESS', // 사업자가 주최한 공동구매
+          is_owner: true
         }
       ]);
     } finally {
@@ -109,8 +113,23 @@ export const useGroupBuy = () => {
   };
 
   const filteredGroupBuys = groupBuys.filter((item) => {
-    if (statusFilter === '전체') return true;
-    return item.status === statusFilter;
+    // 1. 상태(모집중, 완료 등) 필터
+    if (statusFilter !== '전체' && item.status !== statusFilter) {
+      return false;
+    }
+    
+    // 2. 종류(전체, 참여, 주최자) 필터
+    if (filter === 'my' && !item.is_joined) {
+      return false;
+    }
+    if (filter === 'business' && item.creator_type !== 'BUSINESS') {
+      return false;
+    }
+    if (filter === 'partner' && item.creator_type !== 'PARTNER') {
+      return false;
+    }
+
+    return true;
   });
 
   return {

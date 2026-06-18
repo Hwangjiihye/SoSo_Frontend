@@ -84,10 +84,10 @@ const GroupBuyPage = () => {
         </div>
 
         {/* 필터 섹션 */}
-        <div className="flex items-center gap-2 bg-white p-1.5 rounded-[22px] shadow-sm border border-gray-100 w-fit mb-10">
+        <div className="flex flex-wrap items-center gap-2 bg-white p-1.5 rounded-[22px] shadow-sm border border-gray-100 w-fit mb-10">
           <button
             onClick={() => setFilter('all')}
-            className={`px-8 py-3 rounded-[16px] text-sm font-black transition-all ${
+            className={`px-6 sm:px-8 py-3 rounded-[16px] text-sm font-black transition-all ${
               filter === 'all' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-100' : 'text-gray-400 hover:text-gray-600'
             }`}
           >
@@ -95,11 +95,27 @@ const GroupBuyPage = () => {
           </button>
           <button
             onClick={() => setFilter('my')}
-            className={`px-8 py-3 rounded-[16px] text-sm font-black transition-all ${
+            className={`px-6 sm:px-8 py-3 rounded-[16px] text-sm font-black transition-all ${
               filter === 'my' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-100' : 'text-gray-400 hover:text-gray-600'
             }`}
           >
             나의 참여 그룹
+          </button>
+          <button
+            onClick={() => setFilter('business')}
+            className={`px-6 sm:px-8 py-3 rounded-[16px] text-sm font-black transition-all ${
+              filter === 'business' ? 'bg-blue-600 text-white shadow-lg shadow-blue-100' : 'text-gray-400 hover:text-gray-600'
+            }`}
+          >
+            사업자 주관
+          </button>
+          <button
+            onClick={() => setFilter('partner')}
+            className={`px-6 sm:px-8 py-3 rounded-[16px] text-sm font-black transition-all ${
+              filter === 'partner' ? 'bg-orange-500 text-white shadow-lg shadow-orange-100' : 'text-gray-400 hover:text-gray-600'
+            }`}
+          >
+            거래처 주관
           </button>
         </div>
 
@@ -126,14 +142,29 @@ const GroupBuyPage = () => {
                 >
                   <div className="p-10 flex-1 flex flex-col">
                     <div className="flex justify-between items-start mb-8">
-                      <span className={`px-4 py-1.5 rounded-xl text-[10px] font-black border tracking-wider ${statusColors[item.status]}`}>
-                        {item.status}
-                      </span>
-                      {isJoined && (
-                        <span className="bg-emerald-500 text-white px-4 py-1.5 rounded-xl text-[10px] font-black animate-pulse shadow-lg shadow-emerald-200">
-                          참여 중
+                      <div className="flex flex-wrap gap-2">
+                        <span className={`px-4 py-1.5 rounded-xl text-[10px] font-black border tracking-wider ${statusColors[item.status]}`}>
+                          {item.status}
                         </span>
-                      )}
+                        {/* 사업자 / 거래처 제안 구분 뱃지 추가 */}
+                        {item.creator_type === 'BUSINESS' ? (
+                          <span className="bg-blue-50 text-blue-600 px-4 py-1.5 rounded-xl text-[10px] font-black border border-blue-100 shadow-sm">
+                            사업자 제안
+                          </span>
+                        ) : (
+                          <span className="bg-orange-50 text-orange-600 px-4 py-1.5 rounded-xl text-[10px] font-black border border-orange-100 shadow-sm">
+                            거래처 제안
+                          </span>
+                        )}
+                        {isJoined && (
+                          <span className="bg-emerald-500 text-white px-4 py-1.5 rounded-xl text-[10px] font-black animate-pulse shadow-lg shadow-emerald-200">
+                            참여 중
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-[11px] font-black text-gray-300 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-100">
+                        {item.category}
+                      </span>
                     </div>
 
                     <h3 className="text-2xl font-black text-gray-900 mb-2 line-clamp-1 group-hover:text-emerald-600 transition-colors">
