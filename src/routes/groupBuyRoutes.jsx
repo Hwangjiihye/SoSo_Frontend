@@ -1,6 +1,7 @@
 import React from 'react';
 import GroupBuyPage from '../features/groupbuy/GroupBuyPage';
 import GroupBuyDeliveryPage from '../features/groupbuy/GroupBuyDeliveryPage';
+import GroupBuyDetailPage from '../features/groupbuy/GroupBuyDetailPage';
 
 /**
  * @file groupBuyRoutes.jsx
@@ -10,6 +11,10 @@ const groupBuyRoutes = [
   {
     path: '/group-buy',
     element: <GroupBuyPage />,
+  },
+  {
+    path: '/group-buy/:seq',
+    element: <GroupBuyDetailPage />,
   },
   {
     path: '/group-buy/:seq/delivery',

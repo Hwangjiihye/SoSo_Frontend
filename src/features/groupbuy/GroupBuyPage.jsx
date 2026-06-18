@@ -153,11 +153,12 @@ const GroupBuyPage = () => {
                     </div>
 
                     {/* 버튼 그룹 (요구사항 반영) */}
-                    <div className="grid grid-cols-1 gap-2 mt-6">
+                    <div className="grid grid-cols-1 gap-4 mt-10">
+                      {/* 사업자 참여 버튼 (페이지 전환 요구사항 반영) */}
                       {!isPartner && !item.is_joined && item.status === '모집중' && (
                         <button
-                          onClick={() => handleJoinGroupBuy(item.seq)}
-                          className="w-full py-4 bg-emerald-600 text-white rounded-2xl font-black hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-100"
+                          onClick={() => navigate(`/group-buy/${item.seq}`)}
+                          className="w-full py-6 bg-emerald-600 text-white rounded-[32px] font-black text-xl hover:bg-emerald-700 transition-all shadow-xl shadow-emerald-100 hover:-translate-y-1 active:scale-95"
                         >
                           그룹 참여
                         </button>
