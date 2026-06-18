@@ -1,4 +1,4 @@
-// import axiosInstance from './axiosConfig';
+// import axiosInstance from './axiosConfig.js';
 
 // /**
 //  * 로그인 요청 API
@@ -50,7 +50,7 @@
 // };
 
 
-import axiosInstance from './axiosConfig';
+import axiosInstance from './axiosConfig.js';
 
 /**
  * 로그인 요청 API
