@@ -119,14 +119,14 @@ const GroupBuyPage = () => {
           </button>
         </div>
 
-        {/* 공동구매 카드 리스트 */}
+        {/* 공동구매 리스트 (가로형 레이아웃 반영) */}
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-32 space-y-4">
             <div className="w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
             <p className="text-gray-400 font-black text-sm tracking-widest uppercase">Fetching Groups...</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="flex flex-col space-y-6">
             {displayGroupBuys.map((item) => {
               const progress = Math.min(Math.round((item.current_participants / item.target_participants) * 100), 100);
               const isJoined = item.is_joined;
@@ -134,96 +134,117 @@ const GroupBuyPage = () => {
               return (
                 <div 
                   key={item.seq} 
-                  className={`group bg-white rounded-[40px] border-2 transition-all duration-500 flex flex-col hover:-translate-y-2 ${
+                  className={`group bg-white rounded-[24px] border-2 transition-all duration-500 flex flex-col lg:flex-row overflow-hidden hover:-translate-y-1 ${
                     isJoined 
-                      ? 'border-emerald-500 shadow-[0_20px_50px_rgba(16,185,129,0.15)] bg-emerald-50/5' 
-                      : 'border-gray-50 shadow-sm hover:shadow-xl'
+                      ? 'border-emerald-500 shadow-[0_10px_30px_rgba(16,185,129,0.15)] bg-emerald-50/5' 
+                      : 'border-gray-50 shadow-sm hover:shadow-lg'
                   }`}
                 >
-                  <div className="p-10 flex-1 flex flex-col">
-                    <div className="flex justify-between items-start mb-8">
-                      <div className="flex flex-wrap gap-2">
-                        <span className={`px-4 py-1.5 rounded-xl text-[10px] font-black border tracking-wider ${statusColors[item.status]}`}>
-                          {item.status}
+                  {/* 좌측/상단: 메인 콘텐츠 및 메타 정보 */}
+                  <div className="p-5 flex-1 flex flex-col justify-between">
+                    <div>
+                      <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
+                        <div className="flex flex-wrap gap-2">
+                          <span className={`px-3 py-1 rounded-lg text-[10px] font-black border tracking-wider transition-colors ${statusColors[item.status]}`}>
+                            {item.status}
+                          </span>
+                          {/* 사업자 / 거래처 제안 구분 뱃지 */}
+                          {item.creator_type === 'BUSINESS' ? (
+                            <span className="bg-blue-50 text-blue-600 px-3 py-1 rounded-lg text-[10px] font-black border border-blue-100 shadow-sm">
+                              사업자 제안
+                            </span>
+                          ) : (
+                            <span className="bg-orange-50 text-orange-600 px-3 py-1 rounded-lg text-[10px] font-black border border-orange-100 shadow-sm">
+                              거래처 제안
+                            </span>
+                          )}
+                          {isJoined && (
+                            <span className="bg-emerald-500 text-white px-3 py-1 rounded-lg text-[10px] font-black animate-pulse shadow-sm shadow-emerald-200">
+                              참여 중
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-[10px] font-black text-gray-300 bg-gray-50 px-2 py-1 rounded-md border border-gray-100">
+                          {item.category}
                         </span>
-                        {/* 사업자 / 거래처 제안 구분 뱃지 추가 */}
-                        {item.creator_type === 'BUSINESS' ? (
-                          <span className="bg-blue-50 text-blue-600 px-4 py-1.5 rounded-xl text-[10px] font-black border border-blue-100 shadow-sm">
-                            사업자 제안
-                          </span>
-                        ) : (
-                          <span className="bg-orange-50 text-orange-600 px-4 py-1.5 rounded-xl text-[10px] font-black border border-orange-100 shadow-sm">
-                            거래처 제안
-                          </span>
-                        )}
-                        {isJoined && (
-                          <span className="bg-emerald-500 text-white px-4 py-1.5 rounded-xl text-[10px] font-black animate-pulse shadow-lg shadow-emerald-200">
-                            참여 중
-                          </span>
-                        )}
                       </div>
-                      <span className="text-[11px] font-black text-gray-300 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-100">
-                        {item.category}
-                      </span>
+
+                      <h3 className="text-lg sm:text-xl font-black text-gray-900 mb-1.5 group-hover:text-emerald-600 transition-colors line-clamp-1">
+                        {item.title}
+                      </h3>
+                      {!isPartner && (
+                        <p className="text-xs font-bold text-gray-400 mb-4 flex items-center gap-1.5">
+                          <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
+                          {item.supplier_name}
+                        </p>
+                      )}
+
+                      {/* 마감일 및 픽업 위치 */}
+                      <div className="flex flex-col sm:flex-row gap-2 mb-4 text-xs font-bold text-gray-500">
+                        <div className="flex items-center gap-1.5 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-100">
+                          <span className="text-sm">⏰</span>
+                          <span>마감: <span className="text-gray-900">{item.deadline}</span></span>
+                        </div>
+                        <div className="flex items-center gap-1.5 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-100 flex-1">
+                          <span className="text-sm">📍</span>
+                          <span className="line-clamp-1">픽업: <span className="text-gray-900">{item.pickup_location || '미지정'}</span></span>
+                        </div>
+                      </div>
                     </div>
 
-                    <h3 className="text-2xl font-black text-gray-900 mb-2 line-clamp-1 group-hover:text-emerald-600 transition-colors">
-                      {item.title}
-                    </h3>
-                    {!isPartner && <p className="text-sm font-bold text-gray-400 mb-8">{item.supplier_name}</p>}
-
-                    <div className="space-y-5 mb-10 flex-1">
+                    <div className="space-y-2 mt-auto">
                       <div className="flex justify-between items-end">
-                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Recruitment</span>
+                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Progress</span>
                         <div className="text-right">
-                          <span className="text-xl font-black text-emerald-600">{item.current_participants}</span>
+                          <span className="text-lg font-black text-emerald-600">{item.current_participants}</span>
                           <span className="text-xs font-bold text-gray-300"> / {item.target_participants}명</span>
                         </div>
                       </div>
-                      <div className="w-full bg-gray-100 h-2.5 rounded-full overflow-hidden border border-gray-50">
+                      <div className="w-full bg-gray-100 h-1.5 rounded-full overflow-hidden border border-gray-50">
                         <div 
                           className="bg-emerald-500 h-full rounded-full transition-all duration-1000" 
                           style={{ width: `${progress}%` }}
                         ></div>
                       </div>
                     </div>
+                  </div>
 
+                  {/* 우측/하단: 결제 금액 및 액션 버튼 */}
+                  <div className="w-full lg:w-[260px] p-5 bg-gray-50/50 border-t lg:border-t-0 lg:border-l border-gray-100 flex flex-col justify-center shrink-0">
                     {!isPartner && (
-                      <div className="flex items-center justify-between py-6 border-t border-gray-50 mb-8">
-                        <div>
-                          <p className="text-[10px] font-black text-gray-300 uppercase tracking-widest mb-1">참여 금액</p>
-                          <span className="text-2xl font-black text-gray-900">₩{item.price?.toLocaleString()}</span>
-                        </div>
+                      <div className="mb-4">
+                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">총 참여 금액</p>
+                        <span className="text-2xl font-black text-gray-900 tracking-tight">₩{item.price?.toLocaleString()}</span>
                       </div>
                     )}
 
-                    <div className="grid grid-cols-1 gap-3">
+                    <div className="grid grid-cols-1 gap-2 mt-auto">
                       {(!isPartner && item.status === '모집중' && !isJoined) ? (
                         <button
                           onClick={() => navigate(`/group-buy/${item.seq}`)}
-                          className="w-full py-5 bg-emerald-600 text-white rounded-[24px] font-black text-lg hover:bg-emerald-700 transition-all shadow-xl shadow-emerald-100 active:scale-95"
+                          className="w-full py-3 bg-emerald-600 text-white rounded-[14px] font-black text-sm hover:bg-emerald-700 transition-all shadow-md shadow-emerald-100 active:scale-95"
                         >
                           그룹 참여하기
                         </button>
                       ) : (
                         <>
-                          <div className="grid grid-cols-2 gap-3">
+                          <div className="grid grid-cols-2 gap-2">
                             <button
                               onClick={() => navigate(`/group-buy/${item.seq}`)}
-                              className="py-4 bg-emerald-50 text-emerald-600 rounded-2xl font-black text-sm hover:bg-emerald-100 transition-all"
+                              className="py-2.5 bg-emerald-50 text-emerald-600 rounded-xl font-black text-xs hover:bg-emerald-100 transition-all"
                             >
                               참여 현황
                             </button>
                             <button
                               onClick={() => navigate(`/group-buy/${item.seq}/delivery`)}
-                              className="py-4 bg-gray-900 text-white rounded-2xl font-black text-sm hover:bg-black transition-all shadow-lg"
+                              className="py-2.5 bg-gray-900 text-white rounded-xl font-black text-xs hover:bg-black transition-all shadow-md"
                             >
                               배송 안내
                             </button>
                           </div>
                           <button
                             onClick={() => navigate(`/chat/${item.seq}`)}
-                            className="w-full py-4 bg-white border-2 border-gray-900 text-gray-900 rounded-2xl font-black text-sm hover:bg-gray-50 transition-all"
+                            className="w-full py-2.5 bg-white border-2 border-gray-900 text-gray-900 rounded-xl font-black text-xs hover:bg-gray-50 transition-all"
                           >
                             채팅방 입장
                           </button>
@@ -236,7 +257,7 @@ const GroupBuyPage = () => {
                             setSelectedGroupBuy(item);
                             setIsStatusModalOpen(true);
                           }}
-                          className="w-full py-4 bg-orange-50 text-orange-600 rounded-2xl font-black text-sm hover:bg-orange-100 transition-all mt-2"
+                          className="w-full py-2.5 bg-orange-50 text-orange-600 rounded-xl font-black text-xs hover:bg-orange-100 transition-all mt-1 border border-orange-100"
                         >
                           상태 업데이트
                         </button>
