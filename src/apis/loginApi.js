@@ -50,9 +50,6 @@ import axiosInstance from './axiosConfig';
 //   return response.data;
 // };
 
-
-import axiosInstance from './axiosConfig.js';
-
 /**
  * 로그인 요청 API
  * @param {Object} loginData 로그인 요청 데이터
