@@ -1,4 +1,4 @@
-import axiosInstance from './axiosConfig';
+import axiosInstance from './axiosConfig.js';
 
 /**
  * @file stockApi.js
@@ -85,13 +85,13 @@ export const getStockHistoryDashboard = async () => {
   return response.data; // Expected: StockHistoryDTO[] (최대 5개)
 };
 
-// 전체 이력 팝업 모달용 API (페이징)
-// GET /api/stock-history/modal?page={page}&size={size}
-export const getStockHistoryModal = async (page, size) => {
+// 전체 이력 팝업 모달용 API (페이징 및 필터링 추가)
+// GET /api/stock-history/modal?page={page}&size={size}&transactionType={type}...
+export const getStockHistoryModal = async (page, size, stockSeq, transactionType, startDate, endDate, keyword) => {
   const response = await axiosInstance.get('/api/stock-history/modal', {
-    params: { page, size }
+    params: { page, size, stockSeq, transactionType, startDate, endDate, keyword }
   });
-  return response.data; // Expected: { content: StockHistoryDTO[], totalPages, totalElements, ... } 페이징 객체
+  return response.data; // Expected: { historyList: StockHistoryDTO[], totalPages, totalCount, ... }
 };
 
 export const getCategories = async () => {

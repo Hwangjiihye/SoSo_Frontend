@@ -1,4 +1,4 @@
-import maxios from './axiosConfig';
+import maxios from './axiosConfig.js';
 
 // 발주 신청시, 내 재고 품목과 거래처 품목 대조
 export const check = async (itemName, storeSeq) => {
@@ -63,6 +63,12 @@ export const suppliers = async (storeSeq) => {
     const resp = await maxios.get('/order/suppliers', {
         params: { storeSeq }
     });
+    return resp.data;
+}
+
+// 발주서 상세 조회
+export const getOrderDetail = async (orderSeq) => {
+    const resp = await maxios.get(`/order/list/${orderSeq}`);
     return resp.data;
 }
 
