@@ -41,12 +41,27 @@ const GroupBuyCreateModal = ({ onClose, onSubmit, isPartner }) => {
     unitPrice: 0,           // 단가
     targetParticipants: 1,  // 모집인원
     endDate: '',            // 마감기한
-    pickupLocation: '',     // 픽업장소
+    pickupZipCode: '',      // 픽업 우편번호
+    pickupAddress: '',      // 픽업 기본주소
+    pickupDetailAddress: '',// 픽업 상세주소
     pickupTime: '',         // 픽업가능시간
     notice: '',             // 유의사항
   });
 
   const [availableItems, setAvailableItems] = useState([]);
+
+  // 주소 검색 (Daum Postcode)
+  const searchAddress = () => {
+    new window.daum.Postcode({
+      oncomplete: (data) => {
+        setFormData(prev => ({ 
+          ...prev, 
+          pickupZipCode: data.zonecode, 
+          pickupAddress: data.roadAddress 
+        }));
+      }
+    }).open();
+  };
 
   // 거래처 선택 시 해당 거래처의 품목 리스트 업데이트
   useEffect(() => {
@@ -90,9 +105,14 @@ const GroupBuyCreateModal = ({ onClose, onSubmit, isPartner }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    
+    // 주소 정보 조합: (우편번호) 기본주소 상세주소
+    const combinedPickupLocation = `(${formData.pickupZipCode}) ${formData.pickupAddress} ${formData.pickupDetailAddress}`.trim();
+
     // formData에 DTO의 totalAmount 필드로 총 결제금액 전달
     const submitData = {
       ...formData,
+      pickupLocation: combinedPickupLocation,
       totalAmount: formData.quantity * formData.unitPrice,
     };
     
@@ -283,17 +303,39 @@ const GroupBuyCreateModal = ({ onClose, onSubmit, isPartner }) => {
 
             <div className="space-y-2">
               <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">픽업 장소</label>
-              <div className="relative">
+              <div className="flex gap-2">
                 <input
                   required
-                  name="pickupLocation"
-                  value={formData.pickupLocation}
-                  onChange={handleChange}
-                  className="w-full bg-gray-50 border-2 border-gray-50 rounded-2xl px-6 py-4 text-sm focus:border-emerald-500 focus:bg-white outline-none font-bold transition-all pl-12"
-                  placeholder="픽업할 정확한 주소 또는 장소를 입력하세요."
+                  name="pickupZipCode"
+                  value={formData.pickupZipCode}
+                  readOnly
+                  className="w-1/3 bg-gray-100 border-2 border-gray-50 rounded-2xl px-6 py-4 text-sm font-bold text-gray-500 outline-none"
+                  placeholder="우편번호"
                 />
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-lg">📍</span>
+                <button
+                  type="button"
+                  onClick={searchAddress}
+                  className="w-1/3 bg-emerald-600 text-white rounded-2xl font-bold text-sm hover:bg-emerald-700 transition-all shadow-md active:scale-95"
+                >
+                  주소검색
+                </button>
               </div>
+              <input
+                required
+                name="pickupAddress"
+                value={formData.pickupAddress}
+                readOnly
+                className="w-full bg-gray-100 border-2 border-gray-50 rounded-2xl px-6 py-4 text-sm font-bold text-gray-500 outline-none"
+                placeholder="도로명 주소"
+              />
+              <input
+                required
+                name="pickupDetailAddress"
+                value={formData.pickupDetailAddress}
+                onChange={handleChange}
+                className="w-full bg-gray-50 border-2 border-gray-50 rounded-2xl px-6 py-4 text-sm focus:border-emerald-500 focus:bg-white outline-none font-bold transition-all"
+                placeholder="상세주소를 입력하세요"
+              />
             </div>
 
             <div className="space-y-2">
