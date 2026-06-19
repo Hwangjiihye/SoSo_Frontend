@@ -26,9 +26,9 @@ const GroupBuyPage = () => {
 
   const isPartner = user_type === 'PARTNER';
 
-  // 거래처일 경우 내가 올린 항목만 필터링 (is_owner 필드 기준)
+  // 거래처일 경우 내가 올린 항목만 필터링 (isOwner 필드 기준)
   const displayGroupBuys = isPartner 
-    ? groupBuys.filter(item => item.is_owner)
+    ? groupBuys.filter(item => item.isOwner)
     : groupBuys;
 
   const statusColors = {
@@ -51,7 +51,7 @@ const GroupBuyPage = () => {
           </div>
           <div className="bg-white p-8 rounded-[32px] shadow-sm border border-gray-100">
             <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">나의 참여 그룹</p>
-            <h3 className="text-3xl font-black text-emerald-600">{groupBuys.filter(i => i.is_joined).length}건</h3>
+            <h3 className="text-3xl font-black text-emerald-600">{groupBuys.filter(i => i.isJoined).length}건</h3>
           </div>
           <div className="bg-white p-8 rounded-[32px] shadow-sm border border-gray-100">
             <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">배송완료</p>
@@ -128,8 +128,8 @@ const GroupBuyPage = () => {
         ) : (
           <div className="flex flex-col space-y-6">
             {displayGroupBuys.map((item) => {
-              const progress = Math.min(Math.round((item.current_participants / item.target_participants) * 100), 100);
-              const isJoined = item.is_joined;
+              const progress = Math.min(Math.round((item.currentParticipants / item.targetParticipants) * 100), 100);
+              const isJoined = item.isJoined;
 
               return (
                 <div 
@@ -149,7 +149,7 @@ const GroupBuyPage = () => {
                             {item.status}
                           </span>
                           {/* 사업자 / 거래처 제안 구분 뱃지 */}
-                          {item.creator_type === 'BUSINESS' ? (
+                          {item.creatorType === 'BUSINESS' ? (
                             <span className="bg-blue-50 text-blue-600 px-3 py-1 rounded-lg text-[10px] font-black border border-blue-100 shadow-sm">
                               사업자 제안
                             </span>
@@ -170,12 +170,12 @@ const GroupBuyPage = () => {
                       </div>
 
                       <h3 className="text-lg sm:text-xl font-black text-gray-900 mb-1.5 group-hover:text-emerald-600 transition-colors line-clamp-1">
-                        {item.title}
+                        {item.groupName}
                       </h3>
                       {!isPartner && (
                         <p className="text-xs font-bold text-gray-400 mb-4 flex items-center gap-1.5">
                           <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
-                          {item.supplier_name}
+                          {item.partnerName}
                         </p>
                       )}
 
@@ -183,11 +183,11 @@ const GroupBuyPage = () => {
                       <div className="flex flex-col sm:flex-row gap-2 mb-4 text-xs font-bold text-gray-500">
                         <div className="flex items-center gap-1.5 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-100">
                           <span className="text-sm">⏰</span>
-                          <span>마감: <span className="text-gray-900">{item.deadline}</span></span>
+                          <span>마감: <span className="text-gray-900">{item.endDate}</span></span>
                         </div>
                         <div className="flex items-center gap-1.5 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-100 flex-1">
                           <span className="text-sm">📍</span>
-                          <span className="line-clamp-1">픽업: <span className="text-gray-900">{item.pickup_location || '미지정'}</span></span>
+                          <span className="line-clamp-1">픽업: <span className="text-gray-900">{item.pickupLocation || '미지정'}</span></span>
                         </div>
                       </div>
                     </div>
@@ -196,8 +196,8 @@ const GroupBuyPage = () => {
                       <div className="flex justify-between items-end">
                         <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Progress</span>
                         <div className="text-right">
-                          <span className="text-lg font-black text-emerald-600">{item.current_participants}</span>
-                          <span className="text-xs font-bold text-gray-300"> / {item.target_participants}명</span>
+                          <span className="text-lg font-black text-emerald-600">{item.currentParticipants}</span>
+                          <span className="text-xs font-bold text-gray-300"> / {item.targetParticipants}명</span>
                         </div>
                       </div>
                       <div className="w-full bg-gray-100 h-1.5 rounded-full overflow-hidden border border-gray-50">
@@ -214,7 +214,7 @@ const GroupBuyPage = () => {
                     {!isPartner && (
                       <div className="mb-4">
                         <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">총 참여 금액</p>
-                        <span className="text-2xl font-black text-gray-900 tracking-tight">₩{item.price?.toLocaleString()}</span>
+                        <span className="text-2xl font-black text-gray-900 tracking-tight">₩{item.totalAmount?.toLocaleString()}</span>
                       </div>
                     )}
 

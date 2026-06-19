@@ -20,8 +20,8 @@ export const useGroupBuy = () => {
       // 데이터 변환 및 기본값 설정
       const formattedData = data.map(item => ({
         ...item,
-        is_joined: item.is_joined || false,
-        d_day: item.d_day || 'D-Day',
+        isJoined: item.isJoined || false,
+        dDay: item.dDay || 'D-Day',
         status: item.status || '모집중',
         category: item.category || '기타'
       }));
@@ -32,35 +32,35 @@ export const useGroupBuy = () => {
       setGroupBuys([
         {
           seq: 1,
-          title: '한우 등심 (1+ 등급, 10kg)',
-          supplier_name: '상생 농장',
-          deadline: '2024-06-30',
-          pickup_location: '서울특별시 강남구 테헤란로 123 소소빌딩 1층',
-          d_day: 'D-12',
-          current_participants: 15,
-          target_participants: 20,
-          price: 380000,
+          groupName: '한우 등심 (1+ 등급, 10kg)',
+          partnerName: '상생 농장',
+          endDate: '2024-06-30',
+          pickupLocation: '(06236) 서울특별시 강남구 테헤란로 123 소소빌딩 1층',
+          dDay: 'D-12',
+          currentParticipants: 15,
+          targetParticipants: 20,
+          totalAmount: 380000,
           status: '모집중',
           category: '육류',
-          is_joined: false,
-          creator_type: 'PARTNER', // 거래처가 주최한 공동구매
-          is_owner: false
+          isJoined: false,
+          creatorType: 'PARTNER', // 거래처가 주최한 공동구매
+          isOwner: false
         },
         {
           seq: 2,
-          title: '친환경 양파 (20kg 망)',
-          supplier_name: '강남 김치찌개 (사업자)',
-          deadline: '2024-06-20',
-          pickup_location: '서울 서초구 서초대로 456 상가 102호',
-          d_day: 'D-2',
-          current_participants: 30,
-          target_participants: 30,
-          price: 28000,
+          groupName: '친환경 양파 (20kg 망)',
+          partnerName: '강남 김치찌개 (사업자)',
+          endDate: '2024-06-20',
+          pickupLocation: '(06666) 서울 서초구 서초대로 456 상가 102호',
+          dDay: 'D-2',
+          currentParticipants: 30,
+          targetParticipants: 30,
+          totalAmount: 28000,
           status: '모집완료',
           category: '채소류',
-          is_joined: true,
-          creator_type: 'BUSINESS', // 사업자가 주최한 공동구매
-          is_owner: true
+          isJoined: true,
+          creatorType: 'BUSINESS', // 사업자가 주최한 공동구매
+          isOwner: true
         }
       ]);
     } finally {
@@ -121,13 +121,13 @@ export const useGroupBuy = () => {
     }
     
     // 2. 종류(전체, 참여, 주최자) 필터
-    if (filter === 'my' && !item.is_joined) {
+    if (filter === 'my' && !item.isJoined) {
       return false;
     }
-    if (filter === 'business' && item.creator_type !== 'BUSINESS') {
+    if (filter === 'business' && item.creatorType !== 'BUSINESS') {
       return false;
     }
-    if (filter === 'partner' && item.creator_type !== 'PARTNER') {
+    if (filter === 'partner' && item.creatorType !== 'PARTNER') {
       return false;
     }
 
