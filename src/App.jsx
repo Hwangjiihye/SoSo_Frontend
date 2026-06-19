@@ -6,8 +6,12 @@
 import AppRoutes from './routes/AppRoutes'
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import useNotificationSocket from './hooks/useNotificationSocket';
 
 function App() {
+  // 전역 실시간 알림 웹소켓 모니터링 활성화
+  useNotificationSocket();
+
   // 생성해둔 AppRoutes를 반환하여 애플리케이션 전체에 라우팅 규칙을 적용합니다.
   return (
     <>
