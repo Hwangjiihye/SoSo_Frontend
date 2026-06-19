@@ -11,31 +11,11 @@ import React, { useState, useEffect } from 'react';
  * 5. 수량 & 품목명 항목 추가
  */
 const GroupBuyCreateModal = ({ onClose, onSubmit, isPartner }) => {
-  // 모의 데이터: 거래처 및 거래처별 품목(재고) 리스트
-  const mockPartners = [
-    {
-      partnerSeq: 1,
-      partnerName: '상생 농장',
-      items: [
-        { itemSeq: 101, itemName: '한우 등심 (1+ 등급)', category: '육류', unitPrice: 38000 },
-        { itemSeq: 102, itemName: '수입산 삼겹살', category: '육류', unitPrice: 15000 },
-      ]
-    },
-    {
-      partnerSeq: 2,
-      partnerName: '자연 친화 농업',
-      items: [
-        { itemSeq: 201, itemName: '친환경 양파', category: '채소류', unitPrice: 3000 },
-        { itemSeq: 202, itemName: '무농약 쌀', category: '가공식품', unitPrice: 45000 },
-      ]
-    }
-  ];
-
   const [formData, setFormData] = useState({
     groupName: '',          // 공동구매명
     description: '',        // 상세설명
-    partnerSeq: '',         // 거래처
-    itemSeq: '',            // 품목 고유 번호
+    partnerName: '',        // 거래처명 (직접 입력)
+    itemName: '',           // 품목명 (직접 입력)
     category: '',           // 카테고리
     quantity: 1,            // 수량
     unitPrice: 0,           // 단가
@@ -47,8 +27,6 @@ const GroupBuyCreateModal = ({ onClose, onSubmit, isPartner }) => {
     pickupTime: '',         // 픽업가능시간
     notice: '',             // 유의사항
   });
-
-  const [availableItems, setAvailableItems] = useState([]);
 
   // 주소 검색 (Daum Postcode)
   const searchAddress = () => {
@@ -63,41 +41,11 @@ const GroupBuyCreateModal = ({ onClose, onSubmit, isPartner }) => {
     }).open();
   };
 
-  // 거래처 선택 시 해당 거래처의 품목 리스트 업데이트
-  useEffect(() => {
-    if (formData.partnerSeq) {
-      const partner = mockPartners.find(p => p.partnerSeq === Number(formData.partnerSeq));
-      if (partner) {
-        setAvailableItems(partner.items);
-      } else {
-        setAvailableItems([]);
-      }
-      // 거래처 변경 시 품목 관련 필드 초기화
-      setFormData(prev => ({ ...prev, itemSeq: '', category: '', unitPrice: 0 }));
-    } else {
-      setAvailableItems([]);
-    }
-  }, [formData.partnerSeq]);
-
-  // 품목 선택 시 카테고리 및 단가 자동 입력
-  useEffect(() => {
-    if (formData.itemSeq) {
-      const selectedItem = availableItems.find(item => item.itemSeq === Number(formData.itemSeq));
-      if (selectedItem) {
-        setFormData(prev => ({
-          ...prev,
-          category: selectedItem.category,
-          unitPrice: selectedItem.unitPrice
-        }));
-      }
-    }
-  }, [formData.itemSeq, availableItems]);
-
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: ['partnerSeq', 'itemSeq', 'quantity', 'unitPrice', 'targetParticipants'].includes(name) 
+      [name]: ['quantity', 'unitPrice', 'targetParticipants'].includes(name) 
         ? (value === '' ? '' : Number(value)) 
         : value,
     }));
@@ -184,35 +132,26 @@ const GroupBuyCreateModal = ({ onClose, onSubmit, isPartner }) => {
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div className="space-y-2">
-                <label className="text-[10px] font-black text-emerald-600 uppercase tracking-[0.2em] ml-1">거래처 선택</label>
-                <select
+                <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">거래처명</label>
+                <input
                   required
-                  name="partnerSeq"
-                  value={formData.partnerSeq}
+                  name="partnerName"
+                  value={formData.partnerName}
                   onChange={handleChange}
-                  className="w-full bg-gray-50 border-2 border-gray-50 rounded-2xl px-6 py-4 text-sm focus:border-emerald-500 focus:bg-white outline-none font-bold transition-all appearance-none"
-                >
-                  <option value="">거래처를 선택하세요</option>
-                  {mockPartners.map(p => (
-                    <option key={p.partnerSeq} value={p.partnerSeq}>{p.partnerName}</option>
-                  ))}
-                </select>
+                  className="w-full bg-gray-50 border-2 border-gray-50 rounded-2xl px-6 py-4 text-sm focus:border-emerald-500 focus:bg-white outline-none font-black transition-all"
+                  placeholder="예: 상생 농장"
+                />
               </div>
               <div className="space-y-2">
-                <label className="text-[10px] font-black text-emerald-600 uppercase tracking-[0.2em] ml-1">품목명 선택</label>
-                <select
+                <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">품목명</label>
+                <input
                   required
-                  name="itemSeq"
-                  value={formData.itemSeq}
+                  name="itemName"
+                  value={formData.itemName}
                   onChange={handleChange}
-                  disabled={!formData.partnerSeq}
-                  className="w-full bg-gray-50 border-2 border-gray-50 rounded-2xl px-6 py-4 text-sm focus:border-emerald-500 focus:bg-white outline-none font-bold transition-all appearance-none disabled:opacity-50"
-                >
-                  <option value="">품목을 선택하세요</option>
-                  {availableItems.map((item) => (
-                    <option key={item.itemSeq} value={item.itemSeq}>{item.itemName}</option>
-                  ))}
-                </select>
+                  className="w-full bg-gray-50 border-2 border-gray-50 rounded-2xl px-6 py-4 text-sm focus:border-emerald-500 focus:bg-white outline-none font-black transition-all"
+                  placeholder="예: 한우 등심 (1+ 등급)"
+                />
               </div>
             </div>
 
@@ -220,11 +159,12 @@ const GroupBuyCreateModal = ({ onClose, onSubmit, isPartner }) => {
               <div className="space-y-2">
                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">카테고리</label>
                 <input
-                  readOnly
+                  required
                   name="category"
                   value={formData.category}
-                  className="w-full bg-gray-100 border-2 border-gray-50 rounded-2xl px-6 py-4 text-sm outline-none font-black text-gray-500"
-                  placeholder="자동 선택됨"
+                  onChange={handleChange}
+                  className="w-full bg-gray-50 border-2 border-gray-50 rounded-2xl px-6 py-4 text-sm focus:border-emerald-500 focus:bg-white outline-none font-black transition-all"
+                  placeholder="예: 육류, 채소류"
                 />
               </div>
               <div className="space-y-2">
