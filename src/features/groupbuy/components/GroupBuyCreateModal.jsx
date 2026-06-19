@@ -17,16 +17,16 @@ const GroupBuyCreateModal = ({ onClose, onSubmit, isPartner }) => {
       partnerSeq: 1,
       partnerName: '상생 농장',
       items: [
-        { itemName: '한우 등심 (1+ 등급)', category: '육류', unitPrice: 38000 },
-        { itemName: '수입산 삼겹살', category: '육류', unitPrice: 15000 },
+        { itemSeq: 101, itemName: '한우 등심 (1+ 등급)', category: '육류', unitPrice: 38000 },
+        { itemSeq: 102, itemName: '수입산 삼겹살', category: '육류', unitPrice: 15000 },
       ]
     },
     {
       partnerSeq: 2,
       partnerName: '자연 친화 농업',
       items: [
-        { itemName: '친환경 양파', category: '채소류', unitPrice: 3000 },
-        { itemName: '무농약 쌀', category: '가공식품', unitPrice: 45000 },
+        { itemSeq: 201, itemName: '친환경 양파', category: '채소류', unitPrice: 3000 },
+        { itemSeq: 202, itemName: '무농약 쌀', category: '가공식품', unitPrice: 45000 },
       ]
     }
   ];
@@ -35,12 +35,12 @@ const GroupBuyCreateModal = ({ onClose, onSubmit, isPartner }) => {
     groupName: '',          // 공동구매명
     description: '',        // 상세설명
     partnerSeq: '',         // 거래처
-    itemName: '',           // 품목명
+    itemSeq: '',            // 품목 고유 번호
     category: '',           // 카테고리
     quantity: 1,            // 수량
     unitPrice: 0,           // 단가
     targetParticipants: 1,  // 모집인원
-    deadline: '',           // 마감기한
+    endDate: '',            // 마감기한
     pickupLocation: '',     // 픽업장소
     pickupTime: '',         // 픽업가능시간
     notice: '',             // 유의사항
@@ -58,7 +58,7 @@ const GroupBuyCreateModal = ({ onClose, onSubmit, isPartner }) => {
         setAvailableItems([]);
       }
       // 거래처 변경 시 품목 관련 필드 초기화
-      setFormData(prev => ({ ...prev, itemName: '', category: '', unitPrice: 0 }));
+      setFormData(prev => ({ ...prev, itemSeq: '', category: '', unitPrice: 0 }));
     } else {
       setAvailableItems([]);
     }
@@ -66,8 +66,8 @@ const GroupBuyCreateModal = ({ onClose, onSubmit, isPartner }) => {
 
   // 품목 선택 시 카테고리 및 단가 자동 입력
   useEffect(() => {
-    if (formData.itemName) {
-      const selectedItem = availableItems.find(item => item.itemName === formData.itemName);
+    if (formData.itemSeq) {
+      const selectedItem = availableItems.find(item => item.itemSeq === Number(formData.itemSeq));
       if (selectedItem) {
         setFormData(prev => ({
           ...prev,
@@ -76,13 +76,13 @@ const GroupBuyCreateModal = ({ onClose, onSubmit, isPartner }) => {
         }));
       }
     }
-  }, [formData.itemName, availableItems]);
+  }, [formData.itemSeq, availableItems]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: ['partnerSeq', 'quantity', 'unitPrice', 'targetParticipants'].includes(name) 
+      [name]: ['partnerSeq', 'itemSeq', 'quantity', 'unitPrice', 'targetParticipants'].includes(name) 
         ? (value === '' ? '' : Number(value)) 
         : value,
     }));
@@ -90,18 +90,24 @@ const GroupBuyCreateModal = ({ onClose, onSubmit, isPartner }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // formData에 totalPrice(총 결제금액)를 포함해서 전달
+    // formData에 DTO의 totalAmount 필드로 총 결제금액 전달
     const submitData = {
       ...formData,
-      totalPrice: formData.quantity * formData.unitPrice,
+      totalAmount: formData.quantity * formData.unitPrice,
     };
+    
+    // LocalDateTime 파싱을 위해 'T23:59:59'를 붙여 전송 (백엔드가 'yyyy-MM-dd'를 파싱하지 못할 경우 대비)
+    if (submitData.endDate && !submitData.endDate.includes('T')) {
+      submitData.endDate = `${submitData.endDate}T23:59:59`;
+    }
+
     onSubmit(submitData);
     onClose();
   };
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="bg-white w-full max-w-2xl rounded-[40px] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
+      <div className="bg-white w-full max-w-2xl mx-auto rounded-[40px] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
         {/* 헤더 */}
         <div className="px-10 py-8 border-b border-gray-50 flex justify-between items-center bg-gray-50/50">
           <div>
@@ -176,15 +182,15 @@ const GroupBuyCreateModal = ({ onClose, onSubmit, isPartner }) => {
                 <label className="text-[10px] font-black text-emerald-600 uppercase tracking-[0.2em] ml-1">품목명 선택</label>
                 <select
                   required
-                  name="itemName"
-                  value={formData.itemName}
+                  name="itemSeq"
+                  value={formData.itemSeq}
                   onChange={handleChange}
                   disabled={!formData.partnerSeq}
                   className="w-full bg-gray-50 border-2 border-gray-50 rounded-2xl px-6 py-4 text-sm focus:border-emerald-500 focus:bg-white outline-none font-bold transition-all appearance-none disabled:opacity-50"
                 >
                   <option value="">품목을 선택하세요</option>
-                  {availableItems.map((item, idx) => (
-                    <option key={idx} value={item.itemName}>{item.itemName}</option>
+                  {availableItems.map((item) => (
+                    <option key={item.itemSeq} value={item.itemSeq}>{item.itemName}</option>
                   ))}
                 </select>
               </div>
@@ -216,11 +222,14 @@ const GroupBuyCreateModal = ({ onClose, onSubmit, isPartner }) => {
               <div className="space-y-2">
                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">단가 (₩)</label>
                 <input
-                  readOnly
+                  required
                   type="number"
                   name="unitPrice"
                   value={formData.unitPrice}
-                  className="w-full bg-gray-100 border-2 border-gray-50 rounded-2xl px-6 py-4 text-sm outline-none font-black text-gray-500"
+                  onChange={handleChange}
+                  min="0"
+                  className="w-full bg-gray-50 border-2 border-gray-50 rounded-2xl px-6 py-4 text-sm focus:border-emerald-500 focus:bg-white outline-none font-black transition-all"
+                  placeholder="단가 입력"
                 />
               </div>
             </div>
@@ -243,8 +252,8 @@ const GroupBuyCreateModal = ({ onClose, onSubmit, isPartner }) => {
                 <input
                   required
                   type="date"
-                  name="deadline"
-                  value={formData.deadline}
+                  name="endDate"
+                  value={formData.endDate.split('T')[0]} // 화면 표시용
                   onChange={handleChange}
                   className="w-full bg-gray-50 border-2 border-gray-50 rounded-2xl px-6 py-4 text-sm focus:border-emerald-500 focus:bg-white outline-none font-black transition-all"
                 />
