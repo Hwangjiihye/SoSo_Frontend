@@ -5,7 +5,7 @@ import MainFooter from '../../components/layout/MainFooter';
 import authStore from '../../store/authStore';
 import { useStores } from '../../hooks/useStores';
 import { useTransfer } from './hooks/useTransfer';
-import { insertAccount, accountList, accountDel, getPaymentCards, registerPaymentCard } from '../../apis/account';
+import { insertAccount, accountList, accountDel, getPaymentCards, registerPaymentCard, payOrdersByCard, getRecentPayments } from '../../apis/account';
 import { suppliers as getSupplierList, unpaidOrders as getUnpaidOrders } from '../../apis/orderApi';
 import * as PortOne from "@portone/browser-sdk/v2";
 
@@ -43,6 +43,11 @@ const TransferManagementPage = () => {
   const [selectedOrderIds, setSelectedOrderIds] = useState([]);
   const [orderPaymentPartners, setOrderPaymentPartners] = useState([]);
   const [payableOrders, setPayableOrders] = useState([]);
+
+
+  // 결제 요청 진행 여부
+  // true면 결제 버튼을 비활성화해서 중복 결제를 막음
+  const [isPaying, setIsPaying] = useState(false);
 
   const [newCard, setNewCard] = useState({
     cardCompany: "",
@@ -163,11 +168,6 @@ const TransferManagementPage = () => {
     }
   };
 
-  // const handleOrderPaymentToggle = (orderId) => {
-  //   setSelectedOrderIds((prev) =>
-  //     prev.includes(orderId) ? prev.filter((id) => id !== orderId) : [...prev, orderId]
-  //   );
-  // };
   const handleOrderPaymentToggle = (orderSeq) => {
     const targetOrderSeq = Number(orderSeq);
 
@@ -178,13 +178,102 @@ const TransferManagementPage = () => {
     );
   };
 
+  // 선택한 미결제 발주들을 등록된 카드로 결제하는 함수
+  const handlePayOrders = async () => {
+    // 현재 선택된 매장 번호
+    const currentStoreSeq = selectedStoreSeq ?? stores?.[0]?.storeSeq;
 
-  // 등록된 카드 출력
+    // 현재 화면에서 선택된 카드
+    const selectedCard = cards[activeCardIndex];
+
+    // 매장 정보가 없으면 결제 불가
+    if (!currentStoreSeq) {
+      alert("사업장 정보가 없습니다.");
+      return;
+    }
+
+    // 등록된 카드가 없거나 선택된 카드가 없으면 결제 불가
+    if (!selectedCard) {
+      alert("결제할 카드가 없습니다.");
+      return;
+    }
+
+    // 거래처를 선택하지 않았으면 결제 불가
+    if (!selectedPartnerId) {
+      alert("거래처를 선택해 주세요.");
+      return;
+    }
+
+    // 결제할 발주를 선택하지 않았으면 결제 불가
+    if (selectedOrderIds.length === 0) {
+      alert("결제할 발주를 선택해 주세요.");
+      return;
+    }
+
+    // 사용자에게 최종 결제 확인
+    const ok = confirm(`${selectedOrderTotal.toLocaleString()}원을 결제하시겠습니까?`);
+
+    if (!ok) {
+      return;
+    }
+
+    try {
+      // 결제 중 상태로 변경해서 버튼 중복 클릭 방지
+      setIsPaying(true);
+
+      // 백엔드로 결제 요청
+      const result = await payOrdersByCard({
+        storeSeq: Number(currentStoreSeq),       // 돈을 내는 사업자 매장 번호
+        partnerSeq: Number(selectedPartnerId),   // 돈을 받는 거래처 매장 번호
+        cardSeq: Number(selectedCard.cardSeq),   // 결제에 사용할 카드 번호
+        orderSeqList: selectedOrderIds,          // 결제할 발주 번호 목록
+      });
+
+      console.log("결제 결과:", result);
+
+      // 백엔드에서 success true를 내려주면 결제 성공 처리
+      if (result.success) {
+        alert("결제가 완료되었습니다.");
+
+        // 선택한 발주 초기화
+        setSelectedOrderIds([]);
+
+        // 결제한 발주는 미결제 목록에서 빠져야 하므로 다시 조회
+        const orders = await getUnpaidOrders(
+          Number(currentStoreSeq),
+          Number(selectedPartnerId)
+        );
+
+        setPayableOrders(orders ?? []);
+
+        // 방금 결제한 내역이 아래 최근 결제 내역에 바로 뜨도록 다시 조회
+        await fetchRecentPayments(Number(currentStoreSeq));
+      } else {
+        alert(result.message || "결제에 실패했습니다.");
+      }
+    } catch (error) {
+      console.error("발주 결제 실패:", error);
+
+      // 백엔드에서 내려준 에러 메시지가 있으면 그걸 보여주고,
+      // 없으면 기본 메시지를 보여줌
+      alert(error.response?.data?.message || "결제 중 오류가 발생했습니다.");
+    } finally {
+      // 성공/실패와 관계없이 결제 중 상태 해제
+      setIsPaying(false);
+    }
+  };
+
+
+  // 등록된 카드 + 최근 결제 내역 조회
   useEffect(() => {
     const currentStoreSeq = selectedStoreSeq ?? stores?.[0]?.storeSeq;
 
     if (currentStoreSeq) {
+      // 등록된 카드 목록 조회
       fetchCards(currentStoreSeq);
+
+      // 최근 카드 결제 내역 조회
+      fetchRecentPayments(currentStoreSeq);
     }
   }, [selectedStoreSeq, stores]);
 
@@ -215,9 +304,11 @@ const TransferManagementPage = () => {
   }
 };
 
-////////////
+
 const [cards, setCards] = useState([]);
 const [activeCardIndex, setActiveCardIndex] = useState(0);
+// 이체관리 화면 아래에 보여줄 최근 카드 결제 내역
+const [recentPayments, setRecentPayments] = useState([]);
 
 const fetchCards = async (storeSeq) => {
   try {
@@ -226,6 +317,26 @@ const fetchCards = async (storeSeq) => {
     setActiveCardIndex(0);
   } catch (error) {
     console.error("카드 목록 조회 실패:", error);
+  }
+};
+
+
+// 최근 카드 결제 내역 조회
+// payments.store_seq = 현재 매장 번호 기준으로 조회한다.
+const fetchRecentPayments = async (storeSeq) => {
+  try {
+    // 백엔드 /account/recent-payments 호출
+    const data = await getRecentPayments(Number(storeSeq));
+
+    console.log("최근 결제 내역 조회 결과:", data);
+
+    // 조회 결과를 화면 state에 저장
+    setRecentPayments(data ?? []);
+  } catch (error) {
+    console.error("최근 결제 내역 조회 실패:", error);
+
+    // 실패해도 화면이 터지지 않도록 빈 배열 처리
+    setRecentPayments([]);
   }
 };
 
@@ -759,7 +870,7 @@ const handleRegisterCard = async () => {
 
           <section className="overflow-hidden rounded-[28px] border border-gray-100 bg-white text-gray-900 shadow-sm">
             <div className="border-b border-gray-100 px-7 py-6">
-              <h3 className="text-lg font-black">최근 이체 내역</h3>
+              <h3 className="text-lg font-black">최근 결제 내역</h3>
             </div>
             <div className="flex flex-col gap-3 border-b border-gray-100 bg-gray-50/60 px-7 py-4 xl:flex-row xl:items-center">
               <div className="flex shrink-0 items-center gap-1 rounded-xl border border-gray-200 bg-white p-1">
@@ -833,52 +944,87 @@ const handleRegisterCard = async () => {
                 <thead className="border-b border-gray-100 bg-gray-50 text-xs font-bold text-gray-400">
                   <tr>
                     <th className="px-5 py-4">일시</th>
-                    <th className="px-5 py-4">은행</th>
-                    <th className="px-5 py-4">계좌번호</th>
+                    <th className="px-5 py-4">카드사</th>
+                    <th className="px-5 py-4">카드번호</th>
                     <th className="px-5 py-4">보낸 사람</th>
                     <th className="px-5 py-4">받는 사람</th>
-                    <th className="px-5 py-4">이체 금액</th>
+                    <th className="px-5 py-4">결제 금액</th>
                     <th className="px-5 py-4">상태</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
-                  {transferData.recentTransfers.map((item, index) => {
-                    const recipientMatch = item.recipient.match(/^(.+?)\s*\((.+)\)$/);
-                    const recipientName = recipientMatch?.[1] || item.recipient;
-                    const recipientLabel = recipientMatch?.[2] || '';
-                    const transferAccounts = [
-                      { bank: '신한은행', number: '110-123-456789', sender: '소소식당' },
-                      { bank: '국민은행', number: '456-789-012345', sender: '소소식당' },
-                      { bank: '우리은행', number: '1002-345-678901', sender: '소소식당' },
-                      { bank: '하나은행', number: '234-567-890123', sender: '소소식당' },
-                    ];
-                    const transferAccount = transferAccounts[index % transferAccounts.length];
-                    const avatarColors = ['bg-emerald-50 text-emerald-700', 'bg-indigo-50 text-indigo-700', 'bg-amber-50 text-amber-700', 'bg-pink-50 text-pink-700', 'bg-blue-50 text-blue-700'];
+                  {recentPayments.length > 0 ? (
+                    recentPayments.map((item) => {
+                      // 받는 사람 이름 첫 글자
+                      const partnerInitial = item.partnerName?.substring(0, 1) || "거";
 
-                    return (
-                      <tr key={item.id} className="transition-colors hover:bg-emerald-50/20">
-                        <td className="whitespace-nowrap px-5 py-5 text-sm font-medium text-gray-400">{item.date}</td>
-                        <td className="whitespace-nowrap px-5 py-5 text-sm font-black text-gray-700">{transferAccount.bank}</td>
-                        <td className="whitespace-nowrap px-5 py-5 text-sm font-semibold text-gray-500">{transferAccount.number}</td>
-                        <td className="whitespace-nowrap px-5 py-5 text-sm font-black text-gray-700">{transferAccount.sender}</td>
-                        <td className="px-5 py-5">
-                          <div className="flex items-center justify-center gap-3">
-                            <span className={`flex h-9 w-9 items-center justify-center rounded-full text-xs font-black ${avatarColors[index % avatarColors.length]}`}>
-                              {recipientName.substring(0, 1)}
-                            </span>
-                            <div className="min-w-0">
-                              <div className="truncate text-sm font-black">{recipientName}</div>
-                              <div className="mt-0.5 truncate text-xs font-medium text-gray-400">{recipientLabel}</div>
+                      return (
+                        <tr
+                          key={item.paymentSeq}
+                          className="transition-colors hover:bg-emerald-50/20"
+                        >
+                          {/* 결제 일시 */}
+                          <td className="whitespace-nowrap px-5 py-5 text-sm font-semibold text-gray-500">
+                            {item.paidAt}
+                          </td>
+
+                          {/* 카드사 */}
+                          <td className="px-5 py-5 text-sm font-black text-gray-800">
+                            {item.cardCompany || "카드"}
+                          </td>
+
+                          {/* 카드번호 마스킹 */}
+                          <td className="px-5 py-5 text-sm font-bold text-gray-500">
+                            {item.cardNumberMasked || "**** **** **** ****"}
+                          </td>
+
+                          {/* 보낸 사람: 내 매장 */}
+                          <td className="px-5 py-5 text-sm font-bold text-gray-800">
+                            {item.payerName}
+                          </td>
+
+                          {/* 받는 사람: 거래처 */}
+                          <td className="px-5 py-5">
+                            <div className="flex items-center justify-center gap-3">
+                              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-xs font-black text-emerald-700">
+                                {partnerInitial}
+                              </span>
+
+                              <div className="text-left">
+                                <p className="text-sm font-black text-gray-900">
+                                  {item.partnerName}
+                                </p>
+                                <p className="mt-0.5 text-xs font-semibold text-gray-400">
+                                  거래처
+                                </p>
+                              </div>
                             </div>
-                          </div>
-                        </td>
-                        <td className="px-5 py-5 text-center text-base font-black">{formatCurrency(item.amount)}</td>
-                        <td className="px-5 py-5">
-                          <span className="rounded-full bg-emerald-50 px-4 py-2 text-xs font-black text-emerald-700">{item.status}</span>
-                        </td>
-                      </tr>
-                    );
-                  })}
+                          </td>
+
+                          {/* 결제 금액 */}
+                          <td className="px-5 py-5 text-base font-black text-gray-900">
+                            {formatCurrency(item.totalAmount)}
+                          </td>
+
+                          {/* 상태 */}
+                          <td className="px-5 py-5">
+                            <span className="rounded-full bg-emerald-50 px-4 py-2 text-xs font-black text-emerald-700">
+                              {item.status === "PAID" ? "결제 완료" : item.status}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  ) : (
+                    <tr>
+                      <td
+                        colSpan={7}
+                        className="px-5 py-12 text-center text-sm font-bold text-gray-400"
+                      >
+                        최근 결제 내역이 없습니다.
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
@@ -1210,14 +1356,20 @@ const handleRegisterCard = async () => {
               </button>
               <button
                 type="button"
-                disabled={selectedOrderIds.length === 0 || cards.length === 0}
+                // 버튼 클릭 시 선택한 발주들을 등록된 카드로 결제 요청
+                onClick={handlePayOrders}
+
+                // 발주를 선택하지 않았거나, 카드가 없거나, 결제 처리 중이면 버튼 비활성화
+                disabled={selectedOrderIds.length === 0 || cards.length === 0 || isPaying}
+
                 className={`flex-1 rounded-2xl py-4 text-sm font-black transition-colors ${
-                  selectedOrderIds.length === 0 || cards.length === 0
+                  selectedOrderIds.length === 0 || cards.length === 0 || isPaying
                     ? "cursor-not-allowed bg-gray-200 text-gray-400"
                     : "bg-emerald-600 text-white shadow-lg shadow-emerald-200 hover:bg-emerald-700"
                 }`}
               >
-                등록된 카드로 결제
+                {/* 결제 요청 중이면 문구 변경 */}
+                {isPaying ? "결제 처리 중..." : "등록된 카드로 결제"}
               </button>
             </div>
           </div>

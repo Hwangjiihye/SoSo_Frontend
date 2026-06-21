@@ -106,3 +106,23 @@ export const getMyPartners = async (storeSeq) => {
   const response = await axios.get(`/api/account/my-partners/${storeSeq}`);
   return response.data;
 };
+
+// 발주 결제 요청
+// PaymentController의 @RequestMapping("/account") 기준으로
+// /account/order/pay API에 결제 요청 데이터를 보냄
+export const payOrdersByCard = async (data) => {
+  const response = await axiosInstance.post("/account/order/pay", data);
+
+  // 백엔드에서 받은 결제 결과 반환
+  return response.data;
+};
+
+// 이체관리 최근 결제 내역 조회
+// 현재 매장에서 카드로 결제한 내역을 가져온다.
+export const getRecentPayments = async (storeSeq) => {
+  const response = await axiosInstance.get("/account/recent-payments", {
+    params: { storeSeq },
+  });
+
+  return response.data;
+};
