@@ -111,32 +111,37 @@ function MainHeader({ activeMenu = '홈' }) {
           </div>
         </div>
 
-        {/* 이체/수금 관리 드롭다운 메뉴 */}
+        {/* 결제/수금관리 드롭다운 메뉴 */}
         <div 
           className="relative"
           onMouseEnter={() => setIsSettlementDropdownOpen(true)}
           onMouseLeave={() => setIsSettlementDropdownOpen(false)}
         >
-          <div className={activeMenu === '이체/수금 관리' 
+          <div className={activeMenu === '결제/수금관리' 
             ? "px-4 py-1.5 text-sm font-semibold bg-white text-emerald-600 rounded shadow-sm border border-gray-200 cursor-pointer transition-all whitespace-nowrap"
             : "px-4 py-1.5 text-sm font-medium text-gray-500 hover:text-emerald-600 transition-all cursor-pointer whitespace-nowrap"}>
-            이체/수금 관리
+            결제/수금관리
           </div>
           
           <div className={`absolute top-full left-0 w-48 pt-2 z-[60] transition-all duration-200 ${isSettlementDropdownOpen ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-2'}`}>
             <div className="bg-white border border-gray-100 rounded-2xl shadow-xl p-2">
-              <Link to="/transfer-management" className="block w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl mb-1">
-                이체 관리
-              </Link>
-              <Link to="/collection-management" className="block w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl mb-1">
-                수금 관리
-              </Link>
-              <Link to="/expense-category" className="block w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl mb-1">
-                비용 카테고리
-              </Link>
-              <Link to="/settlement" className="block w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl">
-                지출 요약
-              </Link>
+              {user_type === 'PARTNER' ? (
+                <Link to="/collection-management" className="block w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl mb-1">
+                  수금 관리
+                </Link>
+              ) : (
+                <>
+                  <Link to="/transfer-management" className="block w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl mb-1">
+                    이체 관리
+                  </Link>
+                  <Link to="/expense-category" className="block w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl mb-1">
+                    비용 카테고리
+                  </Link>
+                  <Link to="/settlement" className="block w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl">
+                    지출 요약
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </div>

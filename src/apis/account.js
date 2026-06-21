@@ -126,3 +126,19 @@ export const getRecentPayments = async (storeSeq) => {
 
   return response.data;
 };
+
+
+// 거래처 로그인 기준 수금관리 대시보드 조회 API
+// 백엔드 요청 주소: GET /account/collection?storeSeq=매장번호
+// storeSeq: 현재 로그인한 거래처의 매장 번호
+export const getCollectionDashboard = async (storeSeq) => {
+  // 백엔드 PaymentController의 @RequestMapping("/account") + @GetMapping("/collection") 호출
+  const response = await axiosInstance.get('/account/collection', {
+    params: {
+      storeSeq: storeSeq,
+    },
+  });
+
+  // 백엔드에서 내려준 수금관리 데이터 반환
+  return response.data;
+};
