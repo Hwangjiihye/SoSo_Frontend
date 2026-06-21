@@ -37,7 +37,7 @@ const supplierRealName = suppliers.find(
   // 재고랑 발주랑 맞는지 확인 후 선택
   const handleSelectSupplierItem = async (item) => {
   console.log('선택한 품목:', item);
-  
+
   try {
     const storeSeq = Number(localStorage.getItem('storeSeq'));
 
@@ -45,23 +45,73 @@ const supplierRealName = suppliers.find(
       alert('선택된 매장이 없습니다.');
       return;
     }
-    const result = await check(item.itemName);
 
-    console.log('재고 추천 응답:', result);
-    setRecommendedStocks(result);
-    addSelectedItem(item);
+    const result = await check(item.itemName, storeSeq);
+    const list = Array.isArray(result) ? result : [];
+
+    console.log('재고 추천 응답:', list);
+
     setSelectedSupplierItem(item);
+    setRecommendedStocks(list);
+
+    // 비슷한 재고가 없으면 그냥 바로 발주 품목 목록에 추가
+    if (list.length === 0) {
+      addSelectedItem(item);
+    }
+
+    // 추천 있든 없든 모달은 띄움
     setOpenModal(true);
+
   } catch (error) {
     console.error('재고 추천 조회 실패:', error);
-    alert('재고 추천 조회에 실패했습니다.');
+
+    // 추천 조회 실패해도 발주 품목 추가는 막지 않음
+    addSelectedItem(item);
+    setSelectedSupplierItem(item);
+    setRecommendedStocks([]);
+    setOpenModal(true);
   }
 };
+//   const handleSelectSupplierItem = async (item) => {
+//   console.log('선택한 품목:', item);
+  
+//   try {
+//     const storeSeq = Number(localStorage.getItem('storeSeq'));
+
+//     if (!storeSeq) {
+//       alert('선택된 매장이 없습니다.');
+//       return;
+//     }
+//     const result = await check(item.itemName, storeSeq);
+
+//     console.log('재고 추천 응답:', result);
+//     setRecommendedStocks(result);
+//     addSelectedItem(item);
+//     setSelectedSupplierItem(item);
+//     setOpenModal(true);
+//   } catch (error) {
+//     console.error('재고 추천 조회 실패:', error);
+//     alert('재고 추천 조회에 실패했습니다.');
+//   }
+// };
 
 // 모달 Close
 const handleCloseModal = () => {
   setOpenModal(false);
 }
+
+const handleConnectStock = (stock) => {
+  if (!selectedSupplierItem) return;
+
+  console.log('연결할 내 재고:', stock);
+
+  // 추천 재고를 선택하면 그때 발주 품목 목록에 추가
+  addSelectedItem(selectedSupplierItem);
+
+  setOpenModal(false);
+  setSelectedSupplierItem(null);
+  setRecommendedStocks([]);
+};
 
   return (
     <div className="min-h-screen bg-[#F8F9FA] text-gray-800 font-sans">
@@ -108,25 +158,17 @@ const handleCloseModal = () => {
                 <div>
                   <label className="block text-[14px] font-black text-gray-600 mb-2 uppercase tracking-tighter">공급업체</label>
                   <select
-                    value={String(orderInfo.supplier || '')}
-                    onChange={(e) => {
-                      const selectedValue = e.target.value;
-                      console.log('진짜 선택된 공급업체 value:', selectedValue);
-                      handleInfoChange('supplier', selectedValue);
-                    }}
-                    className="w-full bg-gray-50 border-none rounded-2xl py-4 px-4 text-sm font-bold focus:ring-2 focus:ring-emerald-500/20 outline-none"
+                    value={orderInfo.supplier}
+                    onChange={(e) => handleInfoChange('supplier', e.target.value)}
                   >
                     <option value="">공급업체 선택</option>
 
                     {suppliers.map((supplier) => (
-                      <option
-                        key={supplier.storeSeq}
-                        value={String(supplier.storeSeq)}
-                      >
-                        {supplier.partnerName}
+                      <option key={supplier.storeSeq} value={supplier.storeSeq}>
+                        {supplier.companyName}
                       </option>
                     ))}
-                </select>
+                  </select>
                 </div>
                 <div>
                   <label className="block text-[14px] font-black text-gray-600 mb-2 uppercase tracking-tighter">사업자명</label>
@@ -146,7 +188,7 @@ const handleCloseModal = () => {
                 <div className="p-8 border-b border-gray-50 flex justify-between items-center bg-white">
                   <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
                     <span className="w-1.5 h-6 bg-emerald-500 rounded-full"></span>
-                    {supplierRealName?.partnerName} 등록 물품
+                    {supplierRealName?.companyName} 등록 물품
                     <span className="text-[14px] font-medium text-gray-500 ml-2">업체에서 공급하는 품목 리스트입니다.</span>
                   </h3>
                 </div>
@@ -341,9 +383,15 @@ const handleCloseModal = () => {
                           현재 수량: {stock.quantity} / 안전재고: {stock.safetyStock}
                         </p>
                       </div>
-            <button className="px-4 py-2 bg-emerald-600 text-white text-xs font-black rounded-xl hover:bg-emerald-700 transition-all" onClick={handleCloseModal}>
+                <button
+                  className="px-4 py-2 bg-emerald-600 text-white text-xs font-black rounded-xl hover:bg-emerald-700 transition-all"
+                  onClick={() => handleConnectStock(stock)}
+                >
+                  이 재고로 연결
+                </button>
+            {/* <button className="px-4 py-2 bg-emerald-600 text-white text-xs font-black rounded-xl hover:bg-emerald-700 transition-all" onClick={handleCloseModal}>
               이 재고로 연결
-            </button>
+            </button> */}
           </div>
         ))}
       </div>

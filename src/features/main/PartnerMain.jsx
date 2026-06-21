@@ -292,7 +292,7 @@ function PartnerMain({ setRole }) {
           </div>
 
           <div className="flex h-[520px] flex-col bg-white px-5 py-5 max-sm:h-[460px]">
-            <div className="flex-1 space-y-5 overflow-hidden">
+            <div className="min-h-0 flex-1 space-y-5 overflow-y-auto pr-1">
               <div className="flex items-start gap-3">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-emerald-100 bg-emerald-50">
                   <span className="relative flex h-6 w-7 items-center justify-center rounded-lg bg-emerald-600">

@@ -131,11 +131,36 @@ const supplierListCheck = async () => {
 
     const data = await getSupplierList(storeSeq);
 
-    console.log('공급업체 목록 조회 결과:', data);
+    console.log('공급업체 목록 조회 원본:', data);
 
-    const list = Array.isArray(data)
+    const rawList = Array.isArray(data)
       ? data
       : data.results || data.list || data.data || [];
+
+    const list = rawList.map((supplier) => ({
+      relationSeq: supplier.relationSeq ?? supplier.relation_seq,
+      storeSeq:
+        supplier.partnerSeq ??
+        supplier.partner_seq ??
+        supplier.storeSeq ??
+        supplier.store_seq,
+      userSeq: supplier.userSeq ?? supplier.user_seq,
+      companyName:
+        supplier.companyName ??
+        supplier.company_name ??
+        supplier.partnerName ??
+        supplier.partner_name ??
+        supplier.partnerCompanyName ??
+        supplier.partner_company_name,
+      ceoName: supplier.ceoName ?? supplier.ceo_name,
+      bizNumber: supplier.bizNumber ?? supplier.biz_number,
+      memo: supplier.memo ?? '',
+      address1: supplier.address1 ?? '',
+      address2: supplier.address2 ?? '',
+      zonecode: supplier.zonecode ?? supplier.zoneCode ?? '',
+    }));
+
+    console.log('공급업체 목록 정리 후:', list);
 
     setSupplierList(list);
   } catch (error) {
@@ -154,13 +179,17 @@ useEffect(() => {
 
   // 공급업체 선택값 기준으로 필터링
   const selectedSupplier = supplierList.find((supplier) =>
-  String(supplier.storeSeq) === String(orderInfo.supplier) ||
   String(supplier.storeSeq) === String(orderInfo.supplier)
 );
 
 const filteredSupplierItems = orderInfo.supplier
   ? supplierItems.filter((item) =>
-      String(item.storeSeq) === String(orderInfo.supplier)
+      String(
+        item.storeSeq ??
+        item.store_seq ??
+        item.partnerSeq ??
+        item.partner_seq
+      ) === String(orderInfo.supplier)
     )
   : [];
 

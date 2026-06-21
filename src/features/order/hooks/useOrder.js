@@ -16,9 +16,13 @@ export const useOrder = () => {
 
   // 검색
   const fetchSearch = async () => {
-    console.log("검색어 : " + keyword);
+    console.log('검색어:', keyword);
     fetchOrderList(keyword);
   };
+  // const fetchSearch = async () => {
+  //   console.log("검색어 : " + keyword);
+  //   fetchOrderList(keyword);
+  // };
 
   // 검색어 입력
   const handleKeywordChange = useCallback((e) => {
@@ -32,7 +36,7 @@ export const useOrder = () => {
   }
 
   useEffect(() => {
-    fetchOrderList();
+    fetchOrderList('');
   }, [])
 
   const fetchOrderList = async (searchKeyword = '') => {
@@ -47,14 +51,35 @@ export const useOrder = () => {
 
     const data = await orderList(storeSeq, searchKeyword);
 
+    console.log('발주 목록 조회 storeSeq:', storeSeq);
     console.log('발주 목록 조회 결과:', data);
 
-    setOrders(data);
+    setOrders(Array.isArray(data) ? data : []);
   } catch (error) {
     console.error('발주 목록 조회 실패:', error);
     setOrders([]);
   }
 };
+//   const fetchOrderList = async (searchKeyword = '') => {
+//   try {
+//     const storeSeq = Number(localStorage.getItem('storeSeq'));
+
+//     if (!storeSeq) {
+//       console.log('storeSeq 없음');
+//       setOrders([]);
+//       return;
+//     }
+
+//     const data = await orderList(storeSeq, searchKeyword);
+
+//     console.log('발주 목록 조회 결과:', data);
+
+//     setOrders(data);
+//   } catch (error) {
+//     console.error('발주 목록 조회 실패:', error);
+//     setOrders([]);
+//   }
+// };
 
   // 필터링 로직
   const filteredOrders = orders.filter((order) => {

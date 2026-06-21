@@ -19,6 +19,8 @@ import {
 } from 'chart.js';
 import { Bar, Line } from 'react-chartjs-2';
 import authStore from '../../store/authStore';
+import { askRag } from "../../apis/ragApi";
+
 
 // Chart.js 컴포넌트 등록
 ChartJS.register(
@@ -46,7 +48,12 @@ function BusinessMain({ setRole }) {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isSettlementMenuOpen, setIsSettlementMenuOpen] = useState(false);
   const [isChatbotOpen, setIsChatbotOpen] = useState(false);
-  const [chatbotMessage, setChatbotMessage] = useState('');
+
+  const [question, setQuestion] = useState("");
+  const [messages, setMessages] = useState([]);
+  const [loading, setLoading] = useState(false);
+  
+  
 
   // 마이페이지 이동 핸들러
   const handleProfileClick = () => {
@@ -56,7 +63,51 @@ function BusinessMain({ setRole }) {
     } else {
       alert("사업자 전용 마이페이지입니다.");
     }
+  }
+
+  const { user_type, logout, setSelectedStore } = authStore();
   
+
+  const handleSend = async () => {
+  if (!question.trim()) return;
+
+  const userQuestion = question;
+
+  setMessages((prev) => [
+    ...prev,
+    {
+      role: "user",
+      content: userQuestion,
+    },
+  ]);
+
+  setQuestion("");
+  setLoading(true);
+
+  try {
+    const result = await askRag(userQuestion);
+
+    setMessages((prev) => [
+      ...prev,
+      {
+        role: "ai",
+        content: result.answer,
+      },
+    ]);
+  } catch (error) {
+    console.error(error);
+
+    setMessages((prev) => [
+      ...prev,
+      {
+        role: "ai",
+        content: "답변을 가져오는 중 오류가 발생했습니다.",
+      },
+    ]);
+  } finally {
+    setLoading(false);
+  }
+};
 
   /**
    * 🔄 매장 전환 핸들러
@@ -73,7 +124,6 @@ function BusinessMain({ setRole }) {
     alert("로그아웃 되었습니다.");
     navigate("/");
   };
-}
 
   // --- 차트 데이터 영역 (기존과 동일) ---
   const stockChartData = {
@@ -242,58 +292,88 @@ function BusinessMain({ setRole }) {
           </div>
 
           <div className="flex h-[520px] flex-col bg-white px-5 py-5 max-sm:h-[460px]">
-            <div className="flex-1 space-y-5 overflow-hidden">
-              <div className="flex items-start gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-emerald-100 bg-emerald-50">
-                  <span className="relative flex h-6 w-7 items-center justify-center rounded-lg bg-emerald-600">
-                    <span className="absolute -top-1 h-1.5 w-1 rounded-full bg-emerald-600"></span>
-                    <span className="flex h-4 w-5 items-center justify-center gap-1 rounded-md bg-white">
-                      <span className="h-1 w-1 rounded-full bg-emerald-700"></span>
-                      <span className="h-1 w-1 rounded-full bg-emerald-700"></span>
+            <div className="min-h-0 flex-1 space-y-5 overflow-y-auto pr-1">
+
+              <div className="space-y-5">
+                <div className="flex items-start gap-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-emerald-100 bg-emerald-50">
+                    <span className="relative flex h-6 w-7 items-center justify-center rounded-lg bg-emerald-600">
+                      <span className="absolute -top-1 h-1.5 w-1 rounded-full bg-emerald-600"></span>
+                      <span className="flex h-4 w-5 items-center justify-center gap-1 rounded-md bg-white">
+                        <span className="h-1 w-1 rounded-full bg-emerald-700"></span>
+                        <span className="h-1 w-1 rounded-full bg-emerald-700"></span>
+                      </span>
                     </span>
-                  </span>
+                  </div>
+
+                  <div className="max-w-[280px] rounded-2xl rounded-tl-md border border-gray-200 bg-white px-4 py-3 shadow-sm">
+                    <p className="text-sm leading-7 text-gray-900">
+                      안녕하세요! 👋<br />
+                      SoSo 업무 도우미입니다.<br />
+                      무엇을 도와드릴까요?
+                    </p>
+                  </div>
                 </div>
-                <div className="max-w-[280px] rounded-2xl rounded-tl-md border border-gray-200 bg-white px-4 py-3 shadow-sm">
-                  <p className="text-sm leading-7 text-gray-900">안녕하세요! 👋<br />SoSo 업무 도우미입니다.<br />무엇을 도와드릴까요?</p>
-                  <p className="mt-2 text-right text-xs text-gray-400">오후 2:30</p>
-                </div>
+
+                {messages.map((msg, index) => (
+                  msg.role === "user" ? (
+                    <div key={index} className="flex justify-end">
+                      <div className="max-w-[300px] whitespace-pre-line rounded-2xl rounded-tr-md bg-emerald-700 px-4 py-3 text-sm font-bold leading-7 text-white shadow-sm">
+                        {msg.content}
+                      </div>
+                    </div>
+                  ) : (
+                    <div key={index} className="flex items-start gap-3">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-emerald-100 bg-emerald-50">
+                        <span className="relative flex h-6 w-7 items-center justify-center rounded-lg bg-emerald-600">
+                          <span className="absolute -top-1 h-1.5 w-1 rounded-full bg-emerald-600"></span>
+                          <span className="flex h-4 w-5 items-center justify-center gap-1 rounded-md bg-white">
+                            <span className="h-1 w-1 rounded-full bg-emerald-700"></span>
+                            <span className="h-1 w-1 rounded-full bg-emerald-700"></span>
+                          </span>
+                        </span>
+                      </div>
+
+                      <div className="max-w-[310px] rounded-2xl rounded-tl-md border border-gray-200 bg-white px-4 py-3 shadow-sm">
+                        <p className="whitespace-pre-line text-sm leading-7 text-gray-900">
+                          {msg.content}
+                        </p>
+                      </div>
+                    </div>
+                  )
+                ))}
+
+                {loading && (
+                  <div className="flex items-start gap-3">
+                    <div className="max-w-[220px] rounded-2xl rounded-tl-md border border-gray-200 bg-white px-4 py-3 shadow-sm">
+                      <p className="text-sm text-gray-500">답변 생성 중...</p>
+                    </div>
+                  </div>
+                )}
               </div>
 
-              <div className="flex justify-end">
-                <div className="rounded-2xl rounded-tr-md bg-emerald-700 px-4 py-3 text-sm font-bold text-white shadow-sm">최근 발주 내역 알려줘</div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-emerald-100 bg-emerald-50">
-                  <span className="relative flex h-6 w-7 items-center justify-center rounded-lg bg-emerald-600">
-                    <span className="absolute -top-1 h-1.5 w-1 rounded-full bg-emerald-600"></span>
-                    <span className="flex h-4 w-5 items-center justify-center gap-1 rounded-md bg-white">
-                      <span className="h-1 w-1 rounded-full bg-emerald-700"></span>
-                      <span className="h-1 w-1 rounded-full bg-emerald-700"></span>
-                    </span>
-                  </span>
-                </div>
-                <div className="max-w-[310px] rounded-2xl rounded-tl-md border border-gray-200 bg-white px-4 py-3 shadow-sm">
-                  <p className="text-sm leading-7 text-gray-900">최근 발주 내역은 총 3건입니다.</p>
-                  <ul className="mt-2 space-y-1 text-sm leading-6 text-gray-900">
-                    <li>· 2024-06-18 신선식품 350,000원</li>
-                    <li>· 2024-06-17 대한유통 180,000원</li>
-                    <li>· 2024-06-16 푸드상사 250,000원</li>
-                  </ul>
-                  <p className="mt-2 text-right text-xs text-gray-400">오후 2:30</p>
-                </div>
-              </div>
             </div>
 
             <div className="mt-5 flex items-center gap-3 rounded-2xl border border-gray-200 bg-white px-4 py-3 shadow-sm">
               <input
                 type="text"
-                value={chatbotMessage}
-                onChange={(event) => setChatbotMessage(event.target.value)}
+                value={question}
+                onChange={(event) => setQuestion(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") {
+                    handleSend();
+                  }
+                }}
                 placeholder="질문을 입력하세요..."
                 className="min-w-0 flex-1 bg-transparent text-sm font-medium text-gray-700 placeholder:text-gray-400 focus:outline-none"
               />
-              <button type="button" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-emerald-700 text-white shadow-lg shadow-emerald-900/20" aria-label="챗봇 메시지 전송">
+              <button
+                type="button"
+                onClick={handleSend}
+                disabled={loading}
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-emerald-700 text-white shadow-lg shadow-emerald-900/20 disabled:cursor-not-allowed disabled:opacity-60"
+                aria-label="챗봇 메시지 전송"
+              >
                 <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                   <path d="M3.4 20.4 21.6 12 3.4 3.6 3 10l10 2-10 2 .4 6.4Z" />
                 </svg>

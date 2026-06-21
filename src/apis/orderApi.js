@@ -6,12 +6,7 @@ export const check = async (itemName, storeSeq) => {
         params: { itemName, storeSeq }
     });
     return resp.data;
-}
-// export const check = async (itemName) => {
-//     const resp = await maxios.get('/order/check', {
-//         params: {itemName}});
-//     return resp.data;
-// }
+};
 
 // 발주 신청시, 거래처 품목 리스트 확인
 export const items = async (itemName = '') => {
@@ -28,10 +23,6 @@ export const identityCheck = async (storeSeq) => {
     });
     return resp.data;
 }
-// export const identityCheck = async () => {
-//     const resp = await maxios.get('/order/identity');
-//     return resp.data;
-// }
 
 // 발주서 작성
 export const orderForm = async (orderData) => {
@@ -49,22 +40,14 @@ export const orderList = async (storeSeq, keyword = '') => {
     });
     return resp.data;
 }
-// export const orderList = async (keyword = '') => {
-//     const resp = await maxios.get('/order/list', {
-//         params : {
-//             keyword : keyword
-//         }
-//     });
-//     return resp.data;
-// }
 
 // 발주 신청시, 공급업체 목록 조회
 export const suppliers = async (storeSeq) => {
-    const resp = await maxios.get('/order/suppliers', {
-        params: { storeSeq }
-    });
-    return resp.data;
-}
+  const resp = await maxios.get('/api/account/my-partners', {
+    params: { storeSeq }
+  });
+  return resp.data;
+};
 
 // 발주서 상세 조회
 export const getOrderDetail = async (orderSeq) => {
