@@ -4,7 +4,7 @@ import { useOrder } from './hooks/useOrder';
 
 import SockJS from 'sockjs-client';
 import { Client } from '@stomp/stompjs';
-import { webSocketMe } from '../../apis/orderApi';
+import { webSocketMe, getOrderDetail } from '../../apis/orderApi';
 
 /**
  * @file OrderPage.jsx
@@ -21,6 +21,9 @@ function OrderPage() {
   const stompClientRef = useRef(null);
   // 웹소켓으로 받은 최신 발주 상태
   const [liveOrderStatus, setLiveOrderStatus] = useState(null);
+
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState(null);
 
   // userSeq 가져오기
   useEffect(() => {
@@ -136,6 +139,28 @@ function OrderPage() {
     SHIPPING: 'bg-purple-100 text-purple-700 border-purple-200',
     DELIVERED: 'bg-gray-200 text-gray-700 border-gray-300',
   };
+
+  // 상세보기
+  const handleOpenDetail = async (orderSeq) => {
+  console.log('상세보기 클릭:', orderSeq);
+
+  try {
+    const data = await getOrderDetail(orderSeq);
+
+    console.log('상세 조회 결과:', data);
+
+    setSelectedOrder(data);
+    setIsDetailOpen(true);
+  } catch (error) {
+    console.error('상세 조회 실패:', error);
+    alert('발주 상세 조회에 실패했습니다.');
+  }
+};
+
+const handleCloseDetail = () => {
+  setIsDetailOpen(false);
+  setSelectedOrder(null);
+};
 
   return (
     <div className="min-h-screen bg-[#F8F9FA] text-gray-800 font-sans">
@@ -310,7 +335,14 @@ function OrderPage() {
                   </td>
                   <td className="px-8 py-6 text-center">
                     <div className="flex items-center justify-center gap-3">
-                      <button className="p-2 hover:bg-white rounded-lg transition-all border border-transparent hover:border-gray-100 text-gray-400 hover:text-emerald-600 shadow-sm" title="상세보기">📄</button>
+                      <button
+                        type="button"
+                        onClick={() => handleOpenDetail(order.orderSeq)}
+                        className="p-2 hover:bg-white rounded-lg transition-all border border-transparent hover:border-gray-100 text-gray-400 hover:text-emerald-600 shadow-sm"
+                        title="상세보기"
+                      >
+                        📄
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -326,6 +358,55 @@ function OrderPage() {
             </div>
           </div>
         </div>
+        {isDetailOpen && selectedOrder && (
+  <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40">
+    <div className="w-[700px] max-w-[90vw] rounded-[28px] bg-white p-8 shadow-xl">
+      <div className="mb-6 flex items-center justify-between">
+        <h3 className="text-2xl font-black text-gray-900">발주 상세</h3>
+        <button
+          onClick={handleCloseDetail}
+          className="rounded-xl bg-gray-100 px-4 py-2 text-sm font-bold text-gray-500 hover:bg-gray-200"
+        >
+          닫기
+        </button>
+      </div>
+
+      <div className="mb-6 rounded-2xl bg-gray-50 p-5 text-sm font-bold text-gray-700">
+        <p>발주번호: {selectedOrder.orderInfo?.orderNo}</p>
+        <p>공급업체: {selectedOrder.orderInfo?.companyName}</p>
+        <p>상태: {selectedOrder.orderInfo?.status}</p>
+        <p>총 금액: {Number(selectedOrder.orderInfo?.totalAmount || 0).toLocaleString()}원</p>
+        <p>배송지: ({selectedOrder.orderInfo?.zonecode}) {selectedOrder.orderInfo?.address1} {selectedOrder.orderInfo?.address2}</p>
+        <p>요청사항: {selectedOrder.orderInfo?.orderMemo || '-'}</p>
+      </div>
+
+      <table className="w-full text-left">
+        <thead>
+          <tr className="border-b bg-gray-50 text-sm text-gray-500">
+            <th className="p-3">품목명</th>
+            <th className="p-3">카테고리</th>
+            <th className="p-3">수량</th>
+            <th className="p-3">규격</th>
+            <th className="p-3">단가</th>
+            <th className="p-3">합계</th>
+          </tr>
+        </thead>
+        <tbody>
+          {selectedOrder.items?.map((item) => (
+            <tr key={item.orderItemSeq} className="border-b text-sm">
+              <td className="p-3 font-bold">{item.itemName}</td>
+              <td className="p-3">{item.categoryName}</td>
+              <td className="p-3">{item.quantity}</td>
+              <td className="p-3">{item.spec}</td>
+              <td className="p-3">{Number(item.unitPrice || 0).toLocaleString()}원</td>
+              <td className="p-3">{Number(item.totalPrice || 0).toLocaleString()}원</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+)}
       </main>
     </div>
   );
