@@ -80,7 +80,7 @@ function CollectionManagementPage() {
       const data = await getCollectionDashboard(storeSeq);
 
       // 사업자 기본 정보 저장
-      setBusinessInfo(data.businessInfo || null);
+      setBusinessInfo(data.businessInfos || data.businessInfo || null);
 
       // 상단 요약 카드 데이터 저장
       setSummary(data.summary || {
@@ -156,6 +156,15 @@ function CollectionManagementPage() {
     return collectionRows.filter((row) => row.client === selectedClient);
   }, [collectionRows, selectedClient]);
 
+  // 단일 객체와 배열 형태의 사업자 정보를 모두 목록으로 변환
+  const businessInfoList = useMemo(() => {
+    if (!businessInfo) {
+      return [];
+    }
+
+    return Array.isArray(businessInfo) ? businessInfo : [businessInfo];
+  }, [businessInfo]);
+
   // 수금관리 페이지 화면 반환
   return (
     <div className="flex min-h-screen flex-col bg-slate-50 text-slate-800">
@@ -220,44 +229,50 @@ function CollectionManagementPage() {
                 <h2 className="mt-1 text-xl font-black text-slate-900">기본 정보 관리</h2>
               </div>
 
-              {/* 사업자 유형 배지 */}
               <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-500">
-                {businessInfo?.businessType || '-'}
+                총 {businessInfoList.length}개
               </span>
             </div>
 
             {/* 사업자 기본 정보 목록 */}
-            <dl className="space-y-4">
-              {[
-                ['사업자 유형', businessInfo?.businessType || '-'],
-                ['사업자번호', businessInfo?.businessNumber || '-'],
-                ['대표자명', businessInfo?.ownerName || '-'],
-              ].map(([label, value]) => (
-                <div
-                  key={label}
-                  className="grid grid-cols-[110px_1fr] items-center border-b border-slate-100 pb-4 last:border-0 last:pb-0"
-                >
-                  <dt className="text-sm font-semibold text-slate-400">{label}</dt>
-                  <dd className="text-sm font-bold text-slate-700">{value}</dd>
-                </div>
-              ))}
-            </dl>
+            {businessInfoList.length === 0 ? (
+              <p className="rounded-2xl bg-slate-50 p-4 text-sm font-bold text-slate-400">
+                등록된 사업자 정보가 없습니다.
+              </p>
+            ) : (
+              <div className="max-h-[420px] space-y-3 overflow-y-auto pr-1">
+                {businessInfoList.map((info, index) => (
+                  <section
+                    key={info.businessNumber || index}
+                    className="rounded-2xl border border-slate-100 bg-slate-50 p-4"
+                  >
+                    <div className="mb-4 flex items-center justify-between">
+                      <p className="text-sm font-black text-slate-800">사업자 정보 {index + 1}</p>
+                      <span className="rounded-full bg-white px-3 py-1 text-xs font-bold text-slate-500 shadow-sm">
+                        {info.businessType || '-'}
+                      </span>
+                    </div>
 
-            {/* 사업자 정보 버튼 영역 */}
-            <div className="mt-6 flex gap-2">
-              <button
-                type="button"
-                className="rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-emerald-700"
-              >
-                정보 확인
-              </button>
-              <button
-                type="button"
-                className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-50"
-              >
-                수정
-              </button>
-            </div>
+                    <dl className="space-y-3">
+                      {[
+                        ['사업자 유형', info.businessType || '-'],
+                        ['사업자번호', info.businessNumber || '-'],
+                        ['대표자명', info.ownerName || '-'],
+                      ].map(([label, value]) => (
+                        <div
+                          key={label}
+                          className="grid grid-cols-[100px_1fr] items-center border-b border-slate-200 pb-3 last:border-0 last:pb-0"
+                        >
+                          <dt className="text-sm font-semibold text-slate-400">{label}</dt>
+                          <dd className="text-sm font-bold text-slate-700">{value}</dd>
+                        </div>
+                      ))}
+                    </dl>
+
+                  </section>
+                ))}
+              </div>
+            )}
           </article>
 
           {/* 입금 계좌 확인 카드 */}
