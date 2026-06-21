@@ -6,6 +6,7 @@ import authStore from '../../store/authStore';
 import { useStores } from '../../hooks/useStores';
 import { useTransfer } from './hooks/useTransfer';
 import { insertAccount, accountList, accountDel, getPaymentCards, registerPaymentCard } from '../../apis/account';
+import { suppliers as getSupplierList, unpaidOrders as getUnpaidOrders } from '../../apis/orderApi';
 import * as PortOne from "@portone/browser-sdk/v2";
 
 /**
@@ -40,6 +41,8 @@ const TransferManagementPage = () => {
   const [isOrderPaymentModalOpen, setIsOrderPaymentModalOpen] = useState(false);
   const [selectedPartnerId, setSelectedPartnerId] = useState("");
   const [selectedOrderIds, setSelectedOrderIds] = useState([]);
+  const [orderPaymentPartners, setOrderPaymentPartners] = useState([]);
+  const [payableOrders, setPayableOrders] = useState([]);
 
   const [newCard, setNewCard] = useState({
     cardCompany: "",
@@ -112,44 +115,66 @@ const TransferManagementPage = () => {
   // 예금주명 정규식
   const accountNameRegex = /^[가-힣a-zA-Z0-9\s]{2,30}$/;
 
-  const orderPaymentPartners = [
-    {
-      id: "daebak",
-      name: "(주)대박식자재",
-      orders: [
-        { id: "PO-20260617-001", title: "냉장 육류 외 4건", dueDate: "2026-06-20", amount: 1280000 },
-        { id: "PO-20260615-004", title: "소스/양념 정기 발주", dueDate: "2026-06-22", amount: 342000 },
-      ],
-    },
-    {
-      id: "daesung",
-      name: "대성농산",
-      orders: [
-        { id: "PO-20260616-002", title: "채소류 주간 발주", dueDate: "2026-06-21", amount: 568000 },
-        { id: "PO-20260614-006", title: "과일류 추가 발주", dueDate: "2026-06-24", amount: 216000 },
-      ],
-    },
-    {
-      id: "woojin",
-      name: "우진주류",
-      orders: [
-        { id: "PO-20260613-003", title: "주류 정기 발주", dueDate: "2026-06-25", amount: 892000 },
-      ],
-    },
-  ];
+  const selectedPartner = orderPaymentPartners.find(
+    (partner) => String(partner.storeSeq ?? partner.partnerSeq) === String(selectedPartnerId)
+  );
 
-  const selectedPartner = orderPaymentPartners.find((partner) => partner.id === selectedPartnerId);
-  const selectedOrders = selectedPartner?.orders.filter((order) => selectedOrderIds.includes(order.id)) ?? [];
-  const selectedOrderTotal = selectedOrders.reduce((total, order) => total + order.amount, 0);
+  const selectedPartnerOrders = payableOrders;
 
-  const handlePartnerChange = (partnerId) => {
-    setSelectedPartnerId(partnerId);
+  const selectedOrders = payableOrders.filter((order) =>
+    selectedOrderIds.includes(Number(order.orderSeq))
+  );
+
+  const selectedOrderTotal = selectedOrders.reduce(
+    (total, order) => total + Number(order.totalAmount || 0),
+    0
+  );
+
+  // const handlePartnerChange = (partnerId) => {
+  //   setSelectedPartnerId(partnerId);
+  //   setSelectedOrderIds([]);
+  // };
+  const handlePartnerChange = async (partnerSeq) => {
+    setSelectedPartnerId(partnerSeq);
     setSelectedOrderIds([]);
+    setPayableOrders([]);
+
+    if (!partnerSeq) return;
+
+    const currentStoreSeq = selectedStoreSeq ?? stores?.[0]?.storeSeq;
+
+    if (!currentStoreSeq) {
+      alert("사업장 정보가 없습니다.");
+      return;
+    }
+
+    try {
+      const orders = await getUnpaidOrders(
+        Number(currentStoreSeq),
+        Number(partnerSeq)
+      );
+
+      console.log("미결제 발주 목록:", orders);
+
+      setPayableOrders(orders ?? []);
+    } catch (error) {
+      console.error("미결제 발주 목록 조회 실패:", error);
+      alert("미결제 발주 목록을 불러오지 못했습니다.");
+    }
   };
 
-  const handleOrderPaymentToggle = (orderId) => {
+  // const handleOrderPaymentToggle = (orderId) => {
+  //   setSelectedOrderIds((prev) =>
+  //     prev.includes(orderId) ? prev.filter((id) => id !== orderId) : [...prev, orderId]
+  //   );
+  // };
+  const handleOrderPaymentToggle = (orderSeq) => {
+    const targetOrderSeq = Number(orderSeq);
+
     setSelectedOrderIds((prev) =>
-      prev.includes(orderId) ? prev.filter((id) => id !== orderId) : [...prev, orderId]
+      prev.includes(targetOrderSeq)
+        ? prev.filter((id) => id !== targetOrderSeq)
+        : [...prev, targetOrderSeq]
     );
   };
 
@@ -201,6 +226,35 @@ const fetchCards = async (storeSeq) => {
     setActiveCardIndex(0);
   } catch (error) {
     console.error("카드 목록 조회 실패:", error);
+  }
+};
+
+
+const handleOpenOrderPaymentModal = async () => {
+  const currentStoreSeq = selectedStoreSeq ?? stores?.[0]?.storeSeq;
+
+  if (!currentStoreSeq) {
+    alert("사업장 정보가 없습니다.");
+    return;
+  }
+
+  if (cards.length === 0) {
+    alert("등록된 카드가 없습니다. 먼저 카드를 등록해 주세요.");
+    return;
+  }
+
+  try {
+    const partners = await getSupplierList(Number(currentStoreSeq));
+
+    console.log("발주 결제 거래처 목록:", partners);
+
+    setOrderPaymentPartners(partners ?? []);
+    setSelectedPartnerId("");
+    setSelectedOrderIds([]);
+    setIsOrderPaymentModalOpen(true);
+  } catch (error) {
+    console.error("거래처 목록 조회 실패:", error);
+    alert("거래처 목록을 불러오지 못했습니다.");
   }
 };
 
@@ -494,7 +548,7 @@ const handleRegisterCard = async () => {
             </button>
             <button
               type="button"
-              onClick={() => setIsOrderPaymentModalOpen(true)}
+              onClick={handleOpenOrderPaymentModal}
               className="rounded-2xl bg-emerald-600 px-6 py-3 text-sm font-black text-white shadow-lg shadow-emerald-200 transition-all hover:bg-emerald-700"
             >
               발주 결제하기
@@ -1043,8 +1097,8 @@ const handleRegisterCard = async () => {
                 >
                   <option value="">거래처를 선택해 주세요</option>
                   {orderPaymentPartners.map((partner) => (
-                    <option key={partner.id} value={partner.id}>
-                      {partner.name}
+                    <option key={partner.storeSeq} value={partner.storeSeq}>
+                      {partner.companyName}
                     </option>
                   ))}
                 </select>
@@ -1054,20 +1108,20 @@ const handleRegisterCard = async () => {
                 <div className="mb-3 flex items-center justify-between">
                   <h4 className="text-sm font-black text-gray-900">미결제 발주 목록</h4>
                   <span className="text-xs font-bold text-gray-400">
-                    {selectedPartner ? `${selectedPartner.orders.length}건` : "거래처 선택 필요"}
+                    {selectedPartner ? `${payableOrders.length}건` : "거래처 선택 필요"}
                   </span>
                 </div>
 
                 {selectedPartner ? (
                   <div className="space-y-3">
-                    {selectedPartner.orders.map((order) => {
-                      const isSelected = selectedOrderIds.includes(order.id);
+                    {payableOrders.map((order) => {
+                      const isSelected = selectedOrderIds.includes(Number(order.orderSeq));
 
                       return (
                         <button
-                          key={order.id}
+                          key={order.orderSeq}
                           type="button"
-                          onClick={() => handleOrderPaymentToggle(order.id)}
+                          onClick={() => handleOrderPaymentToggle(order.orderSeq)}
                           className={`w-full rounded-2xl border p-5 text-left transition-all ${
                             isSelected
                               ? "border-emerald-500 bg-emerald-50"
@@ -1085,18 +1139,18 @@ const handleRegisterCard = async () => {
                               >
                                 ✓
                               </span>
+
                               <div>
                                 <strong className="block text-sm font-black text-gray-900">
                                   {order.title}
                                 </strong>
                                 <span className="mt-1 block text-xs font-bold text-gray-400">
-                                  {order.id} · 결제 예정일 {order.dueDate}
+                                  {order.orderNo} · 발주일 {String(order.createdAt ?? "").substring(0, 10)}
                                 </span>
                               </div>
                             </div>
-
                             <strong className="text-base font-black text-gray-900">
-                              {formatCurrency(order.amount)}
+                              {formatCurrency(order.totalAmount)}
                             </strong>
                           </div>
                         </button>

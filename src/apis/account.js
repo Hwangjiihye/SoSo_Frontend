@@ -100,3 +100,9 @@ export const ExpenseDetails = async (storeSeq, month, categorySeq) => {
 
   return response.data;
 };
+
+// 내가 등록한 거래처 목록 조회
+export const getMyPartners = async (storeSeq) => {
+  const response = await axios.get(`/api/account/my-partners/${storeSeq}`);
+  return response.data;
+};

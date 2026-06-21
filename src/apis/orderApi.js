@@ -1,3 +1,4 @@
+import axiosInstance from './axiosConfig.js';
 import maxios from './axiosConfig.js';
 
 // 발주 신청시, 내 재고 품목과 거래처 품목 대조
@@ -110,3 +111,12 @@ export const updatePartnerOrderStatus = async (orderSeq, status) => {
     });
     return resp.data;
 }
+
+// 거래처별 미결제 발주 목록 조회
+export const unpaidOrders = async (storeSeq, partnerSeq) => {
+  const response = await axiosInstance.get("/order/unpaid", {
+    params: { storeSeq, partnerSeq },
+  });
+
+  return response.data;
+};
