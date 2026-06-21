@@ -31,15 +31,33 @@ export const orderForm = async (orderData) => {
 }
 
 // 발주서 목록으로 출력
-export const orderList = async (storeSeq, keyword = '') => {
-    const resp = await maxios.get('/order/list', {
-        params: {
-            storeSeq,
-            keyword
-        }
-    });
-    return resp.data;
-}
+export const orderList = async (
+  storeSeq,
+  keyword = '',
+  status = '',
+  startDate = '',
+  endDate = ''
+) => {
+  const resp = await maxios.get('/order/list', {
+    params: {
+      storeSeq,
+      keyword,
+      status,
+      startDate,
+      endDate
+    }
+  });
+  return resp.data;
+};
+// export const orderList = async (storeSeq, keyword = '') => {
+//     const resp = await maxios.get('/order/list', {
+//         params: {
+//             storeSeq,
+//             keyword
+//         }
+//     });
+//     return resp.data;
+// }
 
 // 발주 신청시, 공급업체 목록 조회
 export const suppliers = async (storeSeq) => {
