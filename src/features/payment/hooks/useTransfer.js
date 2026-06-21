@@ -2,31 +2,41 @@ import { useState, useEffect } from 'react';
 
 /**
  * @file useTransfer.js
- * @description 이체 관리 관련 비즈니스 로직 및 데이터를 관리하는 커스텀 훅입니다.
+ * @description 이체/카드 관리 화면에서 공통으로 사용할 로딩 상태와 금액 포맷 함수를 관리하는 커스텀 훅입니다.
  */
 export const useTransfer = () => {
+  // 화면 로딩 상태
   const [isLoading, setIsLoading] = useState(false);
-  const [transferData, setTransferData] = useState({
-    accounts: [],
-    recentTransfers: [
-      { id: 1, date: '2024-06-10 14:30', recipient: '김철수 (식자재)', amount: 150000, status: '이체완료' },
-      { id: 2, date: '2024-06-09 11:20', recipient: '박영희 (임대료)', amount: 2300000, status: '이체완료' },
-      { id: 3, date: '2024-06-08 16:45', recipient: '이민호 (주류)', amount: 850000, status: '이체완료' },
-      { id: 4, date: '2024-06-07 09:15', recipient: '최지우 (야채)', amount: 320000, status: '이체완료' },
-      { id: 5, date: '2024-06-06 18:00', recipient: '정해인 (고기)', amount: 450000, status: '이체완료' },
-    ]
-  });
 
+  /**
+   * 금액 포맷 함수
+   * 110 -> 110원
+   * 14300 -> 14,300원
+   */
+  const formatCurrency = (value) => {
+    // null, undefined, 빈 값이 들어와도 0원으로 처리
+    return `${Number(value || 0).toLocaleString()}원`;
+  };
+
+  // 화면 진입 시 짧은 로딩 처리
   useEffect(() => {
+    // 로딩 시작
     setIsLoading(true);
-    setTimeout(() => {
+
+    // 0.5초 후 로딩 종료
+    const timer = setTimeout(() => {
       setIsLoading(false);
     }, 500);
+
+    // 컴포넌트가 사라질 때 타이머 정리
+    return () => clearTimeout(timer);
   }, []);
 
   return {
+    // 로딩 상태
     isLoading,
-    transferData,
-    formatCurrency: (value) => new Intl.NumberFormat('ko-KR', { style: 'currency', currency: 'KRW' }).format(value).replace('₩', '') + '원',
+
+    // 금액 포맷 함수
+    formatCurrency,
   };
 };

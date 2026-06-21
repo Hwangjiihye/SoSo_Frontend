@@ -132,7 +132,7 @@ function MainHeader({ activeMenu = '홈' }) {
               ) : (
                 <>
                   <Link to="/transfer-management" className="block w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl mb-1">
-                    이체 관리
+                    카드 관리
                   </Link>
                   <Link to="/expense-category" className="block w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl mb-1">
                     비용 카테고리

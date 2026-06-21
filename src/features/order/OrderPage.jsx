@@ -25,6 +25,7 @@ function OrderPage() {
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [sortType, setSortType] = useState('latest');
+  const [currentPage, setCurrentPage] = useState(1);
 
   // userSeq 가져오기
   useEffect(() => {
@@ -170,6 +171,19 @@ const sortedOrders = [...orders].sort((a, b) => {
   return 0;
 });
 
+const ordersPerPage = 5;
+const totalPages = Math.max(1, Math.ceil(sortedOrders.length / ordersPerPage));
+const paginatedOrders = sortedOrders.slice(
+  (currentPage - 1) * ordersPerPage,
+  currentPage * ordersPerPage,
+);
+
+useEffect(() => {
+  if (currentPage > totalPages) {
+    setCurrentPage(totalPages);
+  }
+}, [currentPage, totalPages]);
+
   return (
     <div className="min-h-screen bg-[#F8F9FA] text-gray-800 font-sans">
       <main className="max-w-7xl mx-auto px-6 py-10">
@@ -296,7 +310,10 @@ const sortedOrders = [...orders].sort((a, b) => {
             <div className="flex gap-4">
               <select
                 value={sortType}
-                onChange={(e) => setSortType(e.target.value)}
+                onChange={(e) => {
+                  setSortType(e.target.value);
+                  setCurrentPage(1);
+                }}
                 className="text-xs font-bold text-gray-500 bg-gray-50 border-none rounded-lg px-3 py-1.5 outline-none"
               >
                 <option value="latest">최신순</option>
@@ -317,7 +334,7 @@ const sortedOrders = [...orders].sort((a, b) => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
-              {sortedOrders.map((order) => (
+              {paginatedOrders.map((order) => (
                 <tr key={order.orderSeq} className="hover:bg-emerald-50/30 transition-colors group">
                   <td className="px-8 py-6">
                     <div className="text-sm font-black text-gray-900 mb-1">{order.orderNo}</div>
@@ -360,8 +377,15 @@ const sortedOrders = [...orders].sort((a, b) => {
 
           <div className="px-8 py-6 bg-gray-50/50 flex justify-center border-t border-gray-50">
             <div className="flex gap-2">
-              {[1, 2, 3, 4, 5].map(n => (
-                <button key={n} className={`w-10 h-10 rounded-xl font-bold text-sm transition-all ${n === 1 ? 'bg-emerald-600 text-white shadow-lg' : 'bg-white text-gray-400 hover:bg-gray-100 border border-gray-100'}`}>{n}</button>
+              {Array.from({ length: totalPages }, (_, index) => index + 1).map(n => (
+                <button
+                  key={n}
+                  type="button"
+                  onClick={() => setCurrentPage(n)}
+                  className={`w-10 h-10 rounded-xl font-bold text-sm transition-all ${n === currentPage ? 'bg-emerald-600 text-white shadow-lg' : 'bg-white text-gray-400 hover:bg-gray-100 border border-gray-100'}`}
+                >
+                  {n}
+                </button>
               ))}
             </div>
           </div>

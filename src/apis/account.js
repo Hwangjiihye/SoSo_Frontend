@@ -103,7 +103,10 @@ export const ExpenseDetails = async (storeSeq, month, categorySeq) => {
 
 // 내가 등록한 거래처 목록 조회
 export const getMyPartners = async (storeSeq) => {
-  const response = await axios.get(`/api/account/my-partners/${storeSeq}`);
+  const response = await axiosInstance.get(`/api/account/my-partners`, {
+    params: { storeSeq },
+  });
+
   return response.data;
 };
 
@@ -118,12 +121,39 @@ export const payOrdersByCard = async (data) => {
 };
 
 // 이체관리 최근 결제 내역 조회
-// 현재 매장에서 카드로 결제한 내역을 가져온다.
-export const getRecentPayments = async (storeSeq) => {
-  const response = await axiosInstance.get("/account/recent-payments", {
-    params: { storeSeq },
+// 기존 방식 getRecentPayments(storeSeq)도 가능하고,
+// 검색 조건 방식 getRecentPayments({ storeSeq, period, startDate, endDate, keyword })도 가능하게 만든다.
+export const getRecentPayments = async (options) => {
+  // options가 객체면 검색 조건이 들어온 것
+  // options가 숫자면 기존처럼 storeSeq만 들어온 것
+  const params =
+    typeof options === 'object'
+      ? options
+      : {
+          storeSeq: options,
+        };
+
+  // PaymentController의 /account/recent-payments API 호출
+  const response = await axiosInstance.get('/account/recent-payments', {
+    params: {
+      // 현재 로그인한 사업자 매장 번호
+      storeSeq: params.storeSeq,
+
+      // 기간 필터: week / month / custom
+      period: params.period || 'week',
+
+      // 시작일
+      startDate: params.startDate || '',
+
+      // 종료일
+      endDate: params.endDate || '',
+
+      // 검색어
+      keyword: params.keyword || '',
+    },
   });
 
+  // 백엔드에서 받은 결제 내역 반환
   return response.data;
 };
 
@@ -142,3 +172,13 @@ export const getCollectionDashboard = async (storeSeq) => {
   // 백엔드에서 내려준 수금관리 데이터 반환
   return response.data;
 };
+
+// 비용 카테고리 - 식자재비 - 일반 발주 목록 조회
+export const getGeneralOrdersForExpense = async (storeSeq, partnerStoreSeq) => {
+  const response = await axiosInstance.get(`/expense/${storeSeq}/general-orders`, {
+    params: { partnerStoreSeq },
+  });
+
+  return response.data;
+};
+

@@ -160,6 +160,7 @@ const handleConnectStock = (stock) => {
                   <select
                     value={orderInfo.supplier}
                     onChange={(e) => handleInfoChange('supplier', e.target.value)}
+                    className="w-full bg-gray-50 border-none rounded-2xl py-4 px-4 text-sm font-bold focus:ring-2 focus:ring-emerald-500/20 outline-none"
                   >
                     <option value="">공급업체 선택</option>
 
@@ -412,7 +413,7 @@ const handleConnectStock = (stock) => {
                 <div>
                   <label className="block text-sm font-black text-gray-600 mb-2 uppercase tracking-tighter">결제 방식</label>
                   <div className="grid grid-cols-2 gap-2">
-                    {['계좌이체'].map((method) => (
+                    {['카드결제'].map((method) => (
                       <button
                         key={method}
                         onClick={() => handleInfoChange('paymentMethod', method)}

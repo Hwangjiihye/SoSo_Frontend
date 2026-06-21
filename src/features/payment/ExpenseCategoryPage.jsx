@@ -10,7 +10,7 @@ import {
 import { Doughnut } from 'react-chartjs-2';
 import MainFooter from '../../components/layout/MainFooter';
 import { useExpenseCategory } from './hooks/useExpenseCategory';
-import { insertExpense, getExpenseTotal, categoryCost, ExpenseDetails } from "../../apis/account";
+import { insertExpense, getExpenseTotal, categoryCost, ExpenseDetails,getMyPartners, getGeneralOrdersForExpense } from "../../apis/account";
 
 // Chart.js 컴포넌트 등록
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale);
@@ -31,6 +31,8 @@ const ExpenseCategoryPage = () => {
   const [ingredientOrderType, setIngredientOrderType] = useState('general');
   const [totalAmount, setTotalAmount] = useState(0);
   const [expenseCategoryTotals, setExpenseCategoryTotals] = useState([]);
+  const [isExporting, setIsExporting] = useState(false);
+
 
   // 지출 내역 예시 데이터 상태
   const [expenses, setExpenses] = useState([]);
@@ -79,6 +81,163 @@ const ExpenseCategoryPage = () => {
   const [selectedMonth, setSelectedMonth] = useState(
     new Date().toISOString().substring(0, 7)
   );
+
+
+  // 엑셀 내보내기
+  const formatMonthLabel = (month) => {
+  if (!month) return "";
+
+  const [year, monthNumber] = month.split("-");
+  return `${year}년 ${Number(monthNumber)}월`;
+};
+
+const exportFileName = `${selectedMonth.replace("-", "년_")}월_비용카테고리_지출내역.csv`;
+
+// CSV 값 안전 처리
+const escapeCsvValue = (value) => {
+  if (value === null || value === undefined) return '""';
+
+  let text = String(value)
+    .replaceAll('"', '""')
+    .replace(/\r?\n|\r/g, " ");
+
+  // CSV Injection 방어
+  // 엑셀이 =, +, -, @ 로 시작하는 값을 수식으로 인식하는 것을 막음
+  const trimmed = text.trimStart();
+
+  if (/^[=+\-@]/.test(trimmed)) {
+    text = `'${text}`;
+  }
+
+  return `"${text}"`;
+};
+
+const handleExportCsv = async () => {
+  const storeSeq = Number(localStorage.getItem("storeSeq"));
+
+  if (!storeSeq) {
+    alert("선택된 매장 정보가 없습니다.");
+    return;
+  }
+
+  try {
+    setIsExporting(true);
+
+    const detailResults = await Promise.all(
+      localCategories.map(async (cat) => {
+        const categorySeq = cat.categorySeq ?? cat.id;
+        const categoryName = cat.categoryName ?? cat.name;
+
+        const details = await ExpenseDetails(
+          storeSeq,
+          selectedMonth,
+          categorySeq
+        );
+
+        const safeDetails = Array.isArray(details) ? details : [];
+
+        return safeDetails.map((item) => ({
+          categoryName,
+          ...item,
+        }));
+      })
+    );
+
+    const allExpenses = detailResults.flat();
+
+    if (allExpenses.length === 0) {
+      alert("내보낼 지출 내역이 없습니다.");
+      return;
+    }
+
+    const headers = [
+      "카테고리명",
+      "지출명",
+      "거래일",
+      "거래처명",
+      "거래품목",
+      "구매수량",
+      "결제수단",
+      "공급가액",
+      "부가세",
+      "합계금액",
+      "메모",
+      "참조유형",
+      "참조번호",
+    ];
+
+    const rows = allExpenses.map((item) => {
+      const totalAmount = Number(item.amount || 0);
+
+      // 합계금액이 부가세 포함 금액이라고 보고 계산
+      const supplyAmount = Math.round(totalAmount / 1.1);
+      const vatAmount = totalAmount - supplyAmount;
+
+      const paymentMethod =
+        item.paymentMethod === "card"
+          ? "카드"
+          : item.paymentMethod === "cash"
+            ? "현금"
+            : item.paymentMethod === "transfer"
+              ? "계좌이체"
+              : item.paymentMethod || "-";
+
+      return [
+        item.categoryName || "-",
+        item.title || "-",
+        item.expenseDate || "-",
+        item.supplierName || "-",
+
+        // 나중에 백엔드에서 itemSummary가 오면 그걸 쓰고,
+        // 지금은 없으니까 지출명으로 대체
+        item.itemSummary || item.item_summary || item.title || "-",
+
+        // 나중에 백엔드에서 quantitySummary가 오면 그걸 쓰고,
+        // 지금은 수량 데이터가 없으니까 "-" 처리
+        item.quantitySummary || item.quantity_summary || "-",
+
+        paymentMethod,
+        supplyAmount,
+        vatAmount,
+        totalAmount,
+        item.memo || "-",
+        item.refType || "-",
+        item.refSeq || "-",
+      ];
+    });
+
+    const csvContent = [
+      headers.map(escapeCsvValue).join(","),
+      ...rows.map((row) => row.map(escapeCsvValue).join(",")),
+    ].join("\n");
+
+    // 한글 깨짐 방지
+    const bom = "\uFEFF";
+
+    const blob = new Blob([bom + csvContent], {
+      type: "text/csv;charset=utf-8;",
+    });
+
+    const downloadUrl = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+
+    link.href = downloadUrl;
+    link.download = exportFileName;
+
+    document.body.appendChild(link);
+    link.click();
+
+    link.remove();
+    window.URL.revokeObjectURL(downloadUrl);
+
+    setIsExportModalOpen(false);
+  } catch (error) {
+    console.error("CSV 내보내기 실패:", error);
+    alert("파일을 생성하는 중 오류가 발생했습니다.");
+  } finally {
+    setIsExporting(false);
+  }
+};
 
   const fetchExpenseTotal = async () => {
   const storeSeq = Number(localStorage.getItem("storeSeq"));
@@ -168,6 +327,18 @@ const ExpenseCategoryPage = () => {
   const [selectedGroupPurchaseOrder, setSelectedGroupPurchaseOrder] = useState('');
   const [selectedDirectPurchaseItems, setSelectedDirectPurchaseItems] = useState([]);
   const [ingredientExpenseType, setIngredientExpenseType] = useState('general');
+  const [partnerList, setPartnerList] = useState([]);
+  const [generalOrderList, setGeneralOrderList] = useState([]);
+  const [selectedGeneralOrder, setSelectedGeneralOrder] = useState(null);
+  const [isGeneralOrderLoading, setIsGeneralOrderLoading] = useState(false);
+
+  // 카테고리 판단용
+  const selectedExpenseCategory = localCategories.find(
+    (cat) => Number(cat.categorySeq ?? cat.id) === Number(expenseForm.categorySeq)
+  );
+
+  const isIngredientCategory =
+    selectedExpenseCategory?.categoryName === "식자재비" || selectedExpenseCategory?.name === "식자재비";
 
   // 초기 데이터 연동
   useEffect(() => {
@@ -184,6 +355,79 @@ const ExpenseCategoryPage = () => {
       fetchExpenseTotal();
     }
   }, [categories, selectedMonth]);
+
+
+  useEffect(() => {
+  const fetchPartners = async () => {
+    if (!isExpenseModalOpen) return;
+    if (!isIngredientCategory) return;
+    if (ingredientExpenseType !== "general") return;
+
+    const storeSeq = Number(localStorage.getItem("storeSeq"));
+
+    if (!storeSeq) {
+      console.log("선택된 매장 없음");
+      return;
+    }
+
+    try {
+      const result = await getMyPartners(storeSeq);
+
+      const safeResult = Array.isArray(result)
+        ? result
+        : result.partners || result.data || [];
+
+      setPartnerList(safeResult);
+    } catch (error) {
+      console.error("거래처 목록 조회 실패:", error);
+      setPartnerList([]);
+    }
+  };
+
+  fetchPartners();
+}, [isExpenseModalOpen, isIngredientCategory, ingredientExpenseType]);
+
+
+useEffect(() => {
+  const fetchGeneralOrders = async () => {
+    if (!selectedSupplier) {
+      setGeneralOrderList([]);
+      setSelectedGeneralOrder(null);
+      return;
+    }
+
+    if (ingredientExpenseType !== "general") return;
+
+    const storeSeq = Number(localStorage.getItem("storeSeq"));
+
+    if (!storeSeq) {
+      console.log("선택된 매장 없음");
+      return;
+    }
+
+    try {
+      setIsGeneralOrderLoading(true);
+
+      const result = await getGeneralOrdersForExpense(
+        storeSeq,
+        selectedSupplier
+      );
+
+      const safeResult = Array.isArray(result)
+        ? result
+        : result.orders || result.data || [];
+
+      setGeneralOrderList(safeResult);
+    } catch (error) {
+      console.error("일반 발주 목록 조회 실패:", error);
+      setGeneralOrderList([]);
+    } finally {
+      setIsGeneralOrderLoading(false);
+    }
+  };
+
+  fetchGeneralOrders();
+}, [selectedSupplier, ingredientExpenseType]);
 
   const getColorClass = (color) => {
     const classes = {
@@ -236,6 +480,33 @@ const ExpenseCategoryPage = () => {
       return;
 }
 
+const selectedPartner = partnerList.find((partner) => {
+  const partnerStoreSeq =
+    partner.partnerStoreSeq ??
+    partner.storeSeq ??
+    partner.partner_store_seq;
+
+  return Number(partnerStoreSeq) === Number(selectedSupplier);
+});
+
+const selectedPartnerName =
+  selectedPartner?.partnerName ??
+  selectedPartner?.companyName ??
+  selectedPartner?.company_name ??
+  "";
+
+if (isIngredientCategory && ingredientExpenseType === "general") {
+  if (!selectedSupplier) {
+    alert("거래처를 선택해 주세요.");
+    return;
+  }
+
+  if (!selectedGeneralOrder) {
+    alert("연결할 일반 발주서를 선택해 주세요.");
+    return;
+  }
+}
+
     const requestData = {
       categorySeq: Number(expenseForm.categorySeq),
       expenseDate: expenseForm.date,
@@ -243,9 +514,25 @@ const ExpenseCategoryPage = () => {
       amount: Number(expenseForm.amount),
       memo: expenseForm.memo || "",
       paymentMethod: "card",
-      supplierName: selectedSupplier || "",
-      refType: null,
-      refSeq: null,
+
+      supplierName:
+        isIngredientCategory && ingredientExpenseType === "general"
+          ? selectedPartnerName
+          : selectedSupplier || "",
+
+      refType:
+        isIngredientCategory && ingredientExpenseType === "general"
+          ? "ORDER"
+          : null,
+
+      refSeq:
+        isIngredientCategory && ingredientExpenseType === "general"
+          ? Number(
+              selectedGeneralOrder.orderSeq ??
+              selectedGeneralOrder.order_seq ??
+              selectedGeneralOrder.id
+            )
+          : null,
     };
 
     const result = await insertExpense(storeSeq, requestData);
@@ -511,18 +798,25 @@ const ExpenseCategoryPage = () => {
                     setSelectedGroupPurchase('');
                     setSelectedGroupPurchaseOrder('');
                     setSelectedDirectPurchaseItems([]);
+                    setSelectedGeneralOrder(null);
+                    setGeneralOrderList([]);
                     setIngredientExpenseType('general');
                   }}
                   required
                 >
                   <option value="">카테고리를 선택하세요</option>
                   {localCategories.map(cat => (
-                    <option key={cat.id} value={cat.id}>{cat.name}</option>
+                    <option
+                      key={cat.categorySeq ?? cat.id}
+                      value={cat.categorySeq ?? cat.id}
+                    >
+                      {cat.categoryName ?? cat.name}
+                    </option>
                   ))}
                 </select>
               </div>
 
-              {localCategories.find(cat => cat.id === Number(expenseForm.categorySeq))?.name === '식자재비' && (
+              {isIngredientCategory && (
                 <div className="space-y-3 rounded-2xl border border-emerald-100 bg-emerald-50/40 p-4">
                   <div className="flex items-start justify-between gap-4">
                     <div>
@@ -592,13 +886,28 @@ const ExpenseCategoryPage = () => {
                             onChange={(e) => {
                               setSelectedSupplier(e.target.value);
                               setSelectedPurchaseOrder('');
+                              setSelectedGeneralOrder(null);
                             }}
                             className="w-full appearance-none rounded-xl border border-gray-200 bg-white px-4 py-3 pr-10 text-sm font-bold text-gray-700 outline-none transition-all focus:border-emerald-300 focus:ring-2 focus:ring-emerald-500/10"
                           >
                             <option value="">거래처를 선택하세요</option>
-                            <option value="fresh-market">신선 청과물 시장</option>
-                            <option value="dongwon-meat">동원 유통 정육</option>
-                            <option value="hana-food">하나 식자재 마트</option>
+                              {partnerList.map((partner) => {
+                                const partnerStoreSeq =
+                                  partner.partnerStoreSeq ??
+                                  partner.storeSeq ??
+                                  partner.partner_store_seq;
+
+                                const partnerName =
+                                  partner.partnerName ??
+                                  partner.companyName ??
+                                  partner.company_name;
+
+                                return (
+                                  <option key={partnerStoreSeq} value={partnerStoreSeq}>
+                                    {partnerName}
+                                  </option>
+                                );
+                              })}
                           </select>
                           <svg className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
@@ -616,50 +925,106 @@ const ExpenseCategoryPage = () => {
                           </div>
 
                           <div className="max-h-28 space-y-2 overflow-y-auto">
-                            {[
-                              { id: 'PO-20260610-03', date: '2026.06.10', item: '양파 외 4개 품목', amount: '1,240,000원', status: '입고 완료' },
-                              { id: 'PO-20260608-02', date: '2026.06.08', item: '냉동 삼겹살 외 2개 품목', amount: '3,200,000원', status: '검수 완료' },
-                              { id: 'PO-20260605-01', date: '2026.06.05', item: '소스 외 7개 품목', amount: '1,180,000원', status: '정산 대기' },
-                            ].map((order) => {
-                              const isSelected = selectedPurchaseOrder === order.id;
+                            {isGeneralOrderLoading ? (
+  <div className="flex h-24 items-center justify-center rounded-xl border border-dashed border-emerald-200 bg-white/60 px-4 text-center">
+    <p className="text-xs font-bold text-gray-400">
+      발주서 목록을 불러오는 중입니다.
+    </p>
+  </div>
+) : generalOrderList.length > 0 ? (
+  <div className="max-h-28 space-y-2 overflow-y-auto">
+    {generalOrderList.map((order) => {
+      const orderSeq = order.orderSeq ?? order.order_seq ?? order.id;
+      const orderCode = order.orderCode ?? order.order_code ?? `PO-${orderSeq}`;
+      const orderDate = order.orderDate ?? order.order_date ?? order.createdAt ?? "";
+      const itemSummary =
+        order.itemSummary ??
+        order.item_summary ??
+        order.title ??
+        "발주 품목";
 
-                              return (
-                                <button
-                                  key={order.id}
-                                  type="button"
-                                  onClick={() => setSelectedPurchaseOrder(order.id)}
-                                  className={`w-full rounded-xl border p-4 text-left transition-all ${
-                                    isSelected
-                                      ? 'border-emerald-400 bg-white ring-2 ring-emerald-500/10'
-                                      : 'border-gray-100 bg-white/80 hover:border-emerald-200 hover:bg-white'
-                                  }`}
-                                >
-                                  <div className="flex items-start gap-3">
-                                    <span className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${
-                                      isSelected ? 'border-emerald-500 bg-emerald-500' : 'border-gray-300 bg-white'
-                                    }`}>
-                                      {isSelected && <span className="h-2 w-2 rounded-full bg-white" />}
-                                    </span>
-                                    <div className="min-w-0 flex-1">
-                                      <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-                                        <div className="flex items-center gap-2">
-                                          <span className="text-xs font-black text-gray-800">{order.id}</span>
-                                          <span className="rounded-md bg-gray-100 px-2 py-0.5 text-[9px] font-bold text-gray-500">
-                                            {order.status}
-                                          </span>
-                                        </div>
-                                        <strong className="text-sm font-black text-emerald-600">{order.amount}</strong>
-                                      </div>
-                                      <div className="mt-1 flex items-center gap-2 text-xs font-medium text-gray-500">
-                                        <span>{order.date}</span>
-                                        <span className="h-1 w-1 rounded-full bg-gray-300" />
-                                        <span className="truncate">{order.item}</span>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </button>
-                              );
-                            })}
+      const amount = Number(
+        order.totalAmount ??
+        order.total_amount ??
+        order.amount ??
+        0
+      );
+
+      const status =
+        order.status ??
+        order.orderStatus ??
+        order.order_status ??
+        "발주 완료";
+
+      const isSelected = String(selectedPurchaseOrder) === String(orderSeq);
+
+      return (
+        <button
+          key={orderSeq}
+          type="button"
+          onClick={() => {
+            setSelectedPurchaseOrder(orderSeq);
+            setSelectedGeneralOrder(order);
+
+            setExpenseForm((prev) => ({
+              ...prev,
+              amount: String(amount),
+              title: itemSummary,
+            }));
+          }}
+          className={`w-full rounded-xl border p-4 text-left transition-all ${
+            isSelected
+              ? "border-emerald-400 bg-white ring-2 ring-emerald-500/10"
+              : "border-gray-100 bg-white/80 hover:border-emerald-200 hover:bg-white"
+          }`}
+        >
+          <div className="flex items-start gap-3">
+            <span
+              className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${
+                isSelected
+                  ? "border-emerald-500 bg-emerald-500"
+                  : "border-gray-300 bg-white"
+              }`}
+            >
+              {isSelected && <span className="h-2 w-2 rounded-full bg-white" />}
+              </span>
+
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-black text-gray-800">
+                      {itemSummary}
+                    </span>
+                    <span className="rounded-md bg-gray-100 px-2 py-0.5 text-[9px] font-bold text-gray-500">
+                      {status}
+                    </span>
+                  </div>
+
+                  <strong className="text-sm font-black text-emerald-600">
+                    {formatCurrency(amount)}
+                  </strong>
+                </div>
+
+                <div className="mt-1 flex items-center gap-2 text-xs font-medium text-gray-500">
+                  <span>
+                    {String(orderDate).substring(0, 10).replaceAll("-", ".")}
+                  </span>
+                  <span className="h-1 w-1 rounded-full bg-gray-300" />
+                  <span className="truncate">{orderCode}</span>
+                </div>
+              </div>
+            </div>
+          </button>
+        );
+      })}
+    </div>
+  ) : (
+    <div className="flex h-24 items-center justify-center rounded-xl border border-dashed border-emerald-200 bg-white/60 px-4 text-center">
+      <p className="text-xs font-bold text-gray-400">
+        선택한 거래처의 일반 발주 내역이 없습니다.
+      </p>
+    </div>
+  )}
                           </div>
                         </div>
                       ) : (
@@ -692,10 +1057,23 @@ const ExpenseCategoryPage = () => {
                             }}
                             className="w-full appearance-none rounded-xl border border-gray-200 bg-white px-4 py-3 pr-10 text-sm font-bold text-gray-700 outline-none transition-all focus:border-emerald-300 focus:ring-2 focus:ring-emerald-500/10"
                           >
-                            <option value="">공동 구매 그룹을 선택하세요</option>
-                            <option value="seoul-restaurant">서울 서부 외식업 공동구매</option>
-                            <option value="fresh-food">우리동네 신선식품 구매모임</option>
-                            <option value="small-business">소상공인 식자재 공동구매 3기</option>
+                            {partnerList.map((partner) => {
+                              const partnerStoreSeq =
+                                partner.partnerStoreSeq ??
+                                partner.storeSeq ??
+                                partner.partner_store_seq;
+
+                              const partnerName =
+                                partner.partnerName ??
+                                partner.companyName ??
+                                partner.company_name;
+
+                              return (
+                                <option key={partnerStoreSeq} value={partnerStoreSeq}>
+                                  {partnerName}
+                                </option>
+                              );
+                            })}
                           </select>
                           <svg className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
@@ -1329,7 +1707,7 @@ const ExpenseCategoryPage = () => {
               <div>
                 <p className="mb-2 text-xs font-black text-gray-500">대상 기간</p>
                 <div className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5 text-sm font-black text-gray-800">
-                  2024년 6월
+                  {formatMonthLabel(selectedMonth)}
                 </div>
               </div>
 
@@ -1371,11 +1749,11 @@ const ExpenseCategoryPage = () => {
                 <div className="space-y-2 rounded-xl border border-gray-200 bg-white px-4 py-4">
                   <div className="flex items-center justify-between gap-4 text-xs">
                     <span className="font-bold text-gray-400">파일명</span>
-                    <span className="font-black text-gray-800">2024년_6월_비용카테고리_지출내역.xlsx</span>
+                    <span className="font-black text-gray-800">{exportFileName}</span>
                   </div>
                   <div className="flex items-center justify-between gap-4 text-xs">
                     <span className="font-bold text-gray-400">형식</span>
-                    <span className="font-black text-emerald-600">.xlsx</span>
+                    <span className="font-black text-emerald-600">.csv</span>
                   </div>
                 </div>
               </div>
@@ -1391,12 +1769,18 @@ const ExpenseCategoryPage = () => {
               </button>
               <button
                 type="button"
-                className="flex h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-emerald-600 text-sm font-black text-white transition-colors hover:bg-emerald-700"
+                onClick={handleExportCsv}
+                disabled={isExporting}
+                className={`flex h-12 flex-1 items-center justify-center gap-2 rounded-xl text-sm font-black text-white transition-colors ${
+                  isExporting
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-emerald-600 hover:bg-emerald-700"
+                }`}
               >
                 <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M12 3v12m0 0 4-4m-4 4-4-4M5 20h14" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
-                엑셀 다운로드
+                {isExporting ? "생성 중..." : "엑셀 다운로드"}
               </button>
             </div>
           </div>

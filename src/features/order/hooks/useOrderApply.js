@@ -310,7 +310,7 @@ console.log('필터된 거래처 품목:', filteredSupplierItems);
     console.log("orderInfo:", orderInfo);
     console.log("zonecode:", orderInfo.zonecode);
 
-    if (orderInfo.paymentMethod !== '계좌이체') {
+    if (orderInfo.paymentMethod !== '카드결제') {
       alert('결제 방식을 선택해주세요.');
       return;
 }

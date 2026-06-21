@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import logo from '../../assets/soso로고.png';
-import MainFooter from '../../components/layout/MainFooter';
 import authStore from '../../store/authStore';
 import { useStores } from '../../hooks/useStores';
 import { useTransfer } from './hooks/useTransfer';
@@ -18,7 +17,9 @@ const TransferManagementPage = () => {
   const navigate = useNavigate();
   const { logout, user_nickname, bizname, selectedStoreSeq, setSelectedStore, userSeq } = authStore();
   const { stores, isLoading: isStoresLoading } = useStores();
-  const { transferData, isLoading, formatCurrency } = useTransfer();
+  // useTransfer에서는 로딩 상태와 금액 포맷 함수만 가져온다.
+  // 최근 결제 내역 검색은 이 페이지 안에서 직접 처리한다.
+  const { isLoading, formatCurrency } = useTransfer();
 
   const [accounts, setAccounts] = useState([]);
   const [activeAccountIndex, setActiveAccountIndex] = useState(0);
@@ -30,6 +31,14 @@ const TransferManagementPage = () => {
   const [transferAccount, setTransferAccount] = useState(null);
   const [isAutoTransferEnabled, setIsAutoTransferEnabled] = useState(false);
   const [transferSearchType, setTransferSearchType] = useState('week');
+  // 최근 결제 내역 검색어 상태
+  const [paymentKeyword, setPaymentKeyword] = useState('');
+
+  // 최근 결제 내역 시작일 상태
+  const [paymentStartDate, setPaymentStartDate] = useState('');
+
+  // 최근 결제 내역 종료일 상태
+const [paymentEndDate, setPaymentEndDate] = useState('');
   const [isEditModalOpen, setIsEditModalOpen] = useState(false); // 수정 모달 상태 추가
   const [editingAccount, setEditingAccount] = useState(null); // 수정 중인 계좌 상태 추가
   const [newAccount, setNewAccount] = useState({ // 계좌 추가
@@ -323,19 +332,38 @@ const fetchCards = async (storeSeq) => {
 
 // 최근 카드 결제 내역 조회
 // payments.store_seq = 현재 매장 번호 기준으로 조회한다.
-const fetchRecentPayments = async (storeSeq) => {
+// 검색 조건: 기간, 날짜, 검색어
+const fetchRecentPayments = async (storeSeqParam) => {
+  // 함수 호출 시 storeSeq를 넘기면 그 값을 쓰고,
+  // 없으면 현재 선택된 매장 번호를 사용한다.
+  const currentStoreSeq =
+    storeSeqParam ?? selectedStoreSeq ?? stores?.[0]?.storeSeq;
+
+  // 매장 번호가 없으면 조회하지 않는다.
+  if (!currentStoreSeq) {
+    console.log("사업장 번호 없음");
+    return;
+  }
+
   try {
     // 백엔드 /account/recent-payments 호출
-    const data = await getRecentPayments(Number(storeSeq));
+    // 검색 조건을 함께 전달한다.
+    const data = await getRecentPayments({
+      storeSeq: Number(currentStoreSeq),
+      period: transferSearchType,
+      startDate: paymentStartDate,
+      endDate: paymentEndDate,
+      keyword: paymentKeyword,
+    });
 
     console.log("최근 결제 내역 조회 결과:", data);
 
-    // 조회 결과를 화면 state에 저장
+    // 조회 결과를 화면 state에 저장한다.
     setRecentPayments(data ?? []);
   } catch (error) {
     console.error("최근 결제 내역 조회 실패:", error);
 
-    // 실패해도 화면이 터지지 않도록 빈 배열 처리
+    // 실패해도 화면이 터지지 않도록 빈 배열 처리한다.
     setRecentPayments([]);
   }
 };
@@ -623,10 +651,11 @@ const handleRegisterCard = async () => {
       <main className="max-w-7xl mx-auto px-8 py-8">
         <div className="flex justify-between items-end mb-8">
           <div>
-            <h2 className="text-2xl font-black text-gray-900 mb-1">이체 관리</h2>
-            <p className="text-sm text-gray-500">계좌 잔액 확인 및 안전한 이체 서비스를 이용하세요.</p>
+            <h2 className="text-2xl font-black text-gray-900 mb-1">카드 관리</h2>
+            <p className="text-sm text-gray-500">결제 카드를 등록하고 카드 결제 내역을 한눈에 관리하세요.</p>
           </div>
           <div className="flex gap-3">
+            {/*
             <button 
               onClick={() => {
                 if (accounts.length >= 4) {
@@ -650,6 +679,7 @@ const handleRegisterCard = async () => {
             >
               자동이체 설정
             </button>
+            */}
             <button
               type="button"
               onClick={() => setIsCardRegisterModalOpen(true)}
@@ -707,7 +737,7 @@ const handleRegisterCard = async () => {
 
           <div className="mt-2 flex flex-col items-start gap-2 lg:items-end">
             <span className="rounded-xl bg-emerald-50 px-4 py-2 text-sm font-black text-emerald-700">
-              자동결제 사용 가능
+              사용 가능
             </span>
 
             <span className="text-sm font-bold text-gray-400">
@@ -882,7 +912,16 @@ const handleRegisterCard = async () => {
                   <button
                     key={period.value}
                     type="button"
-                    onClick={() => setTransferSearchType(period.value)}
+                    onClick={() => {
+                      // 선택한 기간 필터를 저장한다.
+                      setTransferSearchType(period.value);
+
+                      // 이번 주나 한 달을 선택하면 직접 지정한 날짜는 초기화한다.
+                      if (period.value !== 'custom') {
+                        setPaymentStartDate('');
+                        setPaymentEndDate('');
+                      }
+                    }}
                     className={`rounded-lg px-4 py-2 text-xs font-black transition-all ${
                       transferSearchType === period.value
                         ? 'bg-emerald-600 text-white shadow-sm'
@@ -898,12 +937,28 @@ const handleRegisterCard = async () => {
                 <input
                   type="date"
                   aria-label="검색 시작일"
+                  value={paymentStartDate}
+                  onChange={(e) => {
+                    // 시작일을 저장한다.
+                    setPaymentStartDate(e.target.value);
+
+                    // 날짜를 직접 선택하면 날짜 지정 필터로 변경한다.
+                    setTransferSearchType('custom');
+                  }}
                   className="rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-xs font-bold text-gray-600 outline-none focus:border-emerald-300 focus:ring-2 focus:ring-emerald-500/10"
                 />
                 <span className="text-xs font-bold text-gray-300">~</span>
                 <input
                   type="date"
                   aria-label="검색 종료일"
+                  value={paymentEndDate}
+                  onChange={(e) => {
+                    // 종료일을 저장한다.
+                    setPaymentEndDate(e.target.value);
+
+                    // 날짜를 직접 선택하면 날짜 지정 필터로 변경한다.
+                    setTransferSearchType('custom');
+                  }}
                   className="rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-xs font-bold text-gray-600 outline-none focus:border-emerald-300 focus:ring-2 focus:ring-emerald-500/10"
                 />
               </div>
@@ -919,12 +974,27 @@ const handleRegisterCard = async () => {
                 </svg>
                 <input
                   type="search"
+                  value={paymentKeyword}
+                  onChange={(e) => {
+                    // 검색어를 저장한다.
+                    setPaymentKeyword(e.target.value);
+                  }}
+                  onKeyDown={(e) => {
+                    // Enter 키를 누르면 검색한다.
+                    if (e.key === 'Enter') {
+                      fetchRecentPayments();
+                    }
+                  }}
                   placeholder="은행명, 받는 사람을 검색하세요"
                   className="w-full rounded-xl border border-gray-200 bg-white py-2.5 pl-10 pr-4 text-xs font-bold text-gray-700 outline-none transition-all placeholder:font-medium placeholder:text-gray-400 focus:border-emerald-300 focus:ring-2 focus:ring-emerald-500/10"
                 />
               </div>
                 <button
                   type="button"
+                  onClick={() => {
+                    // 현재 검색 조건으로 최근 결제 내역을 다시 조회한다.
+                    fetchRecentPayments();
+                  }}
                   className="shrink-0 rounded-xl bg-emerald-600 px-5 py-2.5 text-xs font-black text-white transition-colors hover:bg-emerald-700"
                 >
                   검색
@@ -933,13 +1003,13 @@ const handleRegisterCard = async () => {
             <div className="overflow-x-auto">
               <table className="w-full min-w-[1180px] table-fixed text-center">
                 <colgroup>
-                  <col className="w-[16%]" />
+                  <col className="w-[15%]" />
                   <col className="w-[11%]" />
-                  <col className="w-[18%]" />
+                  <col className="w-[17%]" />
                   <col className="w-[13%]" />
-                  <col className="w-[18%]" />
-                  <col className="w-[14%]" />
-                  <col className="w-[10%]" />
+                  <col className="w-[17%]" />
+                  <col className="w-[15%]" />
+                  <col className="w-[12%]" />
                 </colgroup>
                 <thead className="border-b border-gray-100 bg-gray-50 text-xs font-bold text-gray-400">
                   <tr>
@@ -1008,7 +1078,7 @@ const handleRegisterCard = async () => {
 
                           {/* 상태 */}
                           <td className="px-5 py-5">
-                            <span className="rounded-full bg-emerald-50 px-4 py-2 text-xs font-black text-emerald-700">
+                            <span className="inline-flex whitespace-nowrap rounded-full bg-emerald-50 px-4 py-2 text-xs font-black text-emerald-700">
                               {item.status === "PAID" ? "결제 완료" : item.status}
                             </span>
                           </td>
@@ -1030,7 +1100,7 @@ const handleRegisterCard = async () => {
             </div>
             <div className="flex items-center justify-between border-t border-gray-100 px-7 py-4">
               <span className="text-xs font-bold text-gray-400">
-                총 {transferData.recentTransfers.length}건 · 5개씩 보기
+                총 {recentPayments.length}건 · 5개씩 보기
               </span>
               <div className="flex items-center gap-2">
                 <button
@@ -1047,7 +1117,7 @@ const handleRegisterCard = async () => {
                 <button
                   type="button"
                   aria-label="다음 이체 내역"
-                  disabled={transferData.recentTransfers.length <= 5}
+                  disabled={recentPayments.length <= 5}
                   className="flex h-9 w-9 items-center justify-center rounded-xl border border-gray-200 text-gray-500 transition-colors hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-600 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-300"
                 >
                   <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1730,7 +1800,6 @@ const handleRegisterCard = async () => {
         </div>
       )}
 
-      <MainFooter />
     </div>
   );
 };
