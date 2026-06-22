@@ -96,12 +96,11 @@ export const useStockTransaction = (selectedStock, onClose, onSuccess) => {
         }
         await createIncomingStock({ 
           stockSeq: stockSeq,
-          storeSeq: selectedStoreSeq, // @RequestBody 대응 명시적 추가
+          storeSeq: selectedStoreSeq,
           detailStockName: inboundForm.detailStockName,
           quantity: Number(inboundForm.quantity),
           incomingPrice: Number(inboundForm.incomingPrice),
-          memo: inboundForm.memo,
-          expirationDate: null
+          memo: inboundForm.memo
         });
       } else if (activeTab === 'OUTBOUND') {
         if (!outboundForm.quantity || !outboundForm.reason) {
@@ -149,7 +148,7 @@ export const useStockTransaction = (selectedStock, onClose, onSuccess) => {
       onClose();
     } catch (error) {
       console.error('Transaction Error:', error);
-      alert(error.message || '거래 등록 중 오류가 발생했습니다.');
+      alert(error.response?.data || error.message || '거래 등록 중 오류가 발생했습니다.');
     } finally {
       setIsLoading(false);
     }
