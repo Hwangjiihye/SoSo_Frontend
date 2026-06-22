@@ -38,7 +38,10 @@ export const getStockHistories = async (stockSeq) => {
 // POST /api/stocks/incoming
 export const createIncomingStock = async (data) => {
   // data: { stockSeq, detailProductName, quantity, incomingPrice, expirationDate, manager, memo }
-  const response = await axiosInstance.post('/api/stocks/incoming', data);
+  const {storeSeq, ...body} = data;
+  const response = await axiosInstance.post('/api/stocks/incoming', body, {
+    params: {storeSeq}
+  });
   return response.data;
 };
 
@@ -78,19 +81,19 @@ export const deleteStock = async (stockId) => {
 // 신규 추가: 재고 이력 대시보드 및 모달 전용 API
 // ==========================================
 
-// 메인 대시보드용 API (최신 5건 고정)
+// 메인 대시보드용 API (최신 5건 고정, 매장 식별자 전달 추가)
 // GET /api/stock-history/dashboard
-export const getStockHistoryDashboard = async () => {
-  const response = await axiosInstance.get('/api/stock-history/dashboard');
+export const getStockHistoryDashboard = async (storeSeq) => {
+  const response = await axiosInstance.get('/api/stock-history/dashboard', {
+    params: { storeSeq }
+  });
   return response.data; // Expected: StockHistoryDTO[] (최대 5개)
 };
 
 // 전체 이력 팝업 모달용 API (페이징 및 필터링 추가)
-// GET /api/stock-history/modal?page={page}&size={size}&transactionType={type}...
-export const getStockHistoryModal = async (page, size, stockSeq, transactionType, startDate, endDate, keyword) => {
-  const response = await axiosInstance.get('/api/stock-history/modal', {
-    params: { page, size, stockSeq, transactionType, startDate, endDate, keyword }
-  });
+// GET /api/stock-history/modal
+export const getStockHistoryModal = async (params) => {
+  const response = await axiosInstance.get('/api/stock-history/modal', { params });
   return response.data; // Expected: { historyList: StockHistoryDTO[], totalPages, totalCount, ... }
 };
 

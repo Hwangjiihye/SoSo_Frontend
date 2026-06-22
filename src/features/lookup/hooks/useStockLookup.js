@@ -19,17 +19,16 @@ export const useStockLookup = () => {
   const fetchHistory = useCallback(async (params) => {
     setIsLoading(true);
     try {
-      // getStockHistoryModal(page, size, stockSeq, transactionType, startDate, endDate, keyword)
-      const data = await getStockHistoryModal(
-        params.page || 1,
-        params.size || 15,
-        selectedStoreSeq, // storeSeq 추가
-        params.stockSeq,
-        params.transactionType,
-        params.startDate,
-        params.endDate,
-        params.keyword
-      );
+      const data = await getStockHistoryModal({
+        page: params.page || 1,
+        size: params.size || 15,
+        storeSeq: selectedStoreSeq,
+        stockSeq: params.stockSeq,
+        transactionType: params.transactionType,
+        startDate: params.startDate,
+        endDate: params.endDate,
+        keyword: params.keyword
+      });
       setHistoryData(data);
     } catch (error) {
       console.error('재고 이력을 불러오는데 실패했습니다.', error);
