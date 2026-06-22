@@ -131,7 +131,6 @@ function BusinessMain({ setRole }) {
   // --- 차트 데이터 영역 (기존과 동일) ---
 
   const [dashboard, setDashboard] = useState(null);
-  const [loading, setLoading] = useState(true);
 
   // 실시간 대시보드 데이터 로딩
   useEffect(() => {

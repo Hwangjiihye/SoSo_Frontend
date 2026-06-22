@@ -4,7 +4,7 @@ import logo from '../../assets/soso로고.png';
 import authStore from '../../store/authStore';
 import { useStores } from '../../hooks/useStores';
 import { useTransfer } from './hooks/useTransfer';
-import { insertAccount, accountList, accountDel, getPaymentCards, registerPaymentCard, payOrdersByCard, getRecentPayments } from '../../apis/account';
+import { insertAccount, accountList, accountDel, getPaymentCards, registerPaymentCard, deletePaymentCard, payOrdersByCard, getRecentPayments } from '../../apis/account';
 import { suppliers as getSupplierList, unpaidOrders as getUnpaidOrders } from '../../apis/orderApi';
 import * as PortOne from "@portone/browser-sdk/v2";
 
@@ -329,6 +329,23 @@ const fetchCards = async (storeSeq) => {
   }
 };
 
+const handleDeleteCard = async () => {
+  const selectedCard = cards[activeCardIndex];
+
+  if (!selectedCard || !window.confirm("등록된 카드를 삭제하시겠습니까?")) {
+    return;
+  }
+
+  try {
+    await deletePaymentCard(selectedCard.cardSeq);
+    setCards((prevCards) => prevCards.filter((card) => card.cardSeq !== selectedCard.cardSeq));
+    setActiveCardIndex(0);
+  } catch (error) {
+    console.error("카드 삭제 실패:", error);
+    alert("카드를 삭제하지 못했습니다.");
+  }
+};
+
 
 // 최근 카드 결제 내역 조회
 // payments.store_seq = 현재 매장 번호 기준으로 조회한다.
@@ -407,6 +424,11 @@ const handleRegisterCard = async () => {
   try {
     const currentStoreSeq = selectedStoreSeq ?? stores?.[0]?.storeSeq;
 
+    console.log("selectedStoreSeq:", selectedStoreSeq);
+    console.log("stores:", stores);
+    console.log("currentStoreSeq:", currentStoreSeq);
+    console.log("userSeq:", userSeq);
+
     if (!currentStoreSeq) {
       alert("사업장 정보가 없습니다.");
       return;
@@ -444,6 +466,7 @@ const handleRegisterCard = async () => {
         email: "jihye10226@naver.com",
         phoneNumber: "01073711745"
       },
+      
     });
 
     console.log("포트원 응답:", response);
@@ -743,6 +766,14 @@ const handleRegisterCard = async () => {
             <span className="text-sm font-bold text-gray-400">
               {cards[activeCardIndex]?.cardType || "CARD"}
             </span>
+
+            <button
+              type="button"
+              onClick={handleDeleteCard}
+              className="rounded-xl border border-red-200 px-4 py-2 text-sm font-black text-red-500 transition-colors hover:bg-red-50"
+            >
+              삭제
+            </button>
           </div>
         </div>
       </div>

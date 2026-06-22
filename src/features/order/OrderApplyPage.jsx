@@ -194,37 +194,33 @@ const handleConnectStock = (stock) => {
                   </h3>
                 </div>
                 <div className="max-h-[500px] overflow-x-auto custom-scrollbar">
-                  <table className="w-auto min-w-[780px] text-left border-collapse">
+                  <table className="w-full min-w-[680px] table-fixed text-left border-collapse">
                     <thead className="bg-gray-100/100 sticky top-0 z-10">
                       <tr>
-                        <th className="px-4 py-4 text-[14px] font-black text-gray-600 uppercase tracking-wide text-center align-middle border-b border-gray-50">이미지</th>
-                        <th className="px-3 py-4 text-[14px] font-black text-gray-600 uppercase tracking-wide text-center align-middle whitespace-nowrap border-b border-gray-50">품목코드</th>
-                        <th className="px-6 py-4 text-[14px] font-black text-gray-600 uppercase tracking-wide text-center align-middle whitespace-nowrap border-b border-gray-50">품목명</th>
-                        <th className="px-3 py-4 text-[14px] font-black text-gray-600 uppercase tracking-wide text-center align-middle whitespace-nowrap border-b border-gray-50">카테고리</th>
-                        <th className="w-[120px] px-2 py-4 text-[14px] font-black text-gray-600 uppercase tracking-wide text-center align-middle whitespace-nowrap border-b border-gray-50">규격</th>
-                        <th className="w-[100px] px-2 py-4 text-[14px] font-black text-gray-600 uppercase tracking-wide text-center align-middle whitespace-nowrap border-b border-gray-50">판매단가</th>
-                        <th className="px-4 py-4 text-[14px] font-black text-gray-600 uppercase tracking-wide text-center align-middle border-b border-gray-50"></th>
+                        <th className="w-[18%] px-3 py-4 text-[14px] font-black text-gray-600 uppercase tracking-wide text-center align-middle whitespace-nowrap border-b border-gray-50">품목코드</th>
+                        <th className="w-[22%] px-3 py-4 text-[14px] font-black text-gray-600 uppercase tracking-wide text-center align-middle whitespace-nowrap border-b border-gray-50">품목명</th>
+                        <th className="w-[18%] px-3 py-4 text-[14px] font-black text-gray-600 uppercase tracking-wide text-center align-middle whitespace-nowrap border-b border-gray-50">카테고리</th>
+                        <th className="w-[16%] px-3 py-4 text-[14px] font-black text-gray-600 uppercase tracking-wide text-center align-middle whitespace-nowrap border-b border-gray-50">규격</th>
+                        <th className="w-[16%] px-3 py-4 text-[14px] font-black text-gray-600 uppercase tracking-wide text-center align-middle whitespace-nowrap border-b border-gray-50">판매단가</th>
+                        <th className="w-[10%] px-3 py-4 text-[14px] font-black text-gray-600 uppercase tracking-wide text-center align-middle border-b border-gray-50"></th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-50 bg-white">
                        {filteredSupplierItems.length === 0 ? (
                         <tr>
-                          <td colSpan="8" className="px-3 py-10 text-center text-sm font-bold text-gray-400">
+                          <td colSpan="6" className="px-3 py-10 text-center text-sm font-bold text-gray-400">
                             표시할 거래처 품목이 없습니다.
                           </td>
                         </tr>
                       ) : (filteredSupplierItems.map((item) => (
                         <tr key={item.itemSeq} className="group hover:bg-emerald-50/40 transition-all cursor-default">
-                          <td className="px-3 py-4 text-center text-[12px] align-middle">
-                            이미지
-                          </td>
                           <td className="px-3 py-4 text-center align-middle text-sm font-bold text-gray-500 font-mono truncate whitespace-nowrap">{item.itemCode}</td>
                           <td className="px-3 py-4 text-center align-middle text-sm font-black text-gray-800 truncate whitespace-nowrap">{item.itemName}</td>
                           <td className="px-3 py-4 text-center align-middle whitespace-nowrap">
                             <span className="inline-block px-2.5 py-1 bg-gray-100 text-gray-600 text-[12px] font-black rounded-md uppercase">{item.categoryName}</span>
                           </td>
-                          <td className="w-[120px] px-2 py-4 text-center align-middle text-sm font-bold text-gray-400 whitespace-nowrap">{item.spec}</td>
-                          <td className="w-[100px] px-2 py-4 text-center align-middle text-sm font-black text-emerald-600 whitespace-nowrap">₩{(item.unitPrice ?? 0).toLocaleString()}</td>
+                          <td className="px-3 py-4 text-center align-middle text-sm font-bold text-gray-400 truncate whitespace-nowrap">{item.spec}</td>
+                          <td className="px-3 py-4 text-center align-middle text-sm font-black text-emerald-600 whitespace-nowrap">₩{(item.unitPrice ?? 0).toLocaleString()}</td>
                           <td className="px-3 py-4 text-center align-middle">
                             <button onClick={() => handleSelectSupplierItem(item)} className="px-3 py-2 bg-emerald-50 text-emerald-600 text-[12px] font-black rounded-lg hover:bg-emerald-600 hover:text-white transition-all active:scale-95 border border-emerald-100/50 whitespace-nowrap">선택</button>
                           </td>
