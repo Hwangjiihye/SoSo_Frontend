@@ -15,6 +15,8 @@ const GroupBuyPage = () => {
     isLoading,
     filter,
     setFilter,
+    myCount,
+    globalStats,
     user_type,
     handleCreateGroupBuy,
     handleUpdateStatus,
@@ -65,15 +67,15 @@ const GroupBuyPage = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
           <div className="bg-white p-8 rounded-[32px] shadow-sm border border-gray-100">
             <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">진행 중인 그룹</p>
-            <h3 className="text-3xl font-black text-gray-900">{groupBuys.filter(i => translateStatus(i.status) === '모집중').length}건</h3>
+            <h3 className="text-3xl font-black text-gray-900">{globalStats.ongoing}건</h3>
           </div>
           <div className="bg-white p-8 rounded-[32px] shadow-sm border border-gray-100">
             <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">나의 참여 그룹</p>
-            <h3 className="text-3xl font-black text-emerald-600">{groupBuys.filter(i => i.isJoined).length}건</h3>
+            <h3 className="text-3xl font-black text-emerald-600">{myCount}건</h3>
           </div>
           <div className="bg-white p-8 rounded-[32px] shadow-sm border border-gray-100">
             <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">배송완료</p>
-            <h3 className="text-3xl font-black text-blue-600">{groupBuys.filter(i => translateStatus(i.status) === '배송완료').length}건</h3>
+            <h3 className="text-3xl font-black text-blue-600">{globalStats.delivered}건</h3>
           </div>
         </div>
 

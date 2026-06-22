@@ -11,10 +11,13 @@ export const useGroupBuy = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [filter, setFilter] = useState('all'); // 'all' | 'my'
   const [statusFilter, setStatusFilter] = useState('전체'); 
+  const [myCount, setMyCount] = useState(0);
+  const [globalStats, setGlobalStats] = useState({ ongoing: 0, delivered: 0 });
   const { user_type } = authStore();
 
   const fetchGroupBuys = useCallback(async () => {
     setIsLoading(true);
+    let latestData = [];
     try {
       const data = filter === 'my' 
         ? await groupBuyApi.getParticipatedGroupBuys()
@@ -29,11 +32,12 @@ export const useGroupBuy = () => {
         status: item.status || 'RECRUITING',
         category: item.category || '기타'
       }));
+      latestData = formattedData;
       setGroupBuys(formattedData);
     } catch (error) {
       console.error('Failed to fetch group buys:', error);
       // 개발용 목 데이터
-      setGroupBuys([
+      const mockData = [
         {
           seq: 1,
           groupName: '한우 등심 (1+ 등급, 10kg)',
@@ -66,7 +70,9 @@ export const useGroupBuy = () => {
           creatorType: 'BUSINESS', // 사업자가 주최한 공동구매
           isOwner: true
         }
-      ]);
+      ];
+      latestData = mockData;
+      setGroupBuys(mockData);
     } finally {
       setIsLoading(false);
     }
@@ -74,11 +80,23 @@ export const useGroupBuy = () => {
     // 상단바 통계용 참여 개수 조회 (독립적으로 실행)
     try {
       const countData = await groupBuyApi.getParticipatedCount();
-      setMyCount(countData.count || 0);
+      // 백엔드가 숫자만 반환할 수도 있고 { count: 5 } 형태일 수도 있으므로 방어 코드 작성
+      const countVal = typeof countData === 'number' ? countData : (countData?.count || 0);
+      setMyCount(countVal);
     } catch (countError) {
       console.error('Failed to fetch participated count:', countError);
-      // API 실패 시 현재 상태값(Mock 또는 기존값)에서 임시로 추론
-      setMyCount(prev => prev > 0 ? prev : groupBuys.filter(i => i.isJoined).length);
+      // 백엔드 API 연결 실패 시 최신 데이터에서 추론하도록 폴백 처리
+      setMyCount(latestData.filter(i => i.isJoined).length);
+    }
+
+    // 상단바 통계용 전체 현황 조회 (필터 영향 받지 않음)
+    try {
+      const allData = await groupBuyApi.getGroupBuys('all');
+      const ongoing = allData.filter(i => i.status === 'RECRUITING').length;
+      const delivered = allData.filter(i => i.status === 'DELIVERED').length;
+      setGlobalStats({ ongoing, delivered });
+    } catch (statsError) {
+      console.error('Failed to fetch global stats:', statsError);
     }
   }, [filter]);
 
@@ -155,6 +173,8 @@ export const useGroupBuy = () => {
     setFilter,
     statusFilter,
     setStatusFilter,
+    myCount,
+    globalStats,
     user_type,
     handleCreateGroupBuy,
     handleJoinGroupBuy,
