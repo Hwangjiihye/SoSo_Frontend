@@ -28,6 +28,14 @@ export const groupBuyApi = {
   },
 
   /**
+   * 나의 참여그룹 수 조회
+   */
+  getParticipatedCount: async () => {
+    const response = await axiosInstance.get(`${GROUP_BUY_BASE_URL}/participated/count`);
+    return response.data;
+  },
+
+  /**
    * 공동구매 그룹 생성 (PARTNER 전용)
    * @param {Object} data - 공동구매 생성 데이터
    */
