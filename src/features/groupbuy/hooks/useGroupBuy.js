@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { groupBuyApi } from '../../../apis/groupBuyApi';
 import authStore from '../../../store/authStore';
 
@@ -9,8 +10,23 @@ import authStore from '../../../store/authStore';
 export const useGroupBuy = () => {
   const [groupBuys, setGroupBuys] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [filter, setFilter] = useState('all'); // 'all' | 'my'
-  const [statusFilter, setStatusFilter] = useState('전체'); 
+  const [searchParams, setSearchParams] = useSearchParams();
+  const filter = searchParams.get('filter') || 'all';
+  const statusFilter = searchParams.get('status') || '전체';
+
+  const setFilter = useCallback((newFilter) => {
+    setSearchParams(prev => {
+      prev.set('filter', newFilter);
+      return prev;
+    }, { replace: true });
+  }, [setSearchParams]);
+
+  const setStatusFilter = useCallback((newStatus) => {
+    setSearchParams(prev => {
+      prev.set('status', newStatus);
+      return prev;
+    }, { replace: true });
+  }, [setSearchParams]);
   const [myCount, setMyCount] = useState(0);
   const [globalStats, setGlobalStats] = useState({ ongoing: 0, delivered: 0 });
   const { user_type } = authStore();

@@ -107,60 +107,63 @@ const GroupBuyDeliveryPage = () => {
 
   return (
     <div className="min-h-screen bg-[#F8F9FA] pb-24 font-sans text-gray-900">
-      <main className="max-w-2xl mx-auto px-6 py-10 sm:py-16">
+      <main className="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
         {/* 상단 헤더 & 뒤로가기 */}
-        <div className="flex items-center justify-between mb-10">
+        <div className="flex items-center justify-between mb-8">
           <button 
-            onClick={() => navigate(-1)}
-            className="group flex items-center gap-2 text-gray-400 font-bold hover:text-gray-900 transition-all"
+            onClick={() => navigate(-1)} 
+            className="p-3.5 bg-white rounded-2xl shadow-sm border border-gray-100 hover:bg-gray-50 transition-all group"
           >
-            <div className="p-2 bg-white rounded-xl shadow-sm border border-gray-100 group-hover:bg-gray-50 transition-colors">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
-              </svg>
-            </div>
-            <span>뒤로가기</span>
+            <svg className="w-6 h-6 text-gray-400 group-hover:text-gray-900 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
+            </svg>
           </button>
-          <h1 className="text-xl font-black tracking-tight">픽업 안내</h1>
-          <div className="w-10"></div> {/* 벨런싱용 공간 */}
+          <div className="text-center">
+            <p className="text-[10px] font-black text-emerald-600 uppercase tracking-[0.2em]">Delivery Info</p>
+            <h1 className="text-lg font-black text-gray-900">배송 안내</h1>
+          </div>
+          <div className="w-12"></div> {/* 여백 맞춤용 */}
         </div>
 
         {/* 메인 콘텐츠 카드 */}
-        <div className="bg-white rounded-[48px] shadow-2xl shadow-gray-200/50 border border-gray-50 overflow-hidden">
+        <div className="bg-white rounded-[40px] shadow-xl shadow-gray-200/40 border border-gray-50 overflow-hidden relative">
           {/* 상태 요약 섹션 */}
-          <div className="bg-gray-900 p-10 text-white">
-            <div className="flex justify-between items-center mb-6">
-              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500">Pickup Status</span>
-              <div className="flex items-center gap-2">
-                <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
-                <span className="text-xs font-black text-emerald-500">{translateStatus(groupBuy.status)}</span>
+          <div className="bg-gray-900 p-8 sm:p-10 text-white relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 rounded-bl-full pointer-events-none"></div>
+            <div className="relative z-10">
+              <div className="flex justify-between items-center mb-6">
+                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400">Pickup Status</span>
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+                  <span className="text-xs font-black text-emerald-500">{translateStatus(groupBuy.status)}</span>
+                </div>
               </div>
-            </div>
-            <div className="flex justify-between items-start gap-4">
-              <h2 className="text-2xl sm:text-3xl font-black mb-4 leading-tight">{groupBuy.title}</h2>
-              {/* 작성자(개설자)인 경우에만 상태 업데이트 버튼 표시 */}
-              {Number(groupBuy.userSeq) === Number(user_seq) && (
-                <button
-                  onClick={() => setIsStatusModalOpen(true)}
-                  className="shrink-0 bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-xl text-[11px] font-black tracking-widest transition-all flex items-center gap-2 border border-white/10 shadow-sm"
-                >
-                  배송 상태 업데이트 ⚙️
-                </button>
-              )}
-            </div>
-            <div className="flex items-center gap-4 text-gray-400 text-sm font-bold">
-              <span className="flex items-center gap-1.5">
-                <span className="text-base">🏢</span> {groupBuy.supplier_name}
-              </span>
-              <span className="w-1 h-1 bg-gray-700 rounded-full"></span>
-              <span className="text-emerald-500">{groupBuy.arrival_time}</span>
+              <div className="flex justify-between items-start gap-4">
+                <h2 className="text-3xl sm:text-4xl font-black mb-4 leading-tight tracking-tight">{groupBuy.title}</h2>
+                {/* 작성자(개설자)인 경우에만 상태 업데이트 버튼 표시 */}
+                {Number(groupBuy.userSeq) === Number(user_seq) && (
+                  <button
+                    onClick={() => setIsStatusModalOpen(true)}
+                    className="shrink-0 bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-xl text-[11px] font-black tracking-widest transition-all flex items-center gap-2 border border-white/10 shadow-sm"
+                  >
+                    상태 변경 ⚙️
+                  </button>
+                )}
+              </div>
+              <div className="flex items-center gap-4 text-gray-300 text-sm font-bold">
+                <span className="flex items-center gap-1.5">
+                  <span className="text-base">🏢</span> {groupBuy.supplier_name}
+                </span>
+                <span className="w-1 h-1 bg-gray-600 rounded-full"></span>
+                <span className="text-emerald-400">{groupBuy.arrival_time}</span>
+              </div>
             </div>
           </div>
 
-          <div className="p-10 space-y-14">
-            {/* 픽업 진행 단계 (3단계: 배송준비 -> 배송중 -> 수령) */}
+          <div className="p-8 sm:p-10 space-y-10">
+            {/* 픽업 진행 단계 */}
             <section>
-              <h3 className="text-[11px] font-black text-gray-300 uppercase tracking-[0.2em] mb-10 text-center">진행 단계</h3>
+              <h3 className="text-[11px] font-black text-gray-400 uppercase tracking-widest mb-8 text-center">진행 단계</h3>
               <div className="flex justify-between items-start relative px-4">
                 {/* 배경 선 */}
                 <div className="absolute top-7 left-10 right-10 h-1 bg-gray-50 -z-0 rounded-full"></div>
@@ -191,20 +194,20 @@ const GroupBuyDeliveryPage = () => {
               </div>
             </section>
 
-            {/* 수령 정보 섹션 (배송지 정보 삭제 요구사항 반영) */}
-            <section className="space-y-6">
-              <div className="flex items-center gap-2">
+            {/* 수령 정보 섹션 */}
+            <section className="space-y-4">
+              <div className="flex items-center gap-2 mb-2">
                 <span className="w-1 h-3 bg-emerald-500 rounded-full"></span>
-                <h3 className="text-sm font-black text-gray-900 uppercase tracking-wider">수령 정보</h3>
+                <h3 className="text-[11px] font-black text-gray-500 uppercase tracking-widest">수령 정보</h3>
               </div>
               <div className="grid grid-cols-1 gap-4">
-                <div className="p-8 bg-gray-50 rounded-[32px] border border-gray-100 group hover:border-emerald-200 transition-colors">
-                  <div className="flex items-start gap-5">
-                    <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-xl shadow-sm border border-gray-100">📍</div>
+                <div className="p-6 bg-gray-50 rounded-[24px] border border-gray-100 shadow-sm group hover:border-emerald-200 transition-colors">
+                  <div className="flex items-start gap-4">
+                    <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-lg shadow-sm border border-gray-100">📍</div>
                     <div className="flex-1">
-                      <p className="text-[10px] font-black text-gray-300 uppercase mb-1.5 tracking-widest">Pickup Location</p>
+                      <p className="text-[11px] font-black text-gray-400 uppercase mb-1.5 tracking-widest">Pickup Location</p>
                       <p className="text-base font-black text-gray-900 leading-relaxed mb-3">{groupBuy.pickup_location}</p>
-                      <button className="text-[10px] font-black text-emerald-500 flex items-center gap-1.5 hover:gap-2 transition-all">
+                      <button className="text-[11px] font-black text-emerald-500 flex items-center gap-1.5 hover:gap-2 transition-all">
                         지도에서 위치 확인하기
                         <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
@@ -214,37 +217,37 @@ const GroupBuyDeliveryPage = () => {
                   </div>
                 </div>
 
-                <div className="p-8 bg-emerald-50/30 rounded-[32px] border border-emerald-100/50">
-                  <div className="flex items-start gap-5">
-                    <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-xl shadow-sm border border-emerald-100/50">📝</div>
+                <div className="p-6 bg-emerald-50/30 rounded-[24px] border border-emerald-100/50 shadow-sm">
+                  <div className="flex items-start gap-4">
+                    <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-lg shadow-sm border border-emerald-100/50">📝</div>
                     <div>
-                      <p className="text-[10px] font-black text-emerald-600 uppercase mb-1.5 tracking-widest">Delivery Notes</p>
-                      <p className="text-sm font-bold text-gray-700 leading-relaxed">{groupBuy.delivery_note}</p>
+                      <p className="text-[11px] font-black text-emerald-600 uppercase mb-1.5 tracking-widest">Delivery Notes</p>
+                      <p className="text-base font-bold text-gray-700 leading-relaxed">{groupBuy.delivery_note}</p>
                     </div>
                   </div>
                 </div>
               </div>
             </section>
 
-            {/* 함께 참여 중인 멤버 (요구사항: 참여멤버 정보 나열) */}
-            <section className="space-y-6">
-              <div className="flex items-center gap-2">
+            {/* 함께 참여 중인 멤버 */}
+            <section className="space-y-4">
+              <div className="flex items-center gap-2 mb-2">
                 <span className="w-1 h-3 bg-emerald-500 rounded-full"></span>
-                <h3 className="text-sm font-black text-gray-900 uppercase tracking-wider">함께 수령하는 사장님</h3>
+                <h3 className="text-[11px] font-black text-gray-500 uppercase tracking-widest">함께 수령하는 사장님</h3>
               </div>
               <div className="space-y-3">
                 {participants.map((p, idx) => (
-                  <div key={idx} className="flex items-center justify-between p-6 bg-white border border-gray-100 rounded-[28px] hover:border-emerald-200 transition-all shadow-sm hover:shadow-md">
+                  <div key={idx} className="flex items-center justify-between p-5 bg-white border border-gray-100 rounded-[24px] shadow-sm hover:border-emerald-200 transition-all hover:shadow-md">
                     <div className="flex items-center gap-4">
                       <div className="w-10 h-10 bg-gray-50 rounded-xl flex items-center justify-center text-lg">🏪</div>
                       <div>
                         <p className="text-sm font-black text-gray-900">{p.bizname}</p>
-                        <p className="text-[10px] font-bold text-gray-300">{p.user_nickname}</p>
+                        <p className="text-[11px] font-bold text-gray-400 tracking-wider">{p.user_nickname}</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span>
-                      <span className="text-[10px] font-black text-emerald-500 uppercase tracking-tighter">결제완료</span>
+                    <div className="flex items-center gap-2 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-100">
+                      <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
+                      <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">결제완료</span>
                     </div>
                   </div>
                 ))}
