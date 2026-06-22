@@ -36,20 +36,22 @@ const GroupBuyPage = () => {
   const statusColors = {
     '모집중': 'bg-emerald-50 text-emerald-600 border-emerald-100',
     '모집완료': 'bg-blue-50 text-blue-600 border-blue-100',
-    '배송준비': 'bg-orange-50 text-orange-600 border-orange-100',
-    '배송중': 'bg-purple-50 text-purple-600 border-purple-100',
-    '배송완료': 'bg-gray-100 text-gray-600 border-gray-200',
-    '모집실패': 'bg-red-50 text-red-600 border-red-100',
+    '배송중': 'bg-orange-50 text-orange-600 border-orange-100',
+    '수령': 'bg-yellow-50 text-yellow-600 border-yellow-100',
+    '배분중': 'bg-purple-50 text-purple-600 border-purple-100',
+    '완료': 'bg-gray-100 text-gray-600 border-gray-200',
+    '취소': 'bg-red-50 text-red-600 border-red-100',
   };
 
   // 영문 상태를 한글로 변환
   const translateStatus = (status) => {
-    if (status === 'RECRUITING' || status === '모집중') return '모집중';
-    if (status === 'COMPLETED' || status === '모집완료') return '모집완료';
-    if (status === 'DELIVERY_PREPARING') return '배송준비';
-    if (status === 'DELIVERING') return '배송중';
-    if (status === 'DELIVERED') return '배송완료';
-    if (status === 'FAILED') return '모집실패';
+    if (status === 'RECRUITING') return '모집중';
+    if (status === 'RECRUITED') return '모집완료';
+    if (status === 'SHIPPING') return '배송중';
+    if (status === 'RECEIVED') return '수령';
+    if (status === 'DISTRIBUTING') return '배분중';
+    if (status === 'COMPLETED') return '완료';
+    if (status === 'CANCELED') return '취소';
     return status;
   };
 
@@ -74,7 +76,7 @@ const GroupBuyPage = () => {
             <h3 className="text-3xl font-black text-emerald-600">{myCount}건</h3>
           </div>
           <div className="bg-white p-8 rounded-[32px] shadow-sm border border-gray-100">
-            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">배송완료</p>
+            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">완료된 그룹</p>
             <h3 className="text-3xl font-black text-blue-600">{globalStats.delivered}건</h3>
           </div>
         </div>

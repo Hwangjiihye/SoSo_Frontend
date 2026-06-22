@@ -93,7 +93,7 @@ export const useGroupBuy = () => {
     try {
       const allData = await groupBuyApi.getGroupBuys('all');
       const ongoing = allData.filter(i => i.status === 'RECRUITING').length;
-      const delivered = allData.filter(i => i.status === 'DELIVERED').length;
+      const delivered = allData.filter(i => i.status === 'COMPLETED').length;
       setGlobalStats({ ongoing, delivered });
     } catch (statsError) {
       console.error('Failed to fetch global stats:', statsError);
