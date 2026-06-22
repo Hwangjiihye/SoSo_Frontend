@@ -15,6 +15,36 @@ export const useGroupBuy = () => {
   const [globalStats, setGlobalStats] = useState({ ongoing: 0, delivered: 0 });
   const { user_type } = authStore();
 
+  const calculateDDay = (endDateStr) => {
+    if (!endDateStr) return 'D-Day';
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const end = new Date(endDateStr);
+    end.setHours(0, 0, 0, 0);
+    
+    if (isNaN(end.getTime())) return 'D-Day';
+    
+    const diffTime = end.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays > 0) return `D-${diffDays}`;
+    if (diffDays === 0) return 'D-Day';
+    return `D+${Math.abs(diffDays)}`;
+  };
+
+  const mapGroupBuyData = (item, index, isMyFilter) => {
+    const seq = item.groupBuySeq || item.seq || index;
+    return {
+      ...item,
+      seq: seq,
+      groupBuySeq: seq,
+      isJoined: isMyFilter ? true : (item.isJoined || false),
+      dDay: calculateDDay(item.endDate),
+      status: item.status || 'RECRUITING',
+      category: item.category || '기타'
+    };
+  };
+
   const fetchGroupBuys = useCallback(async () => {
     setIsLoading(true);
     let latestData = [];
@@ -23,15 +53,7 @@ export const useGroupBuy = () => {
         ? await groupBuyApi.getParticipatedGroupBuys()
         : await groupBuyApi.getGroupBuys(filter);
       // 데이터 변환 및 기본값 설정
-      const formattedData = data.map((item, index) => ({
-        ...item,
-        seq: item.groupBuySeq || item.seq || index, // 프론트엔드 호환성을 위해 유지하되
-        groupBuySeq: item.groupBuySeq || item.seq,
-        isJoined: filter === 'my' ? true : (item.isJoined || false),
-        dDay: item.dDay || 'D-Day',
-        status: item.status || 'RECRUITING',
-        category: item.category || '기타'
-      }));
+      const formattedData = data.map((item, index) => mapGroupBuyData(item, index, filter === 'my'));
       latestData = formattedData;
       setGroupBuys(formattedData);
     } catch (error) {
@@ -71,8 +93,9 @@ export const useGroupBuy = () => {
           isOwner: true
         }
       ];
-      latestData = mockData;
-      setGroupBuys(mockData);
+      const formattedMock = mockData.map((item, index) => mapGroupBuyData(item, index, false));
+      latestData = formattedMock;
+      setGroupBuys(formattedMock);
     } finally {
       setIsLoading(false);
     }
