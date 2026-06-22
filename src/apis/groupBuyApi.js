@@ -20,6 +20,14 @@ export const groupBuyApi = {
   },
 
   /**
+   * 내가 참여한 공동구매 목록 조회 (결제 상태, 배송 상태 포함)
+   */
+  getParticipatedGroupBuys: async () => {
+    const response = await axiosInstance.get(`${GROUP_BUY_BASE_URL}/participated`);
+    return response.data;
+  },
+
+  /**
    * 공동구매 그룹 생성 (PARTNER 전용)
    * @param {Object} data - 공동구매 생성 데이터
    */

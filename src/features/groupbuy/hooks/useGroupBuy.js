@@ -16,11 +16,15 @@ export const useGroupBuy = () => {
   const fetchGroupBuys = useCallback(async () => {
     setIsLoading(true);
     try {
-      const data = await groupBuyApi.getGroupBuys(filter);
+      const data = filter === 'my' 
+        ? await groupBuyApi.getParticipatedGroupBuys()
+        : await groupBuyApi.getGroupBuys(filter);
       // 데이터 변환 및 기본값 설정
-      const formattedData = data.map(item => ({
+      const formattedData = data.map((item, index) => ({
         ...item,
-        isJoined: item.isJoined || false,
+        seq: item.groupBuySeq || item.seq || index, // 프론트엔드 호환성을 위해 유지하되
+        groupBuySeq: item.groupBuySeq || item.seq,
+        isJoined: filter === 'my' ? true : (item.isJoined || false),
         dDay: item.dDay || 'D-Day',
         status: item.status || 'RECRUITING',
         category: item.category || '기타'
