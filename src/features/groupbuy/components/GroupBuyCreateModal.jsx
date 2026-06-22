@@ -20,6 +20,7 @@ const GroupBuyCreateModal = ({ onClose, onSubmit, isPartner }) => {
     quantity: 1,            // 수량
     unitPrice: 0,           // 단가
     targetParticipants: 1,  // 모집인원
+    currentParticipants:1,
     endDate: '',            // 마감기한
     pickupZipCode: '',      // 픽업 우편번호
     pickupAddress: '',      // 픽업 기본주소

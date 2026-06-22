@@ -22,7 +22,7 @@ export const useGroupBuy = () => {
         ...item,
         isJoined: item.isJoined || false,
         dDay: item.dDay || 'D-Day',
-        status: item.status || '모집중',
+        status: item.status || 'RECRUITING',
         category: item.category || '기타'
       }));
       setGroupBuys(formattedData);
@@ -40,7 +40,7 @@ export const useGroupBuy = () => {
           currentParticipants: 15,
           targetParticipants: 20,
           totalAmount: 380000,
-          status: '모집중',
+          status: 'RECRUITING',
           category: '육류',
           isJoined: false,
           creatorType: 'PARTNER', // 거래처가 주최한 공동구매
@@ -56,7 +56,7 @@ export const useGroupBuy = () => {
           currentParticipants: 30,
           targetParticipants: 30,
           totalAmount: 28000,
-          status: '모집완료',
+          status: 'COMPLETED',
           category: '채소류',
           isJoined: true,
           creatorType: 'BUSINESS', // 사업자가 주최한 공동구매

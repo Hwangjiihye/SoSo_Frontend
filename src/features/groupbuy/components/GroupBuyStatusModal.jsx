@@ -7,7 +7,14 @@ import React from 'react';
 const GroupBuyStatusModal = ({ groupBuy, onClose, onUpdate }) => {
   if (!groupBuy) return null;
 
-  const statuses = ['모집중', '모집완료', '모집실패', '배송준비', '배송중', '완료'];
+  const statuses = [
+    { value: 'RECRUITING', label: '모집중' },
+    { value: 'COMPLETED', label: '모집완료' },
+    { value: 'FAILED', label: '모집실패' },
+    { value: 'DELIVERY_PREPARING', label: '배송준비' },
+    { value: 'DELIVERING', label: '배송중' },
+    { value: 'DELIVERED', label: '배송완료' },
+  ];
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
@@ -27,18 +34,18 @@ const GroupBuyStatusModal = ({ groupBuy, onClose, onUpdate }) => {
           <div className="grid grid-cols-2 gap-3">
             {statuses.map((status) => (
               <button
-                key={status}
+                key={status.value}
                 onClick={() => {
-                  onUpdate(groupBuy.seq, status);
+                  onUpdate(groupBuy.seq, status.value);
                   onClose();
                 }}
                 className={`py-3 rounded-2xl font-black text-xs transition-all ${
-                  groupBuy.status === status
+                  groupBuy.status === status.value
                     ? 'bg-emerald-600 text-white shadow-lg'
                     : 'bg-gray-50 text-gray-400 hover:bg-gray-100 hover:text-gray-600'
                 }`}
               >
-                {status}
+                {status.label}
               </button>
             ))}
           </div>
