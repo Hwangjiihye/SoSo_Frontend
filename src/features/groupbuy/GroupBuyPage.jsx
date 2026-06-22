@@ -66,7 +66,7 @@ const GroupBuyPage = () => {
         {/* 상단 통계 바 */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
           <div className="bg-white p-8 rounded-[32px] shadow-sm border border-gray-100">
-            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">진행 중인 그룹</p>
+            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">참여 가능한 그룹</p>
             <h3 className="text-3xl font-black text-gray-900">{globalStats.ongoing}건</h3>
           </div>
           <div className="bg-white p-8 rounded-[32px] shadow-sm border border-gray-100">
@@ -111,7 +111,7 @@ const GroupBuyPage = () => {
               filter === 'all' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-100' : 'text-gray-400 hover:text-gray-600'
             }`}
           >
-            모든 그룹
+            참여 가능한 그룹
           </button>
           <button
             onClick={() => setFilter('my')}
