@@ -254,7 +254,7 @@ const GroupBuyPage = () => {
                     <div className="grid grid-cols-1 gap-2 mt-auto">
                       {(!isPartner && displayStatus === '모집중' && !isJoined) ? (
                         <button
-                          onClick={() => navigate(`/group-buy/${item.groupBuySeq}`)}
+                          onClick={() => navigate(`/group-buy/${item.groupBuySeq || item.seq}`)}
                           className="w-full py-3 bg-emerald-600 text-white rounded-[14px] font-black text-sm hover:bg-emerald-700 transition-all shadow-md shadow-emerald-100 active:scale-95"
                         >
                           그룹 참여하기
@@ -263,20 +263,20 @@ const GroupBuyPage = () => {
                         <>
                           <div className="grid grid-cols-2 gap-2">
                             <button
-                              onClick={() => navigate(`/group-buy/${item.groupBuySeq}`)}
+                              onClick={() => navigate(`/group-buy/${item.groupBuySeq || item.seq}/info`, { state: { item } })}
                               className="py-2.5 bg-emerald-50 text-emerald-600 rounded-xl font-black text-xs hover:bg-emerald-100 transition-all"
                             >
-                              참여 현황
+                              상세 정보 내역
                             </button>
                             <button
-                              onClick={() => navigate(`/group-buy/${item.groupBuySeq}/delivery`)}
+                              onClick={() => navigate(`/group-buy/${item.groupBuySeq || item.seq}/delivery`)}
                               className="py-2.5 bg-gray-900 text-white rounded-xl font-black text-xs hover:bg-black transition-all shadow-md"
                             >
                               배송 안내
                             </button>
                           </div>
                           <button
-                            onClick={() => navigate(`/chat/${item.groupBuySeq}`)}
+                            onClick={() => navigate(`/chat/${item.groupBuySeq || item.seq}`)}
                             className="w-full py-2.5 bg-white border-2 border-gray-900 text-gray-900 rounded-xl font-black text-xs hover:bg-gray-50 transition-all"
                           >
                             채팅방 입장
