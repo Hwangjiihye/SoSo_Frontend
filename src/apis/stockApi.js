@@ -1,4 +1,4 @@
-import axiosInstance from './axiosConfig';
+import axiosInstance from './axiosConfig.js';
 
 /**
  * @file stockApi.js
@@ -38,7 +38,10 @@ export const getStockHistories = async (stockSeq) => {
 // POST /api/stocks/incoming
 export const createIncomingStock = async (data) => {
   // data: { stockSeq, detailProductName, quantity, incomingPrice, expirationDate, manager, memo }
-  const response = await axiosInstance.post('/api/stocks/incoming', data);
+  const {storeSeq, ...body} = data;
+  const response = await axiosInstance.post('/api/stocks/incoming', body, {
+    params: {storeSeq}
+  });
   return response.data;
 };
 
@@ -78,25 +81,45 @@ export const deleteStock = async (stockId) => {
 // 신규 추가: 재고 이력 대시보드 및 모달 전용 API
 // ==========================================
 
-// 메인 대시보드용 API (최신 5건 고정)
+// 메인 대시보드용 API (최신 5건 고정, 매장 식별자 전달 추가)
 // GET /api/stock-history/dashboard
-export const getStockHistoryDashboard = async () => {
-  const response = await axiosInstance.get('/api/stock-history/dashboard');
+export const getStockHistoryDashboard = async (storeSeq) => {
+  const response = await axiosInstance.get('/api/stock-history/dashboard', {
+    params: { storeSeq }
+  });
   return response.data; // Expected: StockHistoryDTO[] (최대 5개)
 };
 
-// 전체 이력 팝업 모달용 API (페이징)
-// GET /api/stock-history/modal?page={page}&size={size}
-export const getStockHistoryModal = async (page, size) => {
-  const response = await axiosInstance.get('/api/stock-history/modal', {
-    params: { page, size }
-  });
-  return response.data; // Expected: { content: StockHistoryDTO[], totalPages, totalElements, ... } 페이징 객체
+// 전체 이력 팝업 모달용 API (페이징 및 필터링 추가)
+// GET /api/stock-history/modal
+export const getStockHistoryModal = async (params) => {
+  const response = await axiosInstance.get('/api/stock-history/modal', { params });
+  return response.data; // Expected: { historyList: StockHistoryDTO[], totalPages, totalCount, ... }
 };
 
 export const getCategories = async () => {
   const response = await axiosInstance.get('/api/categories');
   console.log(response.data)
+  return response.data;
+};
+
+// ==========================================
+// 신규 추가: 실시간 알림 관련 API
+// ==========================================
+
+// 1. 최근 3일간 알림 목록 조회
+// GET /api/notifications/recent?storeSeq=값
+export const getRecentNotifications = async (storeSeq) => {
+  const response = await axiosInstance.get('/api/notifications/recent', {
+    params: { storeSeq }
+  });
+  return response.data; // Expected: NotificationDTO[]
+};
+
+// 2. 알림 읽음 처리
+// PATCH /api/notifications/{notificationSeq}/read
+export const markNotificationAsRead = async (notificationSeq) => {
+  const response = await axiosInstance.patch(`/api/notifications/${notificationSeq}/read`);
   return response.data;
 };
 

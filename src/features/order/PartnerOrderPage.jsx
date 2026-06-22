@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { usePartnerOrder } from './hooks/usePartnerOrder';
 
@@ -8,6 +8,8 @@ import { usePartnerOrder } from './hooks/usePartnerOrder';
  * OrderPage와 동일하게 실시간 발주 현황 프로세스 바를 포함합니다.
  */
 function PartnerOrderPage() {
+  const [currentPage, setCurrentPage] = useState(1);
+
   const { 
     orders, // 필터링된 목록
     allOrders, // 전체 목록 (통계용)
@@ -68,6 +70,19 @@ function PartnerOrderPage() {
     SHIPPING: allOrders.filter(o => o.status === 'SHIPPING').length,
     DELIVERED: allOrders.filter(o => o.status === 'DELIVERED').length,
   };
+
+  const ordersPerPage = 5;
+  const totalPages = Math.max(1, Math.ceil(orders.length / ordersPerPage));
+  const paginatedOrders = orders.slice(
+    (currentPage - 1) * ordersPerPage,
+    currentPage * ordersPerPage,
+  );
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
 
   return (
     <div className="min-h-screen bg-[#F8F9FA] text-gray-800 font-sans">
@@ -213,7 +228,7 @@ function PartnerOrderPage() {
                   <td colSpan="5" className="px-8 py-20 text-center text-gray-400 font-bold">접수된 발주 내역이 없습니다.</td>
                 </tr>
               ) : (
-                orders.map((order) => (
+                paginatedOrders.map((order) => (
                   <tr key={order.orderSeq} className="hover:bg-emerald-50/30 transition-colors group cursor-pointer" onClick={() => openOrderDetail(order.orderSeq)}>
                     <td className="px-8 py-6">
                       <div className="text-sm font-black text-gray-900">{order.orderNo}</div>
@@ -263,8 +278,15 @@ function PartnerOrderPage() {
           
           <div className="px-8 py-6 bg-gray-50/50 flex justify-center border-t border-gray-50">
              <div className="flex gap-2">
-               {[1].map(n => (
-                 <button key={n} className={`w-10 h-10 rounded-xl font-bold text-sm transition-all bg-emerald-600 text-white shadow-lg`}>{n}</button>
+               {Array.from({ length: totalPages }, (_, index) => index + 1).map(n => (
+                 <button
+                   key={n}
+                   type="button"
+                   onClick={() => setCurrentPage(n)}
+                   className={`w-10 h-10 rounded-xl font-bold text-sm transition-all ${n === currentPage ? 'bg-emerald-600 text-white shadow-lg' : 'bg-white text-gray-400 hover:bg-gray-100 border border-gray-100'}`}
+                 >
+                   {n}
+                 </button>
                ))}
              </div>
           </div>

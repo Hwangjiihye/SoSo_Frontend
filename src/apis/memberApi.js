@@ -1,4 +1,4 @@
-import axiosInstance from './axiosConfig';
+import axiosInstance from './axiosConfig.js';
 
 /**
  * @file memberApi.js
@@ -236,5 +236,30 @@ export const changePasswordApi = async (passwordData) => {
  */
 export const withdrawMemberApi = async (withdrawalData) => {
   const response = await axiosInstance.patch('/api/member/partner/withdraw', withdrawalData);
+  return response.data;
+};
+
+/**
+ * 🔔 스마트 알림 설정 조회 API
+ * @param {number} storeSeq 
+ * @returns {Promise<Object>} 알림 설정 정보
+ */
+export const getNotificationSettingsApi = async (storeSeq) => {
+  const response = await axiosInstance.get('/api/member/business/notification-settings', {
+    params: { storeSeq }
+  });
+  return response.data;
+};
+
+/**
+ * 🔔 스마트 알림 설정 저장 API
+ * @param {number} storeSeq 
+ * @param {Object} settingsData - { alertStockYn, alertExpiryYn, alertOrderYn, settings }
+ * @returns {Promise<Object>} 결과 메시지
+ */
+export const updateNotificationSettingsApi = async (storeSeq, settingsData) => {
+  const response = await axiosInstance.put('/api/member/business/notification-settings', settingsData, {
+    params: { storeSeq }
+  });
   return response.data;
 };

@@ -80,4 +80,13 @@ export const groupBuyApi = {
     const response = await axiosInstance.get(`${GROUP_BUY_BASE_URL}/${seq}/participants`);
     return response.data;
   },
-};
+
+
+// 1. 공동구매 참여 이력 조회
+ getGroupBuyHistory : async (storeSeq) => {
+  const response = await axiosInstance.get('/api/group-buys/history', {
+    params: { storeSeq }
+  });
+  return response.data;
+},
+}

@@ -4,7 +4,7 @@ import { useOrder } from './hooks/useOrder';
 
 import SockJS from 'sockjs-client';
 import { Client } from '@stomp/stompjs';
-import { webSocketMe } from '../../apis/orderApi';
+import { webSocketMe, getOrderDetail } from '../../apis/orderApi';
 
 /**
  * @file OrderPage.jsx
@@ -21,6 +21,11 @@ function OrderPage() {
   const stompClientRef = useRef(null);
   // 웹소켓으로 받은 최신 발주 상태
   const [liveOrderStatus, setLiveOrderStatus] = useState(null);
+
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [sortType, setSortType] = useState('latest');
+  const [currentPage, setCurrentPage] = useState(1);
 
   // userSeq 가져오기
   useEffect(() => {
@@ -119,15 +124,6 @@ function OrderPage() {
     DELIVERED: orders.filter(order => getOrderStatus(order) === 'DELIVERED').length,
   };
 
-  const listCurrentStepIndex = orders.reduce((maxIndex, order) => {
-    const status = getOrderStatus(order);
-    const index = statusSteps.findIndex((step) => step.key === status);
-    return index > maxIndex ? index : maxIndex;
-  }, -1);
-
-  const liveStepIndex = statusSteps.findIndex((step) => step.key === liveOrderStatus);
-  const currentStepIndex = liveStepIndex >= 0 ? liveStepIndex : listCurrentStepIndex;
-
   // 컬러 매핑
   const statusColors = {
     REQUESTED: 'bg-blue-100 text-blue-700 border-blue-200',
@@ -136,6 +132,57 @@ function OrderPage() {
     SHIPPING: 'bg-purple-100 text-purple-700 border-purple-200',
     DELIVERED: 'bg-gray-200 text-gray-700 border-gray-300',
   };
+
+  // 상세보기
+  const handleOpenDetail = async (orderSeq) => {
+  console.log('상세보기 클릭:', orderSeq);
+
+  try {
+    const data = await getOrderDetail(orderSeq);
+
+    console.log('상세 조회 결과:', data);
+
+    setSelectedOrder(data);
+    setIsDetailOpen(true);
+  } catch (error) {
+    console.error('상세 조회 실패:', error);
+    alert('발주 상세 조회에 실패했습니다.');
+  }
+};
+
+const handleCloseDetail = () => {
+  setIsDetailOpen(false);
+  setSelectedOrder(null);
+};
+
+const sortedOrders = [...orders].sort((a, b) => {
+  if (sortType === 'latest') {
+    return Number(b.orderSeq || 0) - Number(a.orderSeq || 0);
+  }
+
+  if (sortType === 'high') {
+    return Number(b.totalAmount || 0) - Number(a.totalAmount || 0);
+  }
+
+  if (sortType === 'low') {
+    return Number(a.totalAmount || 0) - Number(b.totalAmount || 0);
+  }
+
+  return 0;
+});
+
+const ordersPerPage = 5;
+const totalPages = Math.max(1, Math.ceil(sortedOrders.length / ordersPerPage));
+const paginatedOrders = sortedOrders.slice(
+  (currentPage - 1) * ordersPerPage,
+  currentPage * ordersPerPage,
+);
+
+useEffect(() => {
+  if (currentPage > totalPages) {
+    setCurrentPage(totalPages);
+  }
+}, [currentPage, totalPages]);
 
   return (
     <div className="min-h-screen bg-[#F8F9FA] text-gray-800 font-sans">
@@ -157,20 +204,16 @@ function OrderPage() {
             <span className="w-1.5 h-6 bg-emerald-500 rounded-full"></span>
             발주 현황
           </h3>
-          <div className="flex items-center gap-4">
-            <span className="text-xs font-medium text-gray-400">최근 업데이트: 2024.06.01 14:30</span>
-            <button className="text-xs font-bold text-emerald-600 hover:underline">🔄 새로고침</button>
-          </div>
         </div>
 
         {/* Status Summary - 더 상세한 통계 */}
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-10">
           {[
             { label: '전체 발주', value: orders.length, color: 'border-gray-200', text: 'text-gray-900' },
-            { label: '승인 대기', value: '2', color: 'border-orange-200', text: 'text-orange-600' },
-            { label: '배송 중', value: '4', color: 'border-blue-200', text: 'text-blue-600' },
-            { label: '배송 완료', value: '142', color: 'border-emerald-200', text: 'text-emerald-600' },
-            { label: '취소/반품', value: '8', color: 'border-red-200', text: 'text-red-600' },
+            { label: '승인 대기', value: statusCounts.REQUESTED, color: 'border-orange-200', text: 'text-orange-600' },
+            { label: '접수 완료', value: statusCounts.ACCEPTED, color: 'border-emerald-200', text: 'text-emerald-600' },
+            { label: '배송 중', value: statusCounts.SHIPPING, color: 'border-blue-200', text: 'text-blue-600' },
+            { label: '배송 완료', value: statusCounts.DELIVERED, color: 'border-gray-200', text: 'text-gray-700' },
           ].map((item, idx) => (
             <div key={idx} className={`bg-white p-7 rounded-3xl border shadow-sm transition-transform hover:-translate-y-1 ${item.color}`}>
               <div className="text-gray-600 text-[12px] font-black uppercase tracking-[0.2em] mb-3">{item.label}</div>
@@ -185,7 +228,7 @@ function OrderPage() {
             <div className="absolute top-8 left-0 w-full h-1 bg-gray-50 -z-0 rounded-full"></div>
             {statusSteps.map((step, i) => {
               const count = statusCounts[step.key] || 0;
-              const active = currentStepIndex >= i;
+              const active = count > 0;
               return (
                 <div key={step.key} className="flex flex-col items-center gap-5 relative z-10 bg-white px-6">
                   <div className={`w-16 h-16 rounded-full flex items-center justify-center text-3xl shadow-sm transition-all ${active ? 'bg-emerald-100 text-emerald-700 border-emerald-300 ring-4 ring-emerald-100' : 'bg-gray-50 text-gray-300 grayscale border-gray-100'}`}>
@@ -226,9 +269,9 @@ function OrderPage() {
               {[
                 { name: '전체', activeClass: 'bg-gray-900 text-white shadow-lg shadow-gray-200' },
                 { name: '대기중', activeClass: 'bg-orange-500 text-white shadow-lg shadow-orange-100' },
+                { name: '접수완료', activeClass: 'bg-emerald-600 text-white shadow-lg shadow-emerald-100' },
                 { name: '배송중', activeClass: 'bg-blue-600 text-white shadow-lg shadow-blue-100' },
-                { name: '배송완료', activeClass: 'bg-emerald-600 text-white shadow-lg shadow-emerald-100' },
-                { name: '주문취소', activeClass: 'bg-red-500 text-white shadow-lg shadow-red-100' },
+                { name: '배송완료', activeClass: 'bg-gray-700 text-white shadow-lg shadow-gray-200' },
               ].map((status) => (
                 <button
                   key={status.name}
@@ -265,10 +308,17 @@ function OrderPage() {
               발주 상세 목록 <span className="text-gray-500 font-medium ml-1 text-sm">{orders.length}건</span>
             </h3>
             <div className="flex gap-4">
-              <select className="text-xs font-bold text-gray-500 bg-gray-50 border-none rounded-lg px-3 py-1.5 outline-none">
-                <option>최신순</option>
-                <option>금액 높은순</option>
-                <option>금액 낮은순</option>
+              <select
+                value={sortType}
+                onChange={(e) => {
+                  setSortType(e.target.value);
+                  setCurrentPage(1);
+                }}
+                className="text-xs font-bold text-gray-500 bg-gray-50 border-none rounded-lg px-3 py-1.5 outline-none"
+              >
+                <option value="latest">최신순</option>
+                <option value="high">금액 높은순</option>
+                <option value="low">금액 낮은순</option>
               </select>
             </div>
           </div>
@@ -284,7 +334,7 @@ function OrderPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
-              {orders.map((order) => (
+              {paginatedOrders.map((order) => (
                 <tr key={order.orderSeq} className="hover:bg-emerald-50/30 transition-colors group">
                   <td className="px-8 py-6">
                     <div className="text-sm font-black text-gray-900 mb-1">{order.orderNo}</div>
@@ -310,7 +360,14 @@ function OrderPage() {
                   </td>
                   <td className="px-8 py-6 text-center">
                     <div className="flex items-center justify-center gap-3">
-                      <button className="p-2 hover:bg-white rounded-lg transition-all border border-transparent hover:border-gray-100 text-gray-400 hover:text-emerald-600 shadow-sm" title="상세보기">📄</button>
+                      <button
+                        type="button"
+                        onClick={() => handleOpenDetail(order.orderSeq)}
+                        className="p-2 hover:bg-white rounded-lg transition-all border border-transparent hover:border-gray-100 text-gray-400 hover:text-emerald-600 shadow-sm"
+                        title="상세보기"
+                      >
+                        📄
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -320,12 +377,68 @@ function OrderPage() {
 
           <div className="px-8 py-6 bg-gray-50/50 flex justify-center border-t border-gray-50">
             <div className="flex gap-2">
-              {[1, 2, 3, 4, 5].map(n => (
-                <button key={n} className={`w-10 h-10 rounded-xl font-bold text-sm transition-all ${n === 1 ? 'bg-emerald-600 text-white shadow-lg' : 'bg-white text-gray-400 hover:bg-gray-100 border border-gray-100'}`}>{n}</button>
+              {Array.from({ length: totalPages }, (_, index) => index + 1).map(n => (
+                <button
+                  key={n}
+                  type="button"
+                  onClick={() => setCurrentPage(n)}
+                  className={`w-10 h-10 rounded-xl font-bold text-sm transition-all ${n === currentPage ? 'bg-emerald-600 text-white shadow-lg' : 'bg-white text-gray-400 hover:bg-gray-100 border border-gray-100'}`}
+                >
+                  {n}
+                </button>
               ))}
             </div>
           </div>
         </div>
+        {isDetailOpen && selectedOrder && (
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40">
+            <div className="w-[700px] max-w-[90vw] rounded-[28px] bg-white p-8 shadow-xl">
+              <div className="mb-6 flex items-center justify-between">
+                <h3 className="text-2xl font-black text-gray-900">발주 상세</h3>
+                <button
+                  onClick={handleCloseDetail}
+                  className="rounded-xl bg-gray-100 px-4 py-2 text-sm font-bold text-gray-500 hover:bg-gray-200"
+                >
+                  닫기
+                </button>
+              </div>
+
+              <div className="mb-6 rounded-2xl bg-gray-50 p-5 text-sm font-bold text-gray-700">
+                <p>발주번호: {selectedOrder.orderInfo?.orderNo}</p>
+                <p>공급업체: {selectedOrder.orderInfo?.companyName}</p>
+                <p>상태: {selectedOrder.orderInfo?.status}</p>
+                <p>총 금액: {Number(selectedOrder.orderInfo?.totalAmount || 0).toLocaleString()}원</p>
+                <p>배송지: ({selectedOrder.orderInfo?.zonecode}) {selectedOrder.orderInfo?.address1} {selectedOrder.orderInfo?.address2}</p>
+                <p>요청사항: {selectedOrder.orderInfo?.orderMemo || '-'}</p>
+              </div>
+
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="border-b bg-gray-50 text-sm text-gray-500">
+                    <th className="p-3">품목명</th>
+                    <th className="p-3">카테고리</th>
+                    <th className="p-3">수량</th>
+                    <th className="p-3">규격</th>
+                    <th className="p-3">단가</th>
+                    <th className="p-3">합계</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {selectedOrder.items?.map((item) => (
+                    <tr key={item.orderItemSeq} className="border-b text-sm">
+                      <td className="p-3 font-bold">{item.itemName}</td>
+                      <td className="p-3">{item.categoryName}</td>
+                      <td className="p-3">{item.quantity}</td>
+                      <td className="p-3">{item.spec}</td>
+                      <td className="p-3">{Number(item.unitPrice || 0).toLocaleString()}원</td>
+                      <td className="p-3">{Number(item.totalPrice || 0).toLocaleString()}원</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );

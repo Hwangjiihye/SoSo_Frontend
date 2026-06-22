@@ -4,7 +4,8 @@
  * '마이페이지 사업자.png' 디자인을 기반으로, 사이드바와 콘텐츠 영역을 구현합니다.
  */
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
+import MainFooter from '../../components/layout/MainFooter';
 import logo from "../../assets/soso로고.png";
 import authStore from "../../store/authStore";
 import { useBusinessInfo } from './hooks/useBusinessInfo';
