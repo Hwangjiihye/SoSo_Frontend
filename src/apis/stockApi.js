@@ -100,3 +100,23 @@ export const getCategories = async () => {
   return response.data;
 };
 
+// ==========================================
+// 신규 추가: 실시간 알림 관련 API
+// ==========================================
+
+// 1. 최근 3일간 알림 목록 조회
+// GET /api/notifications/recent?storeSeq=값
+export const getRecentNotifications = async (storeSeq) => {
+  const response = await axiosInstance.get('/api/notifications/recent', {
+    params: { storeSeq }
+  });
+  return response.data; // Expected: NotificationDTO[]
+};
+
+// 2. 알림 읽음 처리
+// PATCH /api/notifications/{notificationSeq}/read
+export const markNotificationAsRead = async (notificationSeq) => {
+  const response = await axiosInstance.patch(`/api/notifications/${notificationSeq}/read`);
+  return response.data;
+};
+

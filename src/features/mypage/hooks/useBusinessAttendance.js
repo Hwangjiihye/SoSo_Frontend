@@ -1,36 +1,89 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import authStore from '../../../store/authStore';
+import { 
+  getEmployeeList, 
+  registerEmployee, 
+  checkInEmployee, 
+  checkOutEmployee 
+} from '../../../apis/employeeApi';
 
 /**
  * @file useBusinessAttendance.js
- * @description 직원 근태 관리를 위한 커스텀 훅 (더미 데이터 포함)
+ * @description 직원 근태 관리를 위한 커스텀 훅 (실제 API 바인딩 버전)
  */
 export const useBusinessAttendance = () => {
+  const selectedStoreSeq = authStore((state) => state.selectedStoreSeq);
   const [staffList, setStaffList] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // 더미 데이터 로드
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setStaffList([
-        { id: 1, name: '김철수', position: '매니저', status: '출근', checkInTime: '09:00', checkOutTime: '-', workHours: '5시간' },
-        { id: 2, name: '이영희', position: '아르바이트', status: '퇴근', checkInTime: '10:00', checkOutTime: '15:00', workHours: '5시간' },
-        { id: 3, name: '박지성', position: '아르바이트', status: '결근', checkInTime: '-', checkOutTime: '-', workHours: '0시간' },
-        { id: 4, name: '최유리', position: '직원', status: '출근', checkInTime: '08:30', checkOutTime: '-', workHours: '5.5시간' },
-      ]);
+  // 직원 목록 로드 함수
+  const fetchStaffList = useCallback(async () => {
+    if (!selectedStoreSeq) return;
+    setIsLoading(true);
+    try {
+      const data = await getEmployeeList(selectedStoreSeq);
+      setStaffList(data || []);
+    } catch (err) {
+      console.error('직원 목록 로드 실패:', err);
+    } finally {
       setIsLoading(false);
-    }, 500);
-    return () => clearTimeout(timer);
-  }, []);
+    }
+  }, [selectedStoreSeq]);
 
-  const handleStatusChange = (id, newStatus) => {
-    setStaffList(prev => prev.map(staff => 
-      staff.id === id ? { ...staff, status: newStatus } : staff
-    ));
+  // 마운트 및 매장 변경 시 로드
+  useEffect(() => {
+    fetchStaffList();
+  }, [fetchStaffList]);
+
+  // 직원 신규 등록
+  const handleRegisterStaff = async (formData) => {
+    if (!selectedStoreSeq) return;
+    try {
+      const payload = {
+        businessSeq: selectedStoreSeq,
+        empName: formData.empName,
+        phone: formData.phone,
+        workStartTime: formData.workStartTime,
+        workEndTime: formData.workEndTime
+      };
+      await registerEmployee(payload);
+      alert('직원이 등록되었습니다.');
+      await fetchStaffList(); // 리스트 갱신
+      return true;
+    } catch (err) {
+      alert(err.response?.data || '직원 등록 중 오류가 발생했습니다.');
+      return false;
+    }
+  };
+
+  // 출근 처리
+  const handleCheckIn = async (employeeSeq) => {
+    try {
+      await checkInEmployee(employeeSeq);
+      alert('출근 처리가 완료되었습니다.');
+      await fetchStaffList();
+    } catch (err) {
+      alert(err.response?.data || '출근 처리 중 오류가 발생했습니다.');
+    }
+  };
+
+  // 퇴근 처리
+  const handleCheckOut = async (employeeSeq) => {
+    try {
+      await checkOutEmployee(employeeSeq);
+      alert('퇴근 처리가 완료되었습니다.');
+      await fetchStaffList();
+    } catch (err) {
+      alert(err.response?.data || '퇴근 처리 중 오류가 발생했습니다.');
+    }
   };
 
   return {
     staffList,
     isLoading,
-    handleStatusChange
+    fetchStaffList,
+    handleRegisterStaff,
+    handleCheckIn,
+    handleCheckOut
   };
 };
