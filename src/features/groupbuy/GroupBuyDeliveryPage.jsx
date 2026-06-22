@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { groupBuyApi } from '../../apis/groupBuyApi';
+import authStore from '../../store/authStore';
+import GroupBuyStatusModal from './components/GroupBuyStatusModal';
 
 /**
  * @file GroupBuyDeliveryPage.jsx
@@ -17,38 +19,82 @@ const GroupBuyDeliveryPage = () => {
   const [groupBuy, setGroupBuy] = useState(null);
   const [participants, setParticipants] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
+  
+  const { user_seq } = authStore();
+
+  const fetchGroupBuyData = async () => {
+    setIsLoading(true);
+    try {
+      // 1. 실제 API 연동 시도
+      const data = await groupBuyApi.getGroupBuyDetail(seq);
+      setGroupBuy({
+        ...data,
+        groupBuySeq: data.groupBuySeq || seq,
+        // DTO 필드를 UI용으로 매핑
+        title: data.groupName,
+        status: data.status,
+        delivery_note: data.notice || '등록된 배송 유의사항이 없습니다.',
+        pickup_location: data.pickupLocation,
+        supplier_name: data.partnerName,
+        arrival_time: data.pickupTime || '미정',
+        userSeq: data.userSeq
+      });
+    } catch (error) {
+      console.error('Failed to fetch real delivery info, using mock:', error);
+      // 2. Mock 데이터 폴백
+      setGroupBuy({
+        groupBuySeq: seq,
+        userSeq: 1, // 테스트를 위해 임의의 작성자 1번으로 고정
+        title: '한우 등심 (1+ 등급, 10kg)',
+        status: 'SHIPPING',
+        delivery_note: '정문 앞 무인 택배함 03번에 보관 예정입니다.',
+        pickup_location: '서울특별시 강남구 테헤란로 123 소소빌딩 1층 정문 택배함',
+        supplier_name: '상생 농장',
+        arrival_time: '오늘 오후 4시 도착 예정'
+      });
+    }
+
+    try {
+      const participantData = await groupBuyApi.getParticipants(seq);
+      setParticipants(participantData || [
+        { bizname: '강남 김치찌개', user_nickname: '김사장' },
+        { bizname: '서초 파스타', user_nickname: '이사장' },
+        { bizname: '역삼 베이커리', user_nickname: '박사장' },
+      ]);
+    } catch (error) {
+      console.error('Failed to fetch participants:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        // 실제 연동 시 API 호출
-        // const data = await groupBuyApi.getGroupBuyDetail(seq);
-        
-        // Mock 데이터 (c4.png 스타일의 실제 데이터 시뮬레이션)
-        setGroupBuy({
-          seq: seq,
-          title: '한우 등심 (1+ 등급, 10kg)',
-          status: '배송중', // 배송준비, 배송중, 배송완료(수령)
-          delivery_note: '정문 앞 무인 택배함 03번에 보관 예정입니다. 도착 시 등록된 번호로 자동 문자가 발송됩니다.',
-          pickup_location: '서울특별시 강남구 테헤란로 123 소소빌딩 1층 정문 택배함',
-          supplier_name: '상생 농장',
-          arrival_time: '오늘 오후 4시 도착 예정'
-        });
-
-        const participantData = await groupBuyApi.getParticipants(seq);
-        setParticipants(participantData || [
-          { bizname: '강남 김치찌개', user_nickname: '김사장' },
-          { bizname: '서초 파스타', user_nickname: '이사장' },
-          { bizname: '역삼 베이커리', user_nickname: '박사장' },
-        ]);
-      } catch (error) {
-        console.error('Failed to fetch delivery info:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchData();
+    fetchGroupBuyData();
   }, [seq]);
+
+  const handleUpdateStatus = async (groupBuySeq, status) => {
+    try {
+      await groupBuyApi.updateGroupBuyStatus(groupBuySeq, status);
+      alert('상태가 변경되었습니다.');
+      fetchGroupBuyData(); // 데이터 재로딩 (낙관적 업데이트 대신 확실하게 리로드)
+    } catch (error) {
+      console.error('Failed to update status:', error);
+      alert('상태 변경에 실패했습니다.');
+    }
+  };
+
+  // 영문 상태를 한글로 변환
+  const translateStatus = (status) => {
+    if (status === 'RECRUITING') return '모집중';
+    if (status === 'RECRUITED') return '모집완료';
+    if (status === 'SHIPPING') return '배송중';
+    if (status === 'RECEIVED') return '수령';
+    if (status === 'DISTRIBUTING') return '배분중';
+    if (status === 'COMPLETED') return '완료';
+    if (status === 'CANCELED') return '취소';
+    return status;
+  };
 
   if (isLoading) return (
     <div className="min-h-screen flex items-center justify-center bg-[#F8F9FA]">
@@ -87,10 +133,21 @@ const GroupBuyDeliveryPage = () => {
               <span className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500">Pickup Status</span>
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
-                <span className="text-xs font-black text-emerald-500">{groupBuy.status}</span>
+                <span className="text-xs font-black text-emerald-500">{translateStatus(groupBuy.status)}</span>
               </div>
             </div>
-            <h2 className="text-2xl sm:text-3xl font-black mb-4 leading-tight">{groupBuy.title}</h2>
+            <div className="flex justify-between items-start gap-4">
+              <h2 className="text-2xl sm:text-3xl font-black mb-4 leading-tight">{groupBuy.title}</h2>
+              {/* 작성자(개설자)인 경우에만 상태 업데이트 버튼 표시 */}
+              {Number(groupBuy.userSeq) === Number(user_seq) && (
+                <button
+                  onClick={() => setIsStatusModalOpen(true)}
+                  className="shrink-0 bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-xl text-[11px] font-black tracking-widest transition-all flex items-center gap-2 border border-white/10 shadow-sm"
+                >
+                  배송 상태 업데이트 ⚙️
+                </button>
+              )}
+            </div>
             <div className="flex items-center gap-4 text-gray-400 text-sm font-bold">
               <span className="flex items-center gap-1.5">
                 <span className="text-base">🏢</span> {groupBuy.supplier_name}
@@ -111,15 +168,18 @@ const GroupBuyDeliveryPage = () => {
                 <div 
                   className="absolute top-7 left-10 h-1 bg-emerald-500 transition-all duration-1000 rounded-full shadow-sm"
                   style={{ 
-                    width: groupBuy.status === '배송준비' ? '0%' : 
-                           groupBuy.status === '배송중' ? '50%' : 'calc(100% - 80px)' 
+                    width: ['RECRUITING', 'RECRUITED'].includes(groupBuy.status) ? '0%' : 
+                           groupBuy.status === 'SHIPPING' ? '25%' :
+                           groupBuy.status === 'RECEIVED' ? '50%' :
+                           groupBuy.status === 'DISTRIBUTING' ? '75%' : 'calc(100% - 60px)' 
                   }}
                 ></div>
 
                 {[
-                  { label: '배송준비', icon: '📦', active: true },
-                  { label: '배송중', icon: '🚚', active: groupBuy.status === '배송중' || groupBuy.status === '배송완료' },
-                  { label: '수령', icon: '✅', active: groupBuy.status === '배송완료' },
+                  { label: '배송중', icon: '🚚', active: ['SHIPPING', 'RECEIVED', 'DISTRIBUTING', 'COMPLETED'].includes(groupBuy.status) },
+                  { label: '수령', icon: '🏢', active: ['RECEIVED', 'DISTRIBUTING', 'COMPLETED'].includes(groupBuy.status) },
+                  { label: '배분중', icon: '🛍️', active: ['DISTRIBUTING', 'COMPLETED'].includes(groupBuy.status) },
+                  { label: '완료', icon: '✅', active: groupBuy.status === 'COMPLETED' },
                 ].map((step, i) => (
                   <div key={i} className="flex flex-col items-center gap-4 relative z-10 bg-white px-2">
                     <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-2xl transition-all duration-500 ${step.active ? 'bg-emerald-500 text-white shadow-xl shadow-emerald-200 ring-4 ring-emerald-50' : 'bg-gray-50 text-gray-200 border border-gray-100'}`}>
@@ -203,6 +263,15 @@ const GroupBuyDeliveryPage = () => {
           </div>
         </div>
       </main>
+
+      {/* 상태 변경 모달 */}
+      {isStatusModalOpen && (
+        <GroupBuyStatusModal 
+          groupBuy={groupBuy} 
+          onClose={() => setIsStatusModalOpen(false)} 
+          onUpdate={handleUpdateStatus} 
+        />
+      )}
     </div>
   );
 };

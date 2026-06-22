@@ -36,6 +36,15 @@ export const groupBuyApi = {
   },
 
   /**
+   * 공동구매 상세 조회
+   * @param {number} seq - 공동구매 시퀀스 번호
+   */
+  getGroupBuyDetail: async (seq) => {
+    const response = await axiosInstance.get(`${GROUP_BUY_BASE_URL}/${seq}`);
+    return response.data;
+  },
+
+  /**
    * 공동구매 그룹 생성 (PARTNER 전용)
    * @param {Object} data - 공동구매 생성 데이터
    */

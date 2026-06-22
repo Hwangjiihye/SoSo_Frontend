@@ -9,11 +9,12 @@ const GroupBuyStatusModal = ({ groupBuy, onClose, onUpdate }) => {
 
   const statuses = [
     { value: 'RECRUITING', label: '모집중' },
-    { value: 'COMPLETED', label: '모집완료' },
-    { value: 'FAILED', label: '모집실패' },
-    { value: 'DELIVERY_PREPARING', label: '배송준비' },
-    { value: 'DELIVERING', label: '배송중' },
-    { value: 'DELIVERED', label: '배송완료' },
+    { value: 'RECRUITED', label: '모집완료' },
+    { value: 'SHIPPING', label: '배송중' },
+    { value: 'RECEIVED', label: '수령' },
+    { value: 'DISTRIBUTING', label: '배분중' },
+    { value: 'COMPLETED', label: '완료' },
+    { value: 'CANCELED', label: '취소' },
   ];
 
   return (
@@ -29,14 +30,14 @@ const GroupBuyStatusModal = ({ groupBuy, onClose, onUpdate }) => {
         </div>
         <div className="p-8 space-y-3">
           <p className="text-sm font-bold text-gray-500 mb-4 text-center">
-            <span className="text-emerald-600">"{groupBuy.title}"</span><br/>의 현재 상태를 업데이트 하세요.
+            <span className="text-emerald-600">"{groupBuy.groupName || groupBuy.title}"</span><br/>의 현재 상태를 업데이트 하세요.
           </p>
           <div className="grid grid-cols-2 gap-3">
             {statuses.map((status) => (
               <button
                 key={status.value}
                 onClick={() => {
-                  onUpdate(groupBuy.seq, status.value);
+                  onUpdate(groupBuy.groupBuySeq || groupBuy.seq, status.value);
                   onClose();
                 }}
                 className={`py-3 rounded-2xl font-black text-xs transition-all ${
