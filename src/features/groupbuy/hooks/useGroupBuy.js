@@ -70,6 +70,16 @@ export const useGroupBuy = () => {
     } finally {
       setIsLoading(false);
     }
+
+    // 상단바 통계용 참여 개수 조회 (독립적으로 실행)
+    try {
+      const countData = await groupBuyApi.getParticipatedCount();
+      setMyCount(countData.count || 0);
+    } catch (countError) {
+      console.error('Failed to fetch participated count:', countError);
+      // API 실패 시 현재 상태값(Mock 또는 기존값)에서 임시로 추론
+      setMyCount(prev => prev > 0 ? prev : groupBuys.filter(i => i.isJoined).length);
+    }
   }, [filter]);
 
   useEffect(() => {

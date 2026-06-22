@@ -152,7 +152,7 @@ const GroupBuyPage = () => {
 
               return (
                 <div 
-                  key={item.seq} 
+                  key={item.groupBuySeq} 
                   className={`group bg-white rounded-[24px] border-2 transition-all duration-500 flex flex-col lg:flex-row overflow-hidden hover:-translate-y-1 ${
                     isJoined 
                       ? 'border-emerald-500 shadow-[0_10px_30px_rgba(16,185,129,0.15)] bg-emerald-50/5' 
@@ -180,6 +180,16 @@ const GroupBuyPage = () => {
                           {isJoined && (
                             <span className="bg-emerald-500 text-white px-3 py-1 rounded-lg text-[10px] font-black animate-pulse shadow-sm shadow-emerald-200">
                               참여 중
+                            </span>
+                          )}
+                          {item.paymentStatus && (
+                            <span className="bg-indigo-50 text-indigo-600 px-3 py-1 rounded-lg text-[10px] font-black border border-indigo-100 shadow-sm">
+                              💳 {item.paymentStatus}
+                            </span>
+                          )}
+                          {item.deliveryStatus && (
+                            <span className="bg-teal-50 text-teal-600 px-3 py-1 rounded-lg text-[10px] font-black border border-teal-100 shadow-sm">
+                              📦 {item.deliveryStatus}
                             </span>
                           )}
                         </div>
@@ -240,7 +250,7 @@ const GroupBuyPage = () => {
                     <div className="grid grid-cols-1 gap-2 mt-auto">
                       {(!isPartner && displayStatus === '모집중' && !isJoined) ? (
                         <button
-                          onClick={() => navigate(`/group-buy/${item.seq}`)}
+                          onClick={() => navigate(`/group-buy/${item.groupBuySeq}`)}
                           className="w-full py-3 bg-emerald-600 text-white rounded-[14px] font-black text-sm hover:bg-emerald-700 transition-all shadow-md shadow-emerald-100 active:scale-95"
                         >
                           그룹 참여하기
@@ -249,20 +259,20 @@ const GroupBuyPage = () => {
                         <>
                           <div className="grid grid-cols-2 gap-2">
                             <button
-                              onClick={() => navigate(`/group-buy/${item.seq}`)}
+                              onClick={() => navigate(`/group-buy/${item.groupBuySeq}`)}
                               className="py-2.5 bg-emerald-50 text-emerald-600 rounded-xl font-black text-xs hover:bg-emerald-100 transition-all"
                             >
                               참여 현황
                             </button>
                             <button
-                              onClick={() => navigate(`/group-buy/${item.seq}/delivery`)}
+                              onClick={() => navigate(`/group-buy/${item.groupBuySeq}/delivery`)}
                               className="py-2.5 bg-gray-900 text-white rounded-xl font-black text-xs hover:bg-black transition-all shadow-md"
                             >
                               배송 안내
                             </button>
                           </div>
                           <button
-                            onClick={() => navigate(`/chat/${item.seq}`)}
+                            onClick={() => navigate(`/chat/${item.groupBuySeq}`)}
                             className="w-full py-2.5 bg-white border-2 border-gray-900 text-gray-900 rounded-xl font-black text-xs hover:bg-gray-50 transition-all"
                           >
                             채팅방 입장
