@@ -254,15 +254,6 @@ const GroupBuyDeliveryPage = () => {
               </div>
             </section>
 
-            {/* 하단 버튼 (채팅보기 삭제 요구사항 반영) */}
-            <div className="pt-8">
-              <button 
-                onClick={() => navigate('/group-buy')}
-                className="w-full py-6 bg-gray-900 text-white rounded-[28px] font-black text-xl hover:bg-black transition-all shadow-2xl shadow-gray-200 active:scale-95 hover:-translate-y-1"
-              >
-                내용을 확인했습니다
-              </button>
-            </div>
           </div>
         </div>
       </main>
