@@ -132,6 +132,9 @@ function BusinessMain({ setRole }) {
 
   const [dashboard, setDashboard] = useState(null);
 
+  const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+
   // 실시간 대시보드 데이터 로딩
   useEffect(() => {
     if (!selectedStoreSeq || !userSeq) return;
@@ -140,6 +143,7 @@ function BusinessMain({ setRole }) {
         setLoading(true);
         const data = await fetchBusinessDashboard(selectedStoreSeq, userSeq);
         setDashboard(data);
+        setCurrentPage(1);
       } catch (err) {
         console.error('소상공인 대시보드 데이터 로드 오류:', err);
       } finally {
@@ -261,22 +265,60 @@ function BusinessMain({ setRole }) {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <MainNotificationSession />
-          <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
-            <h3 className="font-bold mb-6 text-gray-700">공동 발주 현황</h3>
-            <div className="space-y-4">
-              {groupOrders.length === 0 ? (
-                <div className="text-center py-12 text-gray-400 text-sm">참여 가능한 공동 구매가 없습니다.</div>
-              ) : (
-                groupOrders.map(o => (
-                  <div key={o.id} className="border border-gray-100 rounded-2xl p-5 hover:border-emerald-200 hover:shadow-md transition-all">
-                    <div className="flex justify-between mb-4"><h4 className="text-sm font-bold text-gray-900">{o.title}</h4><span className={`text-[10px] font-black px-2 py-0.5 rounded-full border ${o.status === '모집 중' ? 'text-emerald-600 border-emerald-100 bg-emerald-50' : 'text-red-500 border-red-100 bg-red-50'}`}>{o.status}</span></div>
-                    <div className="w-full bg-gray-100 h-1.5 rounded-full mb-3"><div className={`${o.color} h-full rounded-full`} style={{ width: `${o.progress}%` }}></div></div>
-                    <div className="flex justify-between items-center mb-6 text-[10px] text-gray-400 font-bold uppercase tracking-tight"><span>참여 {o.currentParticipants} / {o.targetParticipants}개</span><span>{o.progress}% · {o.dDay}</span></div>
-                    <button className="w-full py-2.5 bg-emerald-50 text-emerald-600 rounded-xl text-xs font-black hover:bg-emerald-500 hover:text-white transition-all shadow-sm shadow-emerald-100/50">{o.btn}</button>
-                  </div>
-                ))
-              )}
+          <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm flex flex-col justify-between">
+            <div>
+              <h3 className="font-bold mb-6 text-gray-700">공동 발주 현황</h3>
+              <div className="space-y-4">
+                {groupOrders.length === 0 ? (
+                  <div className="text-center py-12 text-gray-400 text-sm">참여 가능한 공동 구매가 없습니다.</div>
+                ) : (
+                  (() => {
+                    const currentGroupOrders = groupOrders.slice((currentPage - 1) * 4, currentPage * 4);
+                    return currentGroupOrders.map(o => (
+                      <div key={o.id} className="border border-gray-100 rounded-2xl p-5 hover:border-emerald-200 hover:shadow-md transition-all">
+                        <div className="flex justify-between mb-4"><h4 className="text-sm font-bold text-gray-900">{o.title}</h4><span className={`text-[10px] font-black px-2 py-0.5 rounded-full border ${o.status === '모집 중' ? 'text-emerald-600 border-emerald-100 bg-emerald-50' : 'text-red-500 border-red-100 bg-red-50'}`}>{o.status}</span></div>
+                        <div className="w-full bg-gray-100 h-1.5 rounded-full mb-3"><div className={`${o.color} h-full rounded-full`} style={{ width: `${o.progress}%` }}></div></div>
+                        <div className="flex justify-between items-center mb-6 text-[10px] text-gray-400 font-bold uppercase tracking-tight"><span>참여 {o.currentParticipants} / {o.targetParticipants}개</span><span>{o.progress}% · {o.dDay}</span></div>
+                        <button className="w-full py-2.5 bg-emerald-50 text-emerald-600 rounded-xl text-xs font-black hover:bg-emerald-500 hover:text-white transition-all shadow-sm shadow-emerald-100/50">{o.btn}</button>
+                      </div>
+                    ));
+                  })()
+                )}
+              </div>
             </div>
+            
+            {/* 페이지네이션 UI */}
+            {groupOrders.length > 4 && (
+              <div className="flex justify-center items-center gap-2 mt-6 pt-4 border-t border-gray-50">
+                <button 
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                  className="w-8 h-8 rounded-lg bg-gray-50 border border-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-900 disabled:opacity-30 disabled:pointer-events-none transition-all active:scale-95"
+                >
+                  ←
+                </button>
+                {[...Array(Math.ceil(groupOrders.length / 4))].map((_, i) => (
+                  <button
+                    key={i + 1}
+                    onClick={() => setCurrentPage(i + 1)}
+                    className={`w-8 h-8 rounded-lg font-black text-xs transition-all active:scale-95 ${
+                      currentPage === i + 1 
+                        ? 'bg-emerald-500 text-white shadow-md shadow-emerald-100' 
+                        : 'bg-white text-gray-400 hover:text-gray-900 border border-gray-100'
+                    }`}
+                  >
+                    {i + 1}
+                  </button>
+                ))}
+                <button 
+                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, Math.ceil(groupOrders.length / 4)))}
+                  disabled={currentPage === Math.ceil(groupOrders.length / 4)}
+                  className="w-8 h-8 rounded-lg bg-gray-50 border border-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-900 disabled:opacity-30 disabled:pointer-events-none transition-all active:scale-95"
+                >
+                  →
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </main>

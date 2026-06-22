@@ -1,11 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import authStore from '../../../store/authStore';
+import { getNotificationSettingsApi, updateNotificationSettingsApi } from '../../../apis/memberApi';
 
 /**
  * @file useBusinessSmartNotification.js
  * @description '사업자' 전용 스마트 알림 설정을 관리하는 커스텀 훅입니다.
  */
 export const useBusinessSmartNotification = () => {
-  // 알림 설정 상태 (기본값)
+  const { selectedStoreSeq } = authStore();
   const [settings, setSettings] = useState({
     pushEnabled: true,      // 전체 푸시 알림
     orderAlert: true,       // 발주 상태 알림
@@ -17,6 +19,41 @@ export const useBusinessSmartNotification = () => {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // 백엔드 데이터 -> 로컬 훅 상태로 파싱
+  const parseSettings = useCallback((data) => {
+    const findSetting = (type) => {
+      const s = data.settings?.find(item => item.notificationType === type && item.channelType === 'WEB');
+      return s ? s.isEnabled === 'Y' : true; // 기본값은 true
+    };
+
+    const hasAnyActive = data.alertStockYn === 'Y' || data.alertOrderYn === 'Y';
+
+    return {
+      pushEnabled: hasAnyActive,
+      orderAlert: data.alertOrderYn === 'Y' && findSetting('ORDER_STATUS'),
+      stockAlert: data.alertStockYn === 'Y' && findSetting('STOCK_SHORTAGE'),
+      chatAlert: findSetting('CHAT'),
+      marketingAlert: findSetting('MARKETING'),
+      nightAlert: findSetting('NIGHT_RESTRICTION'),
+    };
+  }, []);
+
+  // 서버로부터 알림 설정 로드
+  useEffect(() => {
+    if (!selectedStoreSeq) return;
+
+    const loadSettings = async () => {
+      try {
+        const data = await getNotificationSettingsApi(selectedStoreSeq);
+        setSettings(parseSettings(data));
+      } catch (err) {
+        console.error('알림 설정을 로드하는데 실패했습니다.', err);
+      }
+    };
+
+    loadSettings();
+  }, [selectedStoreSeq, parseSettings]);
+
   // 스위치 토글 함수
   const toggleSetting = (key) => {
     setSettings(prev => ({ ...prev, [key]: !prev[key] }));
@@ -24,14 +61,36 @@ export const useBusinessSmartNotification = () => {
 
   // 설정 저장 함수
   const handleSave = async () => {
+    if (!selectedStoreSeq) {
+      alert('선택된 매장이 없습니다.');
+      return;
+    }
+
     setIsSubmitting(true);
     try {
-      // 💡 실제 운영 환경에서는 백엔드 API를 호출하여 저장합니다.
-      console.log('[Business] 알림 설정 저장 중:', settings);
-      
-      // 사용자 체감을 위해 가상 딜레이를 줍니다.
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
+      // 로컬 훅 상태 -> 백엔드 DTO 구조로 직렬화
+      const isPushEnabled = settings.pushEnabled;
+      const alertStockYn = (isPushEnabled && settings.stockAlert) ? 'Y' : 'N';
+      const alertExpiryYn = (isPushEnabled && settings.stockAlert) ? 'Y' : 'N';
+      const alertOrderYn = (isPushEnabled && settings.orderAlert) ? 'Y' : 'N';
+
+      const settingsList = [
+        { notificationType: 'STOCK_SHORTAGE', channelType: 'WEB', isEnabled: alertStockYn },
+        { notificationType: 'EXPIRY_IMMINENT', channelType: 'WEB', isEnabled: alertExpiryYn },
+        { notificationType: 'ORDER_STATUS', channelType: 'WEB', isEnabled: alertOrderYn },
+        { notificationType: 'CHAT', channelType: 'WEB', isEnabled: (isPushEnabled && settings.chatAlert) ? 'Y' : 'N' },
+        { notificationType: 'MARKETING', channelType: 'WEB', isEnabled: (isPushEnabled && settings.marketingAlert) ? 'Y' : 'N' },
+        { notificationType: 'NIGHT_RESTRICTION', channelType: 'WEB', isEnabled: (isPushEnabled && settings.nightAlert) ? 'Y' : 'N' },
+      ];
+
+      const requestBody = {
+        alertStockYn,
+        alertExpiryYn,
+        alertOrderYn,
+        settings: settingsList
+      };
+
+      await updateNotificationSettingsApi(selectedStoreSeq, requestBody);
       alert('스마트 알림 설정이 안전하게 저장되었습니다.');
     } catch (err) {
       console.error('알림 설정 저장 실패:', err);

@@ -38,6 +38,16 @@ CREATE TABLE `accounts` (
 ) ENGINE=InnoDB AUTO_INCREMENT=30 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
+CREATE TABLE `user_notification_settings` (
+      `setting_seq` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '설정 고유 번호',
+      `store_seq` bigint(20) NOT NULL COMMENT '연관 매장 번호 (stores.store_seq FK)',
+      `notification_type` varchar(50) NOT NULL COMMENT '알림 대분류 (예: STOCK_SHORTAGE, EXPIRY_IMMINENT, ORDER_STATUS)',
+      `channel_type` varchar(20) NOT NULL COMMENT '수신 채널 (예: WEB, SMS, EMAIL)',
+      `is_enabled` char(1) DEFAULT 'Y' COMMENT '활성화 여부 (Y/N)',
+      `updated_at` timestamp DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+      PRIMARY KEY (`setting_seq`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 --
 -- Table structure for table `auto_payment_schedule`
 --
@@ -672,6 +682,9 @@ CREATE TABLE `users` (
   `user_type` enum('BUSINESS','PARTNER','ADMIN') NOT NULL COMMENT '회원 구분 (소상공인, 거래처, 관리자)',
   `status` enum('ACTIVE','WITHDRAWN') NOT NULL DEFAULT 'ACTIVE' COMMENT '회원 상태 (활동중, 탈퇴)',
   `withdraw_reason` varchar(255) DEFAULT NULL COMMENT '탈퇴 사유',
+  `alert_stock_yn` char(1) enum('Y','N') not null,
+  `alert_expiry_yn` char(1) enum('Y','N') not null,
+  `alert_order_yn` char(1) enum('Y','N') not null,
   `created_at` timestamp NULL DEFAULT current_timestamp() COMMENT '계정 생성 일시',
   PRIMARY KEY (`user_seq`),
   UNIQUE KEY `user_id` (`user_id`)
