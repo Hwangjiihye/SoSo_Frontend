@@ -1,5 +1,5 @@
-import { useState, useCallback, useEffect } from 'react';
-import { check, items as getSupplierItems, identityCheck, orderForm   } from '../../../apis/orderApi';
+import { useState, useEffect } from 'react';
+import { items as getSupplierItems, identityCheck, orderForm, suppliers as getSupplierList } from '../../../apis/orderApi';
 import { useNavigate } from 'react-router-dom';
 
 /**
@@ -7,15 +7,13 @@ import { useNavigate } from 'react-router-dom';
  * @description 발주 신청 페이지의 비즈니스 로직을 담당하는 커스텀 훅입니다.
  */
 export const useOrderApply = () => {
-  useEffect(() => {
-    supplierItemsCheck();
-  }, []);
 
   // 기본 정보 상태
   const [orderInfo, setOrderInfo] = useState({
     orderDate: new Date().toISOString().split('T')[0],
     supplier: '',
-    manager: '', 
+    manager: '',
+    companyName: '',
     deliveryDate: '',
     paymentMethod: '',
     zonecode: '',
@@ -23,70 +21,181 @@ export const useOrderApply = () => {
     address2: '',
     totalAmount: '',
     orderMemo: '',
-    deliveryAddress: ''
+    deliveryAddress: '',
+    deliveryNotes: ''
   });
 
   const navi = useNavigate();
 
-  // 페이지 렌더링 시작할 때, 사업자 정보 불러오기
-  useEffect(() => {
-    const fetchIdentity = async () => {
-    try {
-      const data = await identityCheck();
+// 페이지 렌더링 시작할 때, 사업자 정보 불러오기
+const identityInfoCheck = async () => {
+  try {
+    const storeSeq = Number(localStorage.getItem('storeSeq'));
 
-      const fullAddress = `(${data.zoneCode}) ${data.address1} ${data.address2 || ''}`;
-
-      setOrderInfo(prev => ({
-        ...prev,
-        manager: data.companyName,
-        zonecode: data.zoneCode,
-        address1: data.address1,
-        address2: data.address2,
-        deliveryAddress: fullAddress,
-      }));
-    } catch (error) {
-      console.error('사업자명/주소 조회 실패:', error);
+    if (!storeSeq) {
+      console.log('storeSeq 없음');
+      return;
     }
-  };
 
-  fetchIdentity();
-  }, [])
+    const data = await identityCheck(storeSeq);
+
+    console.log('사업자 정보 조회 결과:', data);
+
+    const companyName =
+      data.companyName ||
+      data.company_name ||
+      data.storeName ||
+      data.store_name ||
+      '';
+
+    const zoneCode =
+      data.zoneCode ||
+      data.zonecode ||
+      data.zone_code ||
+      '';
+
+    const address1 = data.address1 || '';
+    const address2 = data.address2 || '';
+
+    const fullAddress =
+      zoneCode || address1
+        ? `(${zoneCode}) ${address1} ${address2}`
+        : '';
+
+    setOrderInfo(prev => ({
+      ...prev,
+      companyName,
+      manager: companyName,
+      zonecode: zoneCode,
+      address1,
+      address2,
+      deliveryAddress: fullAddress,
+    }));
+  } catch (error) {
+    console.error('사업자명/주소 조회 실패:', error);
+  }
+};
+
+  // 페이지 렌더링 시작할 때, 사업자 정보 불러오기
 
   // 발주 품목 목록 상태
   const [items, setItems] = useState([
-    { id: 1, itemSeq: '', itemName: '', categoryName: '', unitPrice: '', quantity: 0, totalPrice: 0, supplyValue: 0, tax: 0, spec: '', totalSummary: 0}
-  ]);
+  {
+    id: 1,
+    itemSeq: '',
+    itemName: '',
+    categorySeq: '',
+    categoryName: '',
+    unitPrice: 0,
+    quantity: 0,
+    totalPrice: 0,
+    supplyValue: 0,
+    tax: 0,
+    total: 0,
+    spec: ''
+  }
+]);
 
   // 공급업체별 물품 목록
   const [supplierItems, setSupplierItems] = useState([]);
 
   const supplierItemsCheck = async () => {
-    try {
-      const data = await getSupplierItems();
+  try {
+    const data = await getSupplierItems('');
 
-       console.log('거래처 품목 목록:', data);
-       console.log('배열이야?', Array.isArray(data));
-       console.log('첫 번째 데이터:', data[0]);
+    const list = Array.isArray(data)
+      ? data
+      : data.results || data.list || data.data || [];
 
-      setSupplierItems(data);
-    } catch (error) {
-      console.error('거래처 품목 목록 조회 실패:', error);
-      alert('거래처 품목 목록 조회에 실패했습니다.');
-      setSupplierItems([]);
+    console.log('거래처 품목 목록:', list);
+    console.log('첫 번째 데이터:', list[0]);
+
+    setSupplierItems(list);
+  } catch (error) {
+    console.error('거래처 품목 목록 조회 실패:', error);
+    alert('거래처 품목 목록 조회에 실패했습니다.');
+    setSupplierItems([]);
   }
 };
 
-  // 중복제거 : 품목이 5개여도 공급업체가 같으면 option하나만 나오게함
-  const suppliers = supplierItems.filter(
-    (item, index, self) =>
-      index === self.findIndex((s) => s.userSeq === item.userSeq)
-  );
-  // const supplierNames = [...new Set(supplierItems.map((item) => item.partnerName))];
+const [supplierList, setSupplierList] = useState([]);
+
+const supplierListCheck = async () => {
+  try {
+    const storeSeq = Number(localStorage.getItem('storeSeq'));
+
+    if (!storeSeq) {
+      console.log('storeSeq 없음');
+      return;
+    }
+
+    const data = await getSupplierList(storeSeq);
+
+    console.log('공급업체 목록 조회 원본:', data);
+
+    const rawList = Array.isArray(data)
+      ? data
+      : data.results || data.list || data.data || [];
+
+    const list = rawList.map((supplier) => ({
+      relationSeq: supplier.relationSeq ?? supplier.relation_seq,
+      storeSeq:
+        supplier.partnerSeq ??
+        supplier.partner_seq ??
+        supplier.storeSeq ??
+        supplier.store_seq,
+      userSeq: supplier.userSeq ?? supplier.user_seq,
+      companyName:
+        supplier.companyName ??
+        supplier.company_name ??
+        supplier.partnerName ??
+        supplier.partner_name ??
+        supplier.partnerCompanyName ??
+        supplier.partner_company_name,
+      ceoName: supplier.ceoName ?? supplier.ceo_name,
+      bizNumber: supplier.bizNumber ?? supplier.biz_number,
+      memo: supplier.memo ?? '',
+      address1: supplier.address1 ?? '',
+      address2: supplier.address2 ?? '',
+      zonecode: supplier.zonecode ?? supplier.zoneCode ?? '',
+    }));
+
+    console.log('공급업체 목록 정리 후:', list);
+
+    setSupplierList(list);
+  } catch (error) {
+    console.error('공급업체 목록 조회 실패:', error);
+    setSupplierList([]);
+  }
+};
+
+useEffect(() => {
+  identityInfoCheck();
+  supplierItemsCheck();
+  supplierListCheck();
+}, []);
+
+
 
   // 공급업체 선택값 기준으로 필터링
-  const filteredSupplierItems = orderInfo.supplier
-    ? supplierItems.filter((item) => String(item.userSeq) === String(orderInfo.supplier))
-    : supplierItems;
+  const selectedSupplier = supplierList.find((supplier) =>
+  String(supplier.storeSeq) === String(orderInfo.supplier)
+);
+
+const filteredSupplierItems = orderInfo.supplier
+  ? supplierItems.filter((item) =>
+      String(
+        item.storeSeq ??
+        item.store_seq ??
+        item.partnerSeq ??
+        item.partner_seq
+      ) === String(orderInfo.supplier)
+    )
+  : [];
+
+  console.log('선택한 공급업체 값:', orderInfo.supplier);
+console.log('전체 거래처 품목:', supplierItems);
+console.log('필터된 거래처 품목:', filteredSupplierItems);
 
   // 물품 선택 시 발주 목록에 추가
   const addSelectedItem = (selectedItem) => {
@@ -127,13 +236,14 @@ export const useOrderApply = () => {
         const updatedItem = { ...item, [field]: value };
         
         // 수량이나 단가가 변경될 경우 자동 계산 (음수 방지)
-        if (field === 'quantity' || field === 'price') {
+        if (field === 'quantity' || field === 'unitPrice') {
           const rawValue = Number(value);
-          const validatedValue = Math.max(0, rawValue); // 음수 방지
+          const validatedValue = Math.max(0, rawValue);
           updatedItem[field] = validatedValue;
-          
-          const qty = field === 'quantity' ? validatedValue : item.quantity;
-          const prc = field === 'price' ? validatedValue : item.unitPrice;
+
+          const qty = field === 'quantity' ? validatedValue : Number(item.quantity || 0);
+          const prc = field === 'unitPrice' ? validatedValue : Number(item.unitPrice || 0);
+
           updatedItem.supplyValue = qty * prc;
           updatedItem.tax = Math.floor(updatedItem.supplyValue * 0.1);
           updatedItem.total = updatedItem.supplyValue + updatedItem.tax;
@@ -146,9 +256,25 @@ export const useOrderApply = () => {
 
   // 품목 추가
   const addItem = () => {
-    const newId = items.length > 0 ? Math.max(...items.map(i => i.id)) + 1 : 1;
-    setItems([...items, { id: newId, name: '', category: '', unit: '', quantity: 0, price: 0, supplyValue: 0, tax: 0, total: 0 }]);
-  };
+  const newId = items.length > 0 ? Math.max(...items.map(i => i.id)) + 1 : 1;
+
+  setItems([
+    ...items,
+    {
+      id: newId,
+      itemSeq: '',
+      itemName: '',
+      categorySeq: '',
+      categoryName: '',
+      spec: '',
+      quantity: 0,
+      unitPrice: 0,
+      supplyValue: 0,
+      tax: 0,
+      total: 0
+    }
+  ]);
+};
 
   // 품목 삭제
   const removeItem = (id) => {
@@ -162,10 +288,10 @@ export const useOrderApply = () => {
 
   // 총 합계 계산
   const totalSummary = items.reduce((acc, item) => ({
-    supplyValue: acc.supplyValue + item.supplyValue,
-    tax: acc.tax + item.tax,
-    total: acc.total + item.total,
-  }), { supplyValue: 0, tax: 0, total: 0 });
+  supplyValue: acc.supplyValue + Number(item.supplyValue || 0),
+  tax: acc.tax + Number(item.tax || 0),
+  total: acc.total + Number(item.total || 0),
+}), { supplyValue: 0, tax: 0, total: 0 });
 
 
   // 발주 신청 제출
@@ -181,39 +307,39 @@ export const useOrderApply = () => {
       return;
     }
 
-
     console.log("orderInfo:", orderInfo);
-console.log("zonecode:", orderInfo.zonecode);
+    console.log("zonecode:", orderInfo.zonecode);
+
+    if (orderInfo.paymentMethod !== '카드결제') {
+      alert('결제 방식을 선택해주세요.');
+      return;
+}
 
       const orderData = {
-        sellerSeq : Number(orderInfo.supplier),
-        totalAmount : totalSummary.total,
+        buyerSeq: Number(localStorage.getItem('storeSeq')),
+        sellerSeq: Number(orderInfo.supplier),
+        totalAmount: totalSummary.total,
         orderMemo: orderInfo.deliveryNotes,
-        zonecode : orderInfo.zonecode,
-        address1 : orderInfo.address1,
-        address2 : orderInfo.address2,
-      
+        zonecode: orderInfo.zonecode,
+        address1: orderInfo.address1,
+        address2: orderInfo.address2,
 
-      items: items.map((item) => ({
-        itemSeq : item.itemSeq,
-        itemName : item.itemName,
-        categoryName : item.categoryName,
-        quantity: item.quantity,
-        spec : item.spec,
-        unitPrice: item.unitPrice,
-        totalPrice: Number(item.unitPrice || 0) * Number(item.quantity || 0)
-      })),
-    };
+        items: items.map((item) => ({
+          itemSeq: item.itemSeq,
+          itemName: item.itemName,
+          categoryName: item.categoryName,
+          quantity: item.quantity,
+          spec: item.spec,
+          unitPrice: item.unitPrice,
+          totalPrice: Number(item.unitPrice || 0) * Number(item.quantity || 0)
+        })),
+      };
 
     console.log('최종 발주 데이터:', JSON.stringify(orderData, null, 2));
 
     // API 호출
     const result = await orderForm(orderData);
 
-    if (orderInfo.paymentMethod !== '계좌이체') {
-      alert('결제 방식을 선택해주세요.');
-      return;
-    }
   
     console.log('발주 신청 결과:', result);
     console.log('발주 신청 데이터:', orderData);
@@ -234,7 +360,7 @@ console.log("zonecode:", orderInfo.zonecode);
     items,
     totalSummary,
     supplierItems,
-    suppliers,
+    suppliers: supplierList,
     filteredSupplierItems,
     handleInfoChange,
     handleItemChange,

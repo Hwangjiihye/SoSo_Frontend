@@ -1,3 +1,4 @@
+import axiosInstance from './axiosConfig';
 // import axiosInstance from './axiosConfig.js';
 
 // /**
@@ -48,9 +49,6 @@
 //   const response = await axiosInstance.post('/auth/find-password/reset', data);
 //   return response.data;
 // };
-
-
-import axiosInstance from './axiosConfig.js';
 
 /**
  * 로그인 요청 API
