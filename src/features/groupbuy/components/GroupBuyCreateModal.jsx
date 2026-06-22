@@ -54,6 +54,16 @@ const GroupBuyCreateModal = ({ onClose, onSubmit, isPartner }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     
+    // 마감 기한 과거 체크
+    const selectedDate = new Date(formData.endDate);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // 오늘 자정으로 초기화
+
+    if (selectedDate < today) {
+      alert("마감 기한은 이미 지났습니다. 오늘 혹은 미래 날짜로 설정해주세요.");
+      return; // 통신 차단
+    }
+
     // 주소 정보 조합: (우편번호) 기본주소 상세주소
     const combinedPickupLocation = `(${formData.pickupZipCode}) ${formData.pickupAddress} ${formData.pickupDetailAddress}`.trim();
 
@@ -213,6 +223,7 @@ const GroupBuyCreateModal = ({ onClose, onSubmit, isPartner }) => {
                   required
                   type="date"
                   name="endDate"
+                  min={new Date().toISOString().split('T')[0]} // 오늘 날짜 이전 선택 방지
                   value={formData.endDate.split('T')[0]} // 화면 표시용
                   onChange={handleChange}
                   className="w-full bg-gray-50 border-2 border-gray-50 rounded-2xl px-6 py-4 text-sm focus:border-emerald-500 focus:bg-white outline-none font-black transition-all"

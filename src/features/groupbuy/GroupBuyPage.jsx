@@ -40,6 +40,24 @@ const GroupBuyPage = () => {
     '모집실패': 'bg-red-50 text-red-600 border-red-100',
   };
 
+  // 영문 상태를 한글로 변환
+  const translateStatus = (status) => {
+    if (status === 'RECRUITING' || status === '모집중') return '모집중';
+    if (status === 'COMPLETED' || status === '모집완료') return '모집완료';
+    if (status === 'DELIVERY_PREPARING') return '배송준비';
+    if (status === 'DELIVERING') return '배송중';
+    if (status === 'DELIVERED') return '배송완료';
+    if (status === 'FAILED') return '모집실패';
+    return status;
+  };
+
+  // 날짜 포맷 (yyyy-mm-dd 또는 yyyy:mm:dd)
+  const formatEndDate = (dateStr) => {
+    if (!dateStr) return '';
+    // 만약 yyyy:mm:dd 형태로 콜론을 원하신다면 아래 '-'를 ':'로 변경
+    return dateStr.split('T')[0].replace(/-/g, '-');
+  };
+
   return (
     <div className="min-h-screen bg-[#F8F9FA] pb-24 font-sans">
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
@@ -47,7 +65,7 @@ const GroupBuyPage = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
           <div className="bg-white p-8 rounded-[32px] shadow-sm border border-gray-100">
             <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">진행 중인 그룹</p>
-            <h3 className="text-3xl font-black text-gray-900">{groupBuys.filter(i => i.status === '모집중').length}건</h3>
+            <h3 className="text-3xl font-black text-gray-900">{groupBuys.filter(i => translateStatus(i.status) === '모집중').length}건</h3>
           </div>
           <div className="bg-white p-8 rounded-[32px] shadow-sm border border-gray-100">
             <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">나의 참여 그룹</p>
@@ -55,7 +73,7 @@ const GroupBuyPage = () => {
           </div>
           <div className="bg-white p-8 rounded-[32px] shadow-sm border border-gray-100">
             <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">배송완료</p>
-            <h3 className="text-3xl font-black text-blue-600">{groupBuys.filter(i => i.status === '배송완료').length}건</h3>
+            <h3 className="text-3xl font-black text-blue-600">{groupBuys.filter(i => translateStatus(i.status) === '배송완료').length}건</h3>
           </div>
         </div>
 
@@ -130,6 +148,7 @@ const GroupBuyPage = () => {
             {displayGroupBuys.map((item) => {
               const progress = Math.min(Math.round((item.currentParticipants / item.targetParticipants) * 100), 100);
               const isJoined = item.isJoined;
+              const displayStatus = translateStatus(item.status);
 
               return (
                 <div 
@@ -145,8 +164,8 @@ const GroupBuyPage = () => {
                     <div>
                       <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
                         <div className="flex flex-wrap gap-2">
-                          <span className={`px-3 py-1 rounded-lg text-[10px] font-black border tracking-wider transition-colors ${statusColors[item.status]}`}>
-                            {item.status}
+                          <span className={`px-3 py-1 rounded-lg text-[10px] font-black border tracking-wider transition-colors ${statusColors[displayStatus] || 'bg-gray-100 text-gray-600'}`}>
+                            {displayStatus}
                           </span>
                           {/* 사업자 / 거래처 제안 구분 뱃지 */}
                           {item.creatorType === 'BUSINESS' ? (
@@ -183,7 +202,7 @@ const GroupBuyPage = () => {
                       <div className="flex flex-col sm:flex-row gap-2 mb-4 text-xs font-bold text-gray-500">
                         <div className="flex items-center gap-1.5 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-100">
                           <span className="text-sm">⏰</span>
-                          <span>마감: <span className="text-gray-900">{item.endDate}</span></span>
+                          <span>마감: <span className="text-gray-900">{formatEndDate(item.endDate)}</span></span>
                         </div>
                         <div className="flex items-center gap-1.5 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-100 flex-1">
                           <span className="text-sm">📍</span>
@@ -219,7 +238,7 @@ const GroupBuyPage = () => {
                     )}
 
                     <div className="grid grid-cols-1 gap-2 mt-auto">
-                      {(!isPartner && item.status === '모집중' && !isJoined) ? (
+                      {(!isPartner && displayStatus === '모집중' && !isJoined) ? (
                         <button
                           onClick={() => navigate(`/group-buy/${item.seq}`)}
                           className="w-full py-3 bg-emerald-600 text-white rounded-[14px] font-black text-sm hover:bg-emerald-700 transition-all shadow-md shadow-emerald-100 active:scale-95"
