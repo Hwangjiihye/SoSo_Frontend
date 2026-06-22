@@ -19,7 +19,7 @@ const GroupBuyCreateModal = ({ onClose, onSubmit, isPartner }) => {
     category: '',           // 카테고리
     quantity: 1,            // 수량
     unitPrice: 0,           // 단가
-    targetParticipants: 1,  // 모집인원
+    targetParticipants: 2,  // 모집인원 (최소 2명)
     currentParticipants:1,
     endDate: '',            // 마감기한
     pickupZipCode: '',      // 픽업 우편번호
@@ -54,6 +54,12 @@ const GroupBuyCreateModal = ({ onClose, onSubmit, isPartner }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    
+    // 모집인원 2명 이상 검증 로직
+    if (formData.targetParticipants < 2) {
+      alert("모집 인원은 최소 2명 이상으로 설정해야 합니다.");
+      return; // 통신 차단
+    }
     
     // 마감 기한 과거 체크
     const selectedDate = new Date(formData.endDate);
@@ -214,7 +220,7 @@ const GroupBuyCreateModal = ({ onClose, onSubmit, isPartner }) => {
                   name="targetParticipants"
                   value={formData.targetParticipants}
                   onChange={handleChange}
-                  min="1"
+                  min="2"
                   className="w-full bg-gray-50 border-2 border-gray-50 rounded-2xl px-6 py-4 text-sm focus:border-emerald-500 focus:bg-white outline-none font-black transition-all"
                 />
               </div>
