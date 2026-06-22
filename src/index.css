@@ -48,4 +48,20 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
+
+  /* 실시간 알림용 커스텀 스크롤바 */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: #f8fafc;
+    border-radius: 10px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #10b981;
+    border-radius: 10px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #059669;
+  }
 }

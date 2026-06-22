@@ -7,11 +7,29 @@ import { useNavigate } from 'react-router-dom';
 import logo from "../../assets/soso로고.png";
 import authStore from "../../store/authStore";
 import { useBusinessAttendance } from './hooks/useBusinessAttendance';
+import EmployeeRegisterModal from './components/EmployeeRegisterModal';
+import AttendanceHistoryModal from './components/AttendanceHistoryModal';
 
 const AttendanceSection = () => {
-  const { staffList, isLoading, handleStatusChange } = useBusinessAttendance();
+  const { 
+    staffList, 
+    isLoading, 
+    handleRegisterStaff, 
+    handleCheckIn, 
+    handleCheckOut 
+  } = useBusinessAttendance();
+
+  const [isRegisterOpen, setIsRegisterOpen] = useState(false);
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [selectedStaff, setSelectedStaff] = useState(null);
 
   if (isLoading) return <div className="p-12 text-center text-gray-400">근태 정보를 불러오는 중입니다...</div>;
+
+  const todayStr = new Date().toLocaleDateString('ko-KR', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  });
 
   return (
     <div className="bg-white border border-emerald-100 rounded-lg p-8 shadow-sm">
@@ -19,7 +37,7 @@ const AttendanceSection = () => {
         <h2 className="text-xl font-bold text-gray-900">직원 근태 관리</h2>
         <div className="flex gap-2">
           <span className="px-3 py-1 bg-emerald-50 text-emerald-600 text-xs font-bold rounded-full">실시간 현황</span>
-          <span className="px-3 py-1 bg-gray-50 text-gray-500 text-xs font-bold rounded-full">2026.06.08</span>
+          <span className="px-3 py-1 bg-gray-50 text-gray-500 text-xs font-bold rounded-full">{todayStr}</span>
         </div>
       </div>
       <p className="text-sm text-gray-500 mb-8 border-b border-gray-100 pb-4">매장 직원들의 출퇴근 기록 및 근무 상태를 관리합니다.</p>
@@ -27,16 +45,16 @@ const AttendanceSection = () => {
       {/* 대시보드 요약 */}
       <div className="grid grid-cols-3 gap-4 mb-8">
         <div className="bg-emerald-50 p-4 rounded-2xl border border-emerald-100">
-          <p className="text-xs text-emerald-600 font-bold mb-1">전체 직원</p>
+          <p className="text-xs text-emerald-600 font-bold mb-1">등록 직원</p>
           <p className="text-2xl font-black text-emerald-700">{staffList.length}명</p>
         </div>
         <div className="bg-blue-50 p-4 rounded-2xl border border-blue-100">
           <p className="text-xs text-blue-600 font-bold mb-1">현재 출근</p>
-          <p className="text-2xl font-black text-blue-700">{staffList.filter(s => s.status === '출근').length}명</p>
+          <p className="text-2xl font-black text-blue-700">{staffList.filter(s => s.status === 'WORK').length}명</p>
         </div>
         <div className="bg-orange-50 p-4 rounded-2xl border border-orange-100">
-          <p className="text-xs text-orange-600 font-bold mb-1">금일 결근</p>
-          <p className="text-2xl font-black text-orange-700">{staffList.filter(s => s.status === '결근').length}명</p>
+          <p className="text-xs text-orange-600 font-bold mb-1">현재 퇴근</p>
+          <p className="text-2xl font-black text-orange-700">{staffList.filter(s => s.status === 'LEAVE').length}명</p>
         </div>
       </div>
 
@@ -46,46 +64,91 @@ const AttendanceSection = () => {
           <thead>
             <tr className="bg-gray-50 text-gray-500 font-bold text-xs uppercase tracking-wider">
               <th className="px-4 py-3 text-left rounded-l-xl">직원명</th>
-              <th className="px-4 py-3 text-left">직책</th>
-              <th className="px-4 py-3 text-left">상태</th>
-              <th className="px-4 py-3 text-left">출근 시간</th>
-              <th className="px-4 py-3 text-left">퇴근 시간</th>
-              <th className="px-4 py-3 text-left">근무 시간</th>
-              <th className="px-4 py-3 text-center rounded-r-xl">관리</th>
+              <th className="px-4 py-3 text-left">연락처</th>
+              <th className="px-4 py-3 text-left">근무 상태</th>
+              <th className="px-4 py-3 text-left">지정 출근</th>
+              <th className="px-4 py-3 text-left">지정 퇴근</th>
+              <th className="px-4 py-3 text-center">출퇴근 처리</th>
+              <th className="px-4 py-3 text-center rounded-r-xl">근태 이력</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
-            {staffList.map((staff) => (
-              <tr key={staff.id} className="hover:bg-gray-50/50 transition-colors">
-                <td className="px-4 py-4 font-bold text-gray-700">{staff.name}</td>
-                <td className="px-4 py-4 text-gray-500">{staff.position}</td>
-                <td className="px-4 py-4">
-                  <span className={`px-2 py-1 rounded-full text-[10px] font-black ${
-                    staff.status === '출근' ? 'bg-emerald-100 text-emerald-600' :
-                    staff.status === '퇴근' ? 'bg-gray-100 text-gray-400' :
-                    'bg-red-100 text-red-500'
-                  }`}>
-                    {staff.status}
-                  </span>
-                </td>
-                <td className="px-4 py-4 text-gray-500">{staff.checkInTime}</td>
-                <td className="px-4 py-4 text-gray-500">{staff.checkOutTime}</td>
-                <td className="px-4 py-4 text-gray-500">{staff.workHours}</td>
-                <td className="px-4 py-4 text-center">
-                  <button className="text-[10px] font-bold text-emerald-600 hover:underline">기록보기</button>
-                </td>
+            {staffList.length === 0 ? (
+              <tr>
+                <td colSpan="7" className="px-4 py-12 text-center text-gray-400 text-sm">등록된 매장 직원이 없습니다.</td>
               </tr>
-            ))}
+            ) : (
+              staffList.map((staff) => (
+                <tr key={staff.employeeSeq} className="hover:bg-gray-50/50 transition-colors">
+                  <td className="px-4 py-4 font-bold text-gray-700">{staff.empName}</td>
+                  <td className="px-4 py-4 text-gray-500 font-mono">{staff.phone || '-'}</td>
+                  <td className="px-4 py-4">
+                    <span className={`px-2 py-1 rounded-full text-[10px] font-black ${
+                      staff.status === 'WORK' ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-400'
+                    }`}>
+                      {staff.status === 'WORK' ? '근무 중' : '퇴근'}
+                    </span>
+                  </td>
+                  <td className="px-4 py-4 text-gray-500 font-mono">{staff.workStartTime ? staff.workStartTime.slice(0, 5) : '-'}</td>
+                  <td className="px-4 py-4 text-gray-500 font-mono">{staff.workEndTime ? staff.workEndTime.slice(0, 5) : '-'}</td>
+                  <td className="px-4 py-4 text-center">
+                    {staff.status === 'WORK' ? (
+                      <button 
+                        onClick={() => handleCheckOut(staff.employeeSeq)}
+                        className="px-3 py-1 bg-red-50 text-red-500 hover:bg-red-500 hover:text-white rounded-lg text-[10px] font-bold border border-red-200 cursor-pointer transition-colors"
+                      >
+                        퇴근 시키기
+                      </button>
+                    ) : (
+                      <button 
+                        onClick={() => handleCheckIn(staff.employeeSeq)}
+                        className="px-3 py-1 bg-emerald-50 text-emerald-600 hover:bg-emerald-500 hover:text-white rounded-lg text-[10px] font-bold border border-emerald-200 cursor-pointer transition-colors"
+                      >
+                        출근 시키기
+                      </button>
+                    )}
+                  </td>
+                  <td className="px-4 py-4 text-center">
+                    <button 
+                      onClick={() => {
+                        setSelectedStaff(staff);
+                        setIsHistoryOpen(true);
+                      }}
+                      className="text-[10px] font-bold text-emerald-600 hover:underline cursor-pointer"
+                    >
+                      기록보기
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
 
       <div className="mt-8 pt-6 border-t border-gray-50 flex justify-between items-center">
-        <p className="text-[11px] text-gray-400">* 직원들의 QR코드 스캔 또는 수동 입력을 통해 근태가 기록됩니다.</p>
-        <button className="px-6 py-2 bg-emerald-500 text-white rounded-xl text-xs font-bold hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-100">
+        <p className="text-[11px] text-gray-400">* 매장 PC/태블릿을 통해 수동으로 직원의 출퇴근 근태를 기록하고 조회합니다.</p>
+        <button 
+          onClick={() => setIsRegisterOpen(true)}
+          className="px-6 py-2 bg-emerald-500 text-white rounded-xl text-xs font-bold hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-100 cursor-pointer"
+        >
           + 신규 직원 등록
         </button>
       </div>
+
+      {/* 등록 모달 */}
+      <EmployeeRegisterModal 
+        isOpen={isRegisterOpen} 
+        onClose={() => setIsRegisterOpen(false)} 
+        onRegister={handleRegisterStaff} 
+      />
+
+      {/* 근태 이력 팝업 */}
+      <AttendanceHistoryModal 
+        isOpen={isHistoryOpen} 
+        onClose={() => setIsHistoryOpen(false)} 
+        employee={selectedStaff} 
+      />
     </div>
   );
 };

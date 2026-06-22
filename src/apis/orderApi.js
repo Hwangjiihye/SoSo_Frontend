@@ -79,3 +79,14 @@ export const updatePartnerOrderStatus = async (orderSeq, status) => {
     });
     return resp.data;
 }
+
+/**
+ * [거래처 전용] 대시보드 지표 및 그래프 정보 조회 (실제 DB 기반)
+ */
+export const fetchPartnerDashboard = async (sellerSeq) => {
+    const resp = await maxios.get('/api/partner/orders/dashboard', {
+        params: { sellerSeq }
+    });
+    return resp.data;
+}
+
