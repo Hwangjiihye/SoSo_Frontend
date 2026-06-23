@@ -102,9 +102,9 @@ function MainHeader({ activeMenu = '홈' }) {
               <Link to="/orders" className="block w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl mb-1">
                 일반 발주 현황
               </Link>
-              <Link to="/group-orders" className="block w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl mb-1">
+              {/* <Link to="/group-orders" className="block w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl mb-1">
                 공동 발주 현황
-              </Link>
+              </Link> */}
               {user_type !== 'PARTNER' && user_type !== 'Partner' && (
                 <Link to="/orders/new" className="block w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl">
                   발주 신청
@@ -200,7 +200,7 @@ function MainHeader({ activeMenu = '홈' }) {
           </div>
         </div>
 
-        {['공동발주', '커뮤니티'].map(m => (
+        {['공동발주'].map(m => (
           <Link 
             key={m} 
             to={m === '커뮤니티' ? "/community" : (m === '공동발주' ? '/group-buy' : "#")} 
@@ -259,10 +259,10 @@ function MainHeader({ activeMenu = '홈' }) {
           </div>
         ) : (
           <>
-            <button className="text-gray-400 hover:text-emerald-600 relative">
+            {/* <button className="text-gray-400 hover:text-emerald-600 relative">
               <span className="text-xl">🔔</span>
               <span className="absolute -top-1 -right-1 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"></span>
-            </button>
+            </button> */}
 
             <div className="relative">
               <div
