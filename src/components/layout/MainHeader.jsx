@@ -47,8 +47,11 @@ function MainHeader({ activeMenu = '홈' }) {
     if (user_type === 'BUSINESS') {
       navigate('/business-mypage');
       setIsProfileOpen(false);
+    } else if (user_type === 'PARTNER' || user_type === 'Partner') {
+      navigate('/partner-info');
+      setIsProfileOpen(false);
     } else {
-      alert("사업자 전용 마이페이지입니다.");
+      alert("로그인이 필요합니다.");
     }
   };
 
