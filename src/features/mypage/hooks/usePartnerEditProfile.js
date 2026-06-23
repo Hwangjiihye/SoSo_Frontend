@@ -72,7 +72,7 @@ export const usePartnerEditProfile = () => {
           email: result.email,
           bizNumber: result.bizNumber,
           companyName: result.companyName,
-          representativeName: result.repName,
+          representativeName: result.repName || result.ceoName,
           openingDate: result.openingDate,
           zonecode: result.zonecode,
           address1: result.address1,

@@ -10,9 +10,7 @@ import authStore from "../../store/authStore";
 import { usePartnerInfo } from './hooks/usePartnerInfo';
 
 // '업체 정보 확인' 탭에 대한 상세 콘텐츠
-const UserProfileTab = () => {
-  const { profile, isLoading, error, formattedDate, formattedOpeningDate, fullAddress, storeImg1, storeImg2 } = usePartnerInfo();
-
+const UserProfileTab = ({ profile, isLoading, error, formattedDate, formattedOpeningDate, fullAddress, storeImg1, storeImg2 }) => {
   if (isLoading) return <div className="p-8 text-center text-gray-500">정보를 불러오는 중입니다...</div>;
   if (error) return <div className="p-8 text-center text-red-500">정보를 불러오는데 실패했습니다.</div>;
 
@@ -26,7 +24,7 @@ const UserProfileTab = () => {
     email: profile?.email || '정보 없음',
     bizNumber: profile?.bizNumber?.replace(/(\d{3})(\d{2})(\d{5})/, '$1-$2-$3') || '정보 없음',
     bizName: profile?.companyName || '정보 없음',
-    ceoName: profile?.repName || '정보 없음', // Partner용 필드(repName)
+    ceoName: profile?.repName || profile?.ceoName || '정보 없음', // Partner용 필드(repName 또는 ceoName)
     address: fullAddress,
     openDate: formattedOpeningDate
   };
@@ -127,6 +125,9 @@ const PartnerInfoPage = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('업체 정보 확인');
 
+  const partnerInfo = usePartnerInfo();
+  const ceoName = partnerInfo.profile?.repName || partnerInfo.profile?.ceoName || '';
+
   // 사업자 UI와 동일하되, '운영' 부분만 제거됨
   const menuGroups = [
     { title: '계정', items: ['업체 정보 확인', '업체 정보 수정', '회원 탈퇴'] },
@@ -140,7 +141,7 @@ const PartnerInfoPage = () => {
         <aside className="w-64 shrink-0 flex flex-col gap-6">
           <div className="bg-white border border-emerald-100 rounded-lg p-6 shadow-sm">
             <h2 className="font-bold text-gray-900">{bizname || '거래처 업체'}</h2>
-            <p className="text-xs text-gray-500 mt-1">거래처 회원</p>
+            <p className="text-xs text-gray-500 mt-1">거래처 회원 {ceoName && `| ${ceoName} 대표`}</p>
           </div>
           {menuGroups.map((group) => (
             <div key={group.title}>
@@ -172,7 +173,7 @@ const PartnerInfoPage = () => {
         {/* 콘텐츠 영역 */}
         <section className="flex-grow">
           {activeTab === '업체 정보 확인' ? (
-            <UserProfileTab />
+            <UserProfileTab {...partnerInfo} />
           ) : (
             <div className="bg-white border border-gray-100 rounded-lg p-12 text-center text-gray-400">
               <h2 className="font-bold text-lg mb-2">{activeTab}</h2>
