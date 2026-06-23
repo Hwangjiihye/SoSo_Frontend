@@ -100,7 +100,18 @@ export const useSignUp = () => {
     if (name === 'ssnFront' && value.length > 6) return;
     if (name === 'ssnBack' && value.length > 7) return;
 
-    const nextFormData = { ...formData, [name]: value };
+    let finalValue = value;
+    if (name === 'phone') {
+      const numbersOnly = value.replace(/[^0-9]/g, '');
+      finalValue = numbersOnly;
+      if (numbersOnly.length > 3 && numbersOnly.length <= 7) {
+        finalValue = `${numbersOnly.slice(0, 3)}-${numbersOnly.slice(3)}`;
+      } else if (numbersOnly.length > 7) {
+        finalValue = `${numbersOnly.slice(0, 3)}-${numbersOnly.slice(3, 7)}-${numbersOnly.slice(7, 11)}`;
+      }
+    }
+
+    const nextFormData = { ...formData, [name]: finalValue };
     setFormData(nextFormData);
 
     // 중복 확인 상태 초기화 (입력값 변경 시 재인증 필요)
@@ -108,7 +119,7 @@ export const useSignUp = () => {
       setApiStatus(prev => ({ ...prev, [`${name}Checked`]: false }));
     }
 
-    validateField(name, value, nextFormData);
+    validateField(name, finalValue, nextFormData);
   };
 
   /**

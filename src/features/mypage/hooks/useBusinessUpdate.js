@@ -18,7 +18,7 @@ const REGEX = {
  */
 export const useBusinessUpdate = () => {
   const navigate = useNavigate();
-  const { login, selectedStoreSeq, setSelectedStore } = authStore(); // 🏪 [멀티 프로필] 현재 선택된 매장 번호 가져오기
+  const { login, logout, selectedStoreSeq, setSelectedStore } = authStore(); // 🏪 [멀티 프로필] 현재 선택된 매장 번호 가져오기
   
   // 사업자 정보 폼 상태
   const [formData, setFormData] = useState({
@@ -127,8 +127,20 @@ export const useBusinessUpdate = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-    validateField(name, value);
+
+    let finalValue = value;
+    if (name === 'phone') {
+      const numbersOnly = value.replace(/[^0-9]/g, '');
+      finalValue = numbersOnly;
+      if (numbersOnly.length > 3 && numbersOnly.length <= 7) {
+        finalValue = `${numbersOnly.slice(0, 3)}-${numbersOnly.slice(3)}`;
+      } else if (numbersOnly.length > 7) {
+        finalValue = `${numbersOnly.slice(0, 3)}-${numbersOnly.slice(3, 7)}-${numbersOnly.slice(7, 11)}`;
+      }
+    }
+
+    setFormData(prev => ({ ...prev, [name]: finalValue }));
+    validateField(name, finalValue);
 
     // 💡 사업자 인증 관련 필드(번호, 상호, 대표자, 개업일)가 바뀌면 재인증 필요
     if (['bizNumber', 'bizname', 'ceoName', 'openingDate'].includes(name)) {
@@ -285,9 +297,14 @@ export const useBusinessUpdate = () => {
     try {
       const result = await changePasswordApi({ currentPassword, newPassword });
       if (result && result.status === 'success') {
-        alert(result.message);
+        alert('비밀번호가 성공적으로 변경되었습니다. 안전한 이용을 위해 다시 로그인해 주세요.');
         setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
         setPasswordErrors({});
+        
+        // 로그아웃 후 로그인 페이지로 이동
+        logout();
+        navigate('/login');
+        
         return true;
       } else {
         alert(result.message);

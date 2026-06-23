@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getPartnerProfileApi, updatePartnerProfileApi, changePasswordApi } from '../../../apis/memberApi';
+import authStore from '../../../store/authStore';
 
 /**
  * 회원가입 시와 동일한 정규식 정의
@@ -17,6 +18,7 @@ const REGEX = {
  */
 export const usePartnerEditProfile = () => {
   const navigate = useNavigate();
+  const { logout } = authStore();
   
   // 업체 정보 폼 상태
   const [formData, setFormData] = useState({
@@ -116,8 +118,20 @@ export const usePartnerEditProfile = () => {
   // 업체 정보 변경 핸들러
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-    validateField(name, value);
+    
+    let finalValue = value;
+    if (name === 'phone') {
+      const numbersOnly = value.replace(/[^0-9]/g, '');
+      finalValue = numbersOnly;
+      if (numbersOnly.length > 3 && numbersOnly.length <= 7) {
+        finalValue = `${numbersOnly.slice(0, 3)}-${numbersOnly.slice(3)}`;
+      } else if (numbersOnly.length > 7) {
+        finalValue = `${numbersOnly.slice(0, 3)}-${numbersOnly.slice(3, 7)}-${numbersOnly.slice(7, 11)}`;
+      }
+    }
+
+    setFormData(prev => ({ ...prev, [name]: finalValue }));
+    validateField(name, finalValue);
   };
 
   // 비밀번호 입력 핸들러
@@ -235,13 +249,18 @@ export const usePartnerEditProfile = () => {
     try {
       const result = await changePasswordApi({ currentPassword, newPassword });
       if (result && result.status === 'success') {
-        alert(result.message);
+        alert('비밀번호가 성공적으로 변경되었습니다. 안전한 이용을 위해 다시 로그인해 주세요.');
         setPasswordForm({
           currentPassword: '',
           newPassword: '',
           confirmPassword: ''
         });
         setPasswordErrors({});
+        
+        // 로그아웃 후 로그인 페이지로 이동
+        logout();
+        navigate('/login');
+        
         return true; // 모달 닫기용
       } else if (result && (result.status === 'isNotPw' || result.status === 'difPw' || result.status === 'fail')) {
         alert(result.message);
