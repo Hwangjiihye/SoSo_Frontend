@@ -55,8 +55,8 @@ function BusinessMain({ setRole }) {
   const [question, setQuestion] = useState("");
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
-  
-  
+
+
 
   // 마이페이지 이동 핸들러
   const handleProfileClick = () => {
@@ -69,10 +69,10 @@ function BusinessMain({ setRole }) {
   }
 
   const { user_type, logout, setSelectedStore } = authStore();
-  
+
 
   const handleSend = async () => {
-  if (!question.trim()) return;
+    if (!question.trim()) return;
 
   const userQuestion = question;
 
@@ -88,29 +88,34 @@ function BusinessMain({ setRole }) {
   setLoading(true);
 
   try {
-    const result = await askRag(userQuestion);
+    const result = await askRag({
+      message: userQuestion,
+      storeSeq: selectedStoreSeq,
+      userSeq: userSeq,
+      userType: user_type
+    });
 
-    setMessages((prev) => [
-      ...prev,
-      {
-        role: "ai",
-        content: result.answer,
-      },
-    ]);
-  } catch (error) {
-    console.error(error);
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "ai",
+          content: result.answer,
+        },
+      ]);
+    } catch (error) {
+      console.error(error);
 
-    setMessages((prev) => [
-      ...prev,
-      {
-        role: "ai",
-        content: "답변을 가져오는 중 오류가 발생했습니다.",
-      },
-    ]);
-  } finally {
-    setLoading(false);
-  }
-};
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "ai",
+          content: "답변을 가져오는 중 오류가 발생했습니다.",
+        },
+      ]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   /**
    * 🔄 매장 전환 핸들러
@@ -165,13 +170,13 @@ function BusinessMain({ setRole }) {
       label: '현재 재고',
       data: dashboard?.stockStatus?.map(item => item.value) || [],
       backgroundColor: [
-        'rgba(16, 185, 129, 0.6)', 'rgba(59, 130, 246, 0.6)', 
+        'rgba(16, 185, 129, 0.6)', 'rgba(59, 130, 246, 0.6)',
         'rgba(245, 158, 11, 0.6)', 'rgba(239, 68, 68, 0.6)',
         'rgba(139, 92, 246, 0.6)', 'rgba(236, 72, 153, 0.6)',
         'rgba(75, 85, 99, 0.6)', 'rgba(20, 184, 166, 0.6)'
       ],
       borderColor: [
-        'rgb(16, 185, 129)', 'rgb(59, 130, 246)', 
+        'rgb(16, 185, 129)', 'rgb(59, 130, 246)',
         'rgb(245, 158, 11)', 'rgb(239, 68, 68)',
         'rgb(139, 92, 246)', 'rgb(236, 72, 153)',
         'rgb(75, 85, 99)', 'rgb(20, 184, 166)'
@@ -240,7 +245,7 @@ function BusinessMain({ setRole }) {
             <div className="flex justify-between items-center mb-6">
               <h3 className="font-bold text-gray-700 flex items-center gap-2">
                 <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
-                월별 매출 현황 (INCOME 장부 기준)
+                월별 매출 현황
               </h3>
               <span className="text-[10px] text-gray-400 font-bold uppercase tracking-tight">단위: 만원</span>
             </div>
@@ -273,11 +278,11 @@ function BusinessMain({ setRole }) {
                 )}
               </div>
             </div>
-            
+
             {/* 페이지네이션 UI */}
             {groupOrders.length > 4 && (
               <div className="flex justify-center items-center gap-2 mt-6 pt-4 border-t border-gray-50">
-                <button 
+                <button
                   onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                   disabled={currentPage === 1}
                   className="w-8 h-8 rounded-lg bg-gray-50 border border-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-900 disabled:opacity-30 disabled:pointer-events-none transition-all active:scale-95"
@@ -288,16 +293,15 @@ function BusinessMain({ setRole }) {
                   <button
                     key={i + 1}
                     onClick={() => setCurrentPage(i + 1)}
-                    className={`w-8 h-8 rounded-lg font-black text-xs transition-all active:scale-95 ${
-                      currentPage === i + 1 
-                        ? 'bg-emerald-500 text-white shadow-md shadow-emerald-100' 
-                        : 'bg-white text-gray-400 hover:text-gray-900 border border-gray-100'
-                    }`}
+                    className={`w-8 h-8 rounded-lg font-black text-xs transition-all active:scale-95 ${currentPage === i + 1
+                      ? 'bg-emerald-500 text-white shadow-md shadow-emerald-100'
+                      : 'bg-white text-gray-400 hover:text-gray-900 border border-gray-100'
+                      }`}
                   >
                     {i + 1}
                   </button>
                 ))}
-                <button 
+                <button
                   onClick={() => setCurrentPage(prev => Math.min(prev + 1, Math.ceil(groupOrders.length / 4)))}
                   disabled={currentPage === Math.ceil(groupOrders.length / 4)}
                   className="w-8 h-8 rounded-lg bg-gray-50 border border-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-900 disabled:opacity-30 disabled:pointer-events-none transition-all active:scale-95"
@@ -330,37 +334,11 @@ function BusinessMain({ setRole }) {
         </button>
 
         {isChatbotOpen && (
-        <section className="w-[430px] overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-2xl shadow-gray-900/15 max-sm:w-full">
-          <div className="flex items-center justify-between bg-emerald-700 px-5 py-4 text-white">
-            <div className="flex items-center gap-3">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white/95">
-                <div className="relative flex h-8 w-8 items-center justify-center rounded-full bg-emerald-50">
-                  <span className="relative flex h-6 w-7 items-center justify-center rounded-lg bg-emerald-600">
-                    <span className="absolute -top-1 h-1.5 w-1 rounded-full bg-emerald-600"></span>
-                    <span className="flex h-4 w-5 items-center justify-center gap-1 rounded-md bg-white">
-                      <span className="h-1 w-1 rounded-full bg-emerald-700"></span>
-                      <span className="h-1 w-1 rounded-full bg-emerald-700"></span>
-                    </span>
-                  </span>
-                </div>
-              </div>
-              <div>
-                <h2 className="text-xl font-black leading-tight">SoSo 챗봇</h2>
-              </div>
-            </div>
-            <div className="flex items-center text-3xl font-light leading-none">
-              <button type="button" onClick={() => setIsChatbotOpen(false)} aria-label="챗봇 닫기" className="leading-none text-white">
-                ×
-              </button>
-            </div>
-          </div>
-
-          <div className="flex h-[520px] flex-col bg-white px-5 py-5 max-sm:h-[460px]">
-            <div className="min-h-0 flex-1 space-y-5 overflow-y-auto pr-1">
-
-              <div className="space-y-5">
-                <div className="flex items-start gap-3">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-emerald-100 bg-emerald-50">
+          <section className="w-[430px] overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-2xl shadow-gray-900/15 max-sm:w-full">
+            <div className="flex items-center justify-between bg-emerald-700 px-5 py-4 text-white">
+              <div className="flex items-center gap-3">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white/95">
+                  <div className="relative flex h-8 w-8 items-center justify-center rounded-full bg-emerald-50">
                     <span className="relative flex h-6 w-7 items-center justify-center rounded-lg bg-emerald-600">
                       <span className="absolute -top-1 h-1.5 w-1 rounded-full bg-emerald-600"></span>
                       <span className="flex h-4 w-5 items-center justify-center gap-1 rounded-md bg-white">
@@ -369,82 +347,108 @@ function BusinessMain({ setRole }) {
                       </span>
                     </span>
                   </div>
+                </div>
+                <div>
+                  <h2 className="text-xl font-black leading-tight">SoSo 챗봇</h2>
+                </div>
+              </div>
+              <div className="flex items-center text-3xl font-light leading-none">
+                <button type="button" onClick={() => setIsChatbotOpen(false)} aria-label="챗봇 닫기" className="leading-none text-white">
+                  ×
+                </button>
+              </div>
+            </div>
 
-                  <div className="max-w-[280px] rounded-2xl rounded-tl-md border border-gray-200 bg-white px-4 py-3 shadow-sm">
-                    <p className="text-sm leading-7 text-gray-900">
-                      안녕하세요! 👋<br />
-                      SoSo 업무 도우미입니다.<br />
-                      무엇을 도와드릴까요?
-                    </p>
+            <div className="flex h-[520px] flex-col bg-white px-5 py-5 max-sm:h-[460px]">
+              <div className="min-h-0 flex-1 space-y-5 overflow-y-auto pr-1">
+
+                <div className="space-y-5">
+                  <div className="flex items-start gap-3">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-emerald-100 bg-emerald-50">
+                      <span className="relative flex h-6 w-7 items-center justify-center rounded-lg bg-emerald-600">
+                        <span className="absolute -top-1 h-1.5 w-1 rounded-full bg-emerald-600"></span>
+                        <span className="flex h-4 w-5 items-center justify-center gap-1 rounded-md bg-white">
+                          <span className="h-1 w-1 rounded-full bg-emerald-700"></span>
+                          <span className="h-1 w-1 rounded-full bg-emerald-700"></span>
+                        </span>
+                      </span>
+                    </div>
+
+                    <div className="max-w-[280px] rounded-2xl rounded-tl-md border border-gray-200 bg-white px-4 py-3 shadow-sm">
+                      <p className="text-sm leading-7 text-gray-900">
+                        안녕하세요! 👋<br />
+                        SoSo 업무 도우미입니다.<br />
+                        무엇을 도와드릴까요?
+                      </p>
+                    </div>
                   </div>
+
+                  {messages.map((msg, index) => (
+                    msg.role === "user" ? (
+                      <div key={index} className="flex justify-end">
+                        <div className="max-w-[300px] whitespace-pre-line rounded-2xl rounded-tr-md bg-emerald-700 px-4 py-3 text-sm font-bold leading-7 text-white shadow-sm">
+                          {msg.content}
+                        </div>
+                      </div>
+                    ) : (
+                      <div key={index} className="flex items-start gap-3">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-emerald-100 bg-emerald-50">
+                          <span className="relative flex h-6 w-7 items-center justify-center rounded-lg bg-emerald-600">
+                            <span className="absolute -top-1 h-1.5 w-1 rounded-full bg-emerald-600"></span>
+                            <span className="flex h-4 w-5 items-center justify-center gap-1 rounded-md bg-white">
+                              <span className="h-1 w-1 rounded-full bg-emerald-700"></span>
+                              <span className="h-1 w-1 rounded-full bg-emerald-700"></span>
+                            </span>
+                          </span>
+                        </div>
+
+                        <div className="max-w-[310px] rounded-2xl rounded-tl-md border border-gray-200 bg-white px-4 py-3 shadow-sm">
+                          <p className="whitespace-pre-line text-sm leading-7 text-gray-900">
+                            {msg.content}
+                          </p>
+                        </div>
+                      </div>
+                    )
+                  ))}
+
+                  {loading && (
+                    <div className="flex items-start gap-3">
+                      <div className="max-w-[220px] rounded-2xl rounded-tl-md border border-gray-200 bg-white px-4 py-3 shadow-sm">
+                        <p className="text-sm text-gray-500">답변 생성 중...</p>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
-                {messages.map((msg, index) => (
-                  msg.role === "user" ? (
-                    <div key={index} className="flex justify-end">
-                      <div className="max-w-[300px] whitespace-pre-line rounded-2xl rounded-tr-md bg-emerald-700 px-4 py-3 text-sm font-bold leading-7 text-white shadow-sm">
-                        {msg.content}
-                      </div>
-                    </div>
-                  ) : (
-                    <div key={index} className="flex items-start gap-3">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-emerald-100 bg-emerald-50">
-                        <span className="relative flex h-6 w-7 items-center justify-center rounded-lg bg-emerald-600">
-                          <span className="absolute -top-1 h-1.5 w-1 rounded-full bg-emerald-600"></span>
-                          <span className="flex h-4 w-5 items-center justify-center gap-1 rounded-md bg-white">
-                            <span className="h-1 w-1 rounded-full bg-emerald-700"></span>
-                            <span className="h-1 w-1 rounded-full bg-emerald-700"></span>
-                          </span>
-                        </span>
-                      </div>
-
-                      <div className="max-w-[310px] rounded-2xl rounded-tl-md border border-gray-200 bg-white px-4 py-3 shadow-sm">
-                        <p className="whitespace-pre-line text-sm leading-7 text-gray-900">
-                          {msg.content}
-                        </p>
-                      </div>
-                    </div>
-                  )
-                ))}
-
-                {loading && (
-                  <div className="flex items-start gap-3">
-                    <div className="max-w-[220px] rounded-2xl rounded-tl-md border border-gray-200 bg-white px-4 py-3 shadow-sm">
-                      <p className="text-sm text-gray-500">답변 생성 중...</p>
-                    </div>
-                  </div>
-                )}
               </div>
 
+              <div className="mt-5 flex items-center gap-3 rounded-2xl border border-gray-200 bg-white px-4 py-3 shadow-sm">
+                <input
+                  type="text"
+                  value={question}
+                  onChange={(event) => setQuestion(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") {
+                      handleSend();
+                    }
+                  }}
+                  placeholder="질문을 입력하세요..."
+                  className="min-w-0 flex-1 bg-transparent text-sm font-medium text-gray-700 placeholder:text-gray-400 focus:outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={handleSend}
+                  disabled={loading}
+                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-emerald-700 text-white shadow-lg shadow-emerald-900/20 disabled:cursor-not-allowed disabled:opacity-60"
+                  aria-label="챗봇 메시지 전송"
+                >
+                  <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <path d="M3.4 20.4 21.6 12 3.4 3.6 3 10l10 2-10 2 .4 6.4Z" />
+                  </svg>
+                </button>
+              </div>
             </div>
-
-            <div className="mt-5 flex items-center gap-3 rounded-2xl border border-gray-200 bg-white px-4 py-3 shadow-sm">
-              <input
-                type="text"
-                value={question}
-                onChange={(event) => setQuestion(event.target.value)}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter") {
-                    handleSend();
-                  }
-                }}
-                placeholder="질문을 입력하세요..."
-                className="min-w-0 flex-1 bg-transparent text-sm font-medium text-gray-700 placeholder:text-gray-400 focus:outline-none"
-              />
-              <button
-                type="button"
-                onClick={handleSend}
-                disabled={loading}
-                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-emerald-700 text-white shadow-lg shadow-emerald-900/20 disabled:cursor-not-allowed disabled:opacity-60"
-                aria-label="챗봇 메시지 전송"
-              >
-                <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                  <path d="M3.4 20.4 21.6 12 3.4 3.6 3 10l10 2-10 2 .4 6.4Z" />
-                </svg>
-              </button>
-            </div>
-          </div>
-        </section>
+          </section>
         )}
       </aside>
     </div>

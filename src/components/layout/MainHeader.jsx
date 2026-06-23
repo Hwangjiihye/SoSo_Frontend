@@ -20,6 +20,7 @@ function MainHeader({ activeMenu = '홈' }) {
   const [isAccountDropdownOpen, setIsAccountDropdownOpen] = useState(false);
   const [isSupportDropdownOpen, setIsSupportDropdownOpen] = useState(false);
   const [isStockDropdownOpen, setIsStockDropdownOpen] = useState(false);
+  const [isGroupBuyDropdownOpen, setIsGroupBuyDropdownOpen] = useState(false);
 
   useEffect(() => {
     if (!stores || stores.length === 0) return;
@@ -47,8 +48,11 @@ function MainHeader({ activeMenu = '홈' }) {
     if (user_type === 'BUSINESS') {
       navigate('/business-mypage');
       setIsProfileOpen(false);
+    } else if (user_type === 'PARTNER' || user_type === 'Partner') {
+      navigate('/partner-info');
+      setIsProfileOpen(false);
     } else {
-      alert("사업자 전용 마이페이지입니다.");
+      alert("로그인이 필요합니다.");
     }
   };
 
@@ -81,8 +85,9 @@ function MainHeader({ activeMenu = '홈' }) {
       </div>
 
       {/* Navigation Section */}
-      <nav className="hidden md:flex justify-center gap-1 border border-gray-100 rounded-lg p-1 bg-gray-50 w-fit mx-auto relative">
-        {/* 발주 관리 드롭다운 메뉴 */}
+      {user_type && (
+        <nav className="hidden md:flex justify-center gap-1 border border-gray-100 rounded-lg p-1 bg-gray-50 w-fit mx-auto relative">
+          {/* 발주 관리 드롭다운 메뉴 */}
         <div 
           className="relative"
           onMouseEnter={() => setIsOrderDropdownOpen(true)}
@@ -137,41 +142,43 @@ function MainHeader({ activeMenu = '홈' }) {
                   <Link to="/expense-category" className="block w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl mb-1">
                     비용 카테고리
                   </Link>
-                  <Link to="/settlement" className="block w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl">
+                  {/* <Link to="/settlement" className="block w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl">
                     지출 요약
-                  </Link>
+                  </Link> */}
                 </>
               )}
             </div>
           </div>
         </div>
 
-        {/* 거래처 관리 드롭다운 메뉴 */}
-        <div 
-          className="relative"
-          onMouseEnter={() => setIsAccountDropdownOpen(true)}
-          onMouseLeave={() => setIsAccountDropdownOpen(false)}
-        >
-          <div className={activeMenu === '거래처 관리' 
-            ? "px-4 py-1.5 text-sm font-semibold bg-white text-emerald-600 rounded shadow-sm border border-gray-200 cursor-pointer transition-all whitespace-nowrap"
-            : "px-4 py-1.5 text-sm font-medium text-gray-500 hover:text-emerald-600 transition-all cursor-pointer whitespace-nowrap"}>
-            거래처 관리
-          </div>
-          
-          <div className={`absolute top-full left-0 w-48 pt-2 z-[60] transition-all duration-200 ${isAccountDropdownOpen ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-2'}`}>
-            <div className="bg-white border border-gray-100 rounded-2xl shadow-xl p-2">
-              <Link to="/account/list" className="block w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl mb-1">
-                거래처 목록
-              </Link>
-              <Link to="/account/register" className="block w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl">
-                신규 거래처 등록
-              </Link>
-              {/* <Link to="/account/management" className="block w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl mb-1">
-                품목 관리
-              </Link> */}
+        {/* 거래처 관리 드롭다운 메뉴 (거래처(PARTNER) 로그인 시 숨김 처리) */}
+        {user_type !== 'PARTNER' && user_type !== 'Partner' && (
+          <div 
+            className="relative"
+            onMouseEnter={() => setIsAccountDropdownOpen(true)}
+            onMouseLeave={() => setIsAccountDropdownOpen(false)}
+          >
+            <div className={activeMenu === '거래처 관리' 
+              ? "px-4 py-1.5 text-sm font-semibold bg-white text-emerald-600 rounded shadow-sm border border-gray-200 cursor-pointer transition-all whitespace-nowrap"
+              : "px-4 py-1.5 text-sm font-medium text-gray-500 hover:text-emerald-600 transition-all cursor-pointer whitespace-nowrap"}>
+              거래처 관리
+            </div>
+            
+            <div className={`absolute top-full left-0 w-48 pt-2 z-[60] transition-all duration-200 ${isAccountDropdownOpen ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-2'}`}>
+              <div className="bg-white border border-gray-100 rounded-2xl shadow-xl p-2">
+                <Link to="/account/list" className="block w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl mb-1">
+                  거래처 목록
+                </Link>
+                <Link to="/account/register" className="block w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl">
+                  신규 거래처 등록
+                </Link>
+                {/* <Link to="/account/management" className="block w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl mb-1">
+                  품목 관리
+                </Link> */}
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* 재고 관리 드롭다운 메뉴 */}
         <div 
@@ -197,15 +204,26 @@ function MainHeader({ activeMenu = '홈' }) {
           </div>
         </div>
 
-        {['공동발주'].map(m => (
-          <Link 
-            key={m} 
-            to={m === '커뮤니티' ? "/community" : "#"} 
-            className={getNavStyle(m)}
-          >
-            {m}
-          </Link>
-        ))}
+        {/* 공동발주 드롭다운 메뉴 */}
+        <div 
+          className="relative"
+          onMouseEnter={() => setIsGroupBuyDropdownOpen(true)}
+          onMouseLeave={() => setIsGroupBuyDropdownOpen(false)}
+        >
+          <div className={activeMenu === '공동발주' 
+            ? "px-4 py-1.5 text-sm font-semibold bg-white text-emerald-600 rounded shadow-sm border border-gray-200 cursor-pointer transition-all whitespace-nowrap"
+            : "px-4 py-1.5 text-sm font-medium text-gray-500 hover:text-emerald-600 transition-all cursor-pointer whitespace-nowrap"}>
+            공동발주
+          </div>
+          
+          <div className={`absolute top-full left-0 w-48 pt-2 z-[60] transition-all duration-200 ${isGroupBuyDropdownOpen ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-2'}`}>
+            <div className="bg-white border border-gray-100 rounded-2xl shadow-xl p-2">
+              <Link to="/group-buy" className="block w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl">
+                공동발주 현황
+              </Link>
+            </div>
+          </div>
+        </div>
 
         <Link to="/lookup" className={getNavStyle('조회/기록')}>조회/기록</Link>
 
@@ -235,7 +253,8 @@ function MainHeader({ activeMenu = '홈' }) {
             </div>
           </div>
         </div>
-      </nav>
+        </nav>
+      )}
 
       {/* Right Section (Notifications & Profile) */}
       <div className="flex items-center justify-end gap-4">

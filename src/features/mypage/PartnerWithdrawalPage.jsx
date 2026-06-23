@@ -1,81 +1,33 @@
-import React from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { usePartnerWithdrawal } from './hooks/usePartnerWithdrawal';
-import logo from "../../assets/soso로고.png";
-import authStore from '../../store/authStore';
-
 /**
  * @file PartnerWithdrawalPage.jsx
- * @description 거래처 회원 탈퇴 페이지
+ * @description 거래처 회원 탈퇴 페이지 (사업자 마이페이지 UI 레이아웃 통일 적용)
  */
-const PartnerWithdrawalPage = () => {
-  const navigate = useNavigate();
-  const logout = authStore((state) => state.logout);
-  const { 
-    reason, 
-    setReason, 
-    customReason, 
-    setCustomReason, 
-    isChecked, 
-    setIsChecked, 
-    isSubmitting, 
-    reasons, 
-    handleWithdrawal 
-  } = usePartnerWithdrawal();
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { usePartnerWithdrawal } from './hooks/usePartnerWithdrawal';
+import { usePartnerInfo } from './hooks/usePartnerInfo';
+import authStore from '../../store/authStore';
 
-  const handleLogout = () => {
-    logout();
-    alert("로그아웃 되었습니다.");
-    navigate("/");
-  };
-
+// 회원 탈퇴 탭 콘텐츠
+const WithdrawalTab = ({
+  reason, 
+  setReason, 
+  customReason, 
+  setCustomReason, 
+  isChecked, 
+  setIsChecked, 
+  isSubmitting, 
+  reasons, 
+  handleWithdrawal 
+}) => {
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col font-sans pb-12">
-      {/* 1. 상단 탑바 */}
-      <header className="bg-white border-b border-gray-200 h-14 flex items-center justify-between px-6 sticky top-0 z-50">
-        <Link to="/" className="flex items-center gap-2">
-          <img src={logo} alt="SoSo" className="h-8 w-8 object-contain" />
-          <span className="text-xl font-black text-emerald-600 tracking-tighter">SoSo</span>
-        </Link>
-        <button onClick={handleLogout} className="text-sm font-medium text-gray-500 hover:text-emerald-600 flex items-center gap-1 transition-colors">
-          <span>로그아웃</span>
-        </button>
-      </header>
-
-      {/* 2. 네비게이션 탭 */}
-      <nav className="bg-white border-b border-gray-200 flex px-6 overflow-x-auto scrollbar-hide">
-        {[
-          { name: '업체 정보 확인', icon: '🏢', path: '/partner-info' },
-          { name: '업체 정보 수정', icon: '📝', path: '/partner-edit' },
-          { name: '회원 탈퇴', icon: '👤', path: '/partner-withdrawal' },
-          { name: '스마트 알림 설정', icon: '🔔', path: '/partner-notification' }
-        ].map(tab => (
-          <div
-            key={tab.name}
-            onClick={() => tab.path !== '#' && navigate(tab.path)}
-            className={`px-4 py-4 text-sm font-bold flex items-center gap-2 cursor-pointer border-b-2 transition-all whitespace-nowrap ${
-              tab.path === '/partner-withdrawal' 
-              ? 'text-emerald-600 border-emerald-600' 
-              : 'text-gray-400 border-transparent hover:text-gray-600'
-            }`}
-          >
-            <span>{tab.icon}</span>
-            {tab.name}
-          </div>
-        ))}
-      </nav>
-
-      {/* 3. 페이지 헤더 */}
-      <div className="max-w-[600px] w-full mx-auto mt-8 px-4">
-        <h2 className="text-xl font-bold text-gray-900">회원 탈퇴</h2>
-        <p className="text-sm text-gray-500 mt-1">SoSo 서비스를 탈퇴하시기 전 아래 내용을 확인해 주세요.</p>
-      </div>
-
-      {/* 4. 메인 콘텐츠 */}
-      <div className="max-w-[600px] w-full mx-auto mt-6 px-4 flex flex-col gap-6">
-        
+    <div className="bg-white border border-emerald-100 rounded-lg p-8 shadow-sm">
+      <h2 className="text-xl font-bold mb-2">회원 탈퇴</h2>
+      <p className="text-sm text-gray-500 mb-8 border-b border-gray-100 pb-4">SoSo 서비스를 탈퇴하시기 전 아래 내용을 확인해 주세요.</p>
+      
+      <div className="space-y-8">
         {/* 유의사항 카드 */}
-        <div className="bg-white rounded-2xl border border-red-100 p-6 shadow-sm">
+        <div className="bg-white rounded-xl border border-red-100 p-6 shadow-sm">
           <div className="flex items-center gap-2 text-red-600 font-bold mb-4">
             <span>⚠️</span>
             탈퇴 시 유의사항
@@ -89,13 +41,11 @@ const PartnerWithdrawalPage = () => {
         </div>
 
         {/* 탈퇴 사유 선택 카드 */}
-        <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+        <div>
           <div className="flex items-center gap-2 text-gray-800 font-bold mb-4">
             <span className="text-emerald-600">📝</span>
             탈퇴하시는 사유가 무엇인가요?
           </div>
-          <div className="h-px bg-gray-100 mb-6"></div>
-          
           <div className="space-y-3">
             {reasons.map((r) => (
               <label key={r} className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors">
@@ -123,7 +73,7 @@ const PartnerWithdrawalPage = () => {
         </div>
 
         {/* 동의 및 버튼 영역 */}
-        <div className="flex flex-col gap-4">
+        <div className="pt-4 flex flex-col gap-4">
           <label className="flex items-center gap-2 cursor-pointer group px-1">
             <input 
               type="checkbox" 
@@ -147,15 +97,82 @@ const PartnerWithdrawalPage = () => {
           >
             {isSubmitting ? '탈퇴 처리 중...' : '👤 회원 탈퇴하기'}
           </button>
-
-          <button 
-            onClick={() => navigate('/partner-info')}
-            className="w-full h-12 bg-white border border-gray-200 text-gray-600 font-bold rounded-xl hover:bg-gray-50 transition-colors"
-          >
-            취소하고 돌아가기
-          </button>
         </div>
       </div>
+    </div>
+  );
+};
+
+const PartnerWithdrawalPage = () => {
+  const { bizname } = authStore();
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState('회원 탈퇴');
+
+  const partnerInfo = usePartnerInfo();
+  const ceoName = partnerInfo.profile?.repName || partnerInfo.profile?.ceoName || '';
+
+  const { 
+    reason, setReason, customReason, setCustomReason, isChecked, setIsChecked, 
+    isSubmitting, reasons, handleWithdrawal 
+  } = usePartnerWithdrawal();
+
+  const menuGroups = [
+    { title: '계정', items: ['업체 정보 확인', '업체 정보 수정', '회원 탈퇴'] },
+    { title: '설정', items: ['스마트 알림 설정'] }
+  ];
+
+  return (
+    <div className="min-h-screen bg-[#FAFAFA] flex flex-col font-sans">
+      <main className="flex-grow w-full max-w-6xl mx-auto px-4 py-10 flex gap-8">
+        {/* 사이드바 */}
+        <aside className="w-64 shrink-0 flex flex-col gap-6">
+          <div className="bg-white border border-emerald-100 rounded-lg p-6 shadow-sm">
+            <h2 className="font-bold text-gray-900">{bizname || '거래처 업체'}</h2>
+            <p className="text-xs text-gray-500 mt-1">거래처 회원 {ceoName && `| ${ceoName} 대표`}</p>
+          </div>
+          {menuGroups.map((group) => (
+            <div key={group.title}>
+              <h4 className="text-xs font-bold text-gray-400 mb-2 px-2">{group.title}</h4>
+              <ul className="flex flex-col gap-1">
+                {group.items.map((item) => (
+                  <li key={item}>
+                    <button
+                      onClick={() => {
+                        if (item === '업체 정보 확인') navigate("/partner-info");
+                        else if (item === '업체 정보 수정') navigate("/partner-edit");
+                        else if (item === '회원 탈퇴') navigate("/partner-withdrawal");
+                        else if (item === '스마트 알림 설정') navigate("/partner-notification");
+                        else setActiveTab(item);
+                      }}
+                      className={`w-full text-left px-3 py-2.5 rounded-lg text-sm font-semibold ${
+                        activeTab === item ? 'bg-emerald-50 text-emerald-700' : 'text-gray-600 hover:bg-gray-100'
+                      }`}
+                    >
+                      {item}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </aside>
+        
+        {/* 콘텐츠 영역 */}
+        <section className="flex-grow">
+          {activeTab === '회원 탈퇴' ? (
+            <WithdrawalTab 
+              reason={reason} setReason={setReason} customReason={customReason} setCustomReason={setCustomReason} 
+              isChecked={isChecked} setIsChecked={setIsChecked} isSubmitting={isSubmitting} 
+              reasons={reasons} handleWithdrawal={handleWithdrawal}
+            />
+          ) : (
+            <div className="bg-white border border-gray-100 rounded-lg p-12 text-center text-gray-400">
+              <h2 className="font-bold text-lg mb-2">{activeTab}</h2>
+              <p>콘텐츠 준비 중입니다.</p>
+            </div>
+          )}
+        </section>
+      </main>
     </div>
   );
 };

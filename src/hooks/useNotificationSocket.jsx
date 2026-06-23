@@ -34,7 +34,9 @@ const useNotificationSocket = () => {
 
     // 웹소켓 클라이언트 생성 (기존 연결이 없을 때만 연결 가동)
     if (!stompClient.current) {
-      const socket = new SockJS('http://localhost/ws');
+      const socket = new SockJS(import.meta.env.VITE_API_BASE_URL ,'/ws', null, {
+    transports: ['websocket']
+});
       stompClient.current = new Client({
         webSocketFactory: () => socket,
         debug: (str) => {

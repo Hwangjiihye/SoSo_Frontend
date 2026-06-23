@@ -45,7 +45,7 @@ function OrderPage() {
   useEffect(() => {
     if (!userSeq) return;
 
-    const socket = new SockJS('http://localhost/ws');
+    const socket = new SockJS(import.meta.env.VITE_API_BASE_URL ,'/ws');
 
     const client = new Client({
       webSocketFactory: () => socket,

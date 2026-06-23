@@ -17,9 +17,10 @@ import memberRoutes from './memberRoutes';
 import mypageRoutes from './mypageRoutes';
 import stockRoutes from './stockRoutes';
 import orderRoutes from './orders';
-import settlementRoutes from './settlementRoutes';
+// import settlementRoutes from './settlementRoutes';
 import communityRoutes from './communityRoutes';
 import accountRoutes from './accountRoutes';
+import groupBuyRoutes from './groupBuyRoutes';
 import supportRoutes from './supportRoutes';
 import lookupRoutes from './lookupRoutes';
 
@@ -60,9 +61,10 @@ const router = createBrowserRouter([
       ...mypageRoutes,
       ...stockRoutes,
       ...orderRoutes,
-      ...settlementRoutes,
+      // ...settlementRoutes,
       ...communityRoutes,
       ...accountRoutes,
+      ...groupBuyRoutes,
       ...supportRoutes,
       ...lookupRoutes,
     ],

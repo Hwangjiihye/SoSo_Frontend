@@ -66,11 +66,15 @@ export const useStockTransaction = (selectedStock, onClose, onSuccess) => {
 
   const handleInboundChange = (e) => {
     const { name, value } = e.target;
+    // 음수 부호(-) 입력 방지
+    if ((name === 'quantity' || name === 'incomingPrice') && Number(value) < 0) return;
     setInboundForm(prev => ({ ...prev, [name]: value }));
   };
 
   const handleOutboundChange = (e) => {
     const { name, value } = e.target;
+    // 음수 부호(-) 입력 방지
+    if (name === 'quantity' && Number(value) < 0) return;
     setOutboundForm(prev => ({ ...prev, [name]: value }));
   };
 
@@ -94,6 +98,12 @@ export const useStockTransaction = (selectedStock, onClose, onSuccess) => {
         if (!inboundForm.quantity || !inboundForm.incomingPrice) {
           throw new Error('필수 입력 항목을 확인해주세요.');
         }
+        if (Number(inboundForm.quantity) <= 0) {
+          throw new Error('입고 수량은 1개 이상이어야 합니다.');
+        }
+        if (Number(inboundForm.incomingPrice) < 0) {
+          throw new Error('입고 단가는 0원 이상이어야 합니다.');
+        }
         await createIncomingStock({ 
           stockSeq: stockSeq,
           storeSeq: selectedStoreSeq,
@@ -105,6 +115,9 @@ export const useStockTransaction = (selectedStock, onClose, onSuccess) => {
       } else if (activeTab === 'OUTBOUND') {
         if (!outboundForm.quantity || !outboundForm.reason) {
           throw new Error('필수 입력 항목을 확인해주세요.');
+        }
+        if (Number(outboundForm.quantity) <= 0) {
+          throw new Error('출고 수량은 1개 이상이어야 합니다.');
         }
         // 출고 시 재고 부족 체크
         if (Number(outboundForm.quantity) > selectedStock.currentStock) {
