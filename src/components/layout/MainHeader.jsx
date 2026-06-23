@@ -85,8 +85,9 @@ function MainHeader({ activeMenu = '홈' }) {
       </div>
 
       {/* Navigation Section */}
-      <nav className="hidden md:flex justify-center gap-1 border border-gray-100 rounded-lg p-1 bg-gray-50 w-fit mx-auto relative">
-        {/* 발주 관리 드롭다운 메뉴 */}
+      {user_type && (
+        <nav className="hidden md:flex justify-center gap-1 border border-gray-100 rounded-lg p-1 bg-gray-50 w-fit mx-auto relative">
+          {/* 발주 관리 드롭다운 메뉴 */}
         <div 
           className="relative"
           onMouseEnter={() => setIsOrderDropdownOpen(true)}
@@ -252,7 +253,8 @@ function MainHeader({ activeMenu = '홈' }) {
             </div>
           </div>
         </div>
-      </nav>
+        </nav>
+      )}
 
       {/* Right Section (Notifications & Profile) */}
       <div className="flex items-center justify-end gap-4">
