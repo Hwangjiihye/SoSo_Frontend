@@ -200,7 +200,7 @@ function MainHeader({ activeMenu = '홈' }) {
         {['공동발주', '커뮤니티'].map(m => (
           <Link 
             key={m} 
-            to={m === '커뮤니티' ? "/community" : "#"} 
+            to={m === '커뮤니티' ? "/community" : (m === '공동발주' ? '/group-buy' : "#")} 
             className={getNavStyle(m)}
           >
             {m}
