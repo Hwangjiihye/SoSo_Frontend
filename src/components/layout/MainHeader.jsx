@@ -142,9 +142,9 @@ function MainHeader({ activeMenu = '홈' }) {
                   <Link to="/expense-category" className="block w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl mb-1">
                     비용 카테고리
                   </Link>
-                  <Link to="/settlement" className="block w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl">
+                  {/* <Link to="/settlement" className="block w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl">
                     지출 요약
-                  </Link>
+                  </Link> */}
                 </>
               )}
             </div>

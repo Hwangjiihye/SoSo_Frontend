@@ -88,7 +88,12 @@ function BusinessMain({ setRole }) {
   setLoading(true);
 
   try {
-    const result = await askRag(userQuestion);
+    const result = await askRag({
+      message: userQuestion,
+      storeSeq: selectedStoreSeq,
+      userSeq: userSeq,
+      userType: user_type
+    });
 
     setMessages((prev) => [
       ...prev,
