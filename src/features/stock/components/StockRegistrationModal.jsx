@@ -104,10 +104,10 @@ const [categories, setCategories] = useState([]);
               >
                 <option value="">선택하세요</option>
                 {categories.map((cat) => (
-      <option key={cat.categorySeq} value={cat.categorySeq}>
-        {cat.categoryName}
-      </option>
-    ))}
+                  <option key={cat.categorySeq} value={cat.categoryName}>
+                    {cat.categoryName}
+                  </option>
+                ))}
               </select>
             </div>
             <div>
