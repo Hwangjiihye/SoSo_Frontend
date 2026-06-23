@@ -75,7 +75,7 @@ const LoginPage = () => {
         </div>
 
         {/* 로그인 입력 영역: 요소 간 세로 여백(space-y-5)을 유지하여 깔끔함을 유지합니다. */}
-        <div className="space-y-5">
+        <form className="space-y-5" onSubmit={(e) => { e.preventDefault(); handleLoginSubmit(); }}>
           <div className="space-y-5">
             {/* 아이디 입력란 */}
             <div>
@@ -168,7 +168,7 @@ const LoginPage = () => {
           {/* 로그인 버튼: 크기와 높이를 키워 사용자 액션을 강력하게 유도합니다. */}
           <div className="pt-0">
             <button
-              onClick={handleLoginSubmit}
+              type="submit"
               className="w-full flex justify-center py-2 px-4 border border-transparent text-ml font-black rounded-2xl text-white shadow-lg transition-all transform active:scale-[0.98]"
               style={{ backgroundColor: '#1D9E75', padding: '10px' }}
               onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#158A64')}
@@ -177,7 +177,7 @@ const LoginPage = () => {
               로그인
             </button>
           </div>
-        </div>
+        </form>
 
         {/* 하단 회원가입 유도 영역: 상단에 회색 구분선 추가 */}
         <div className="text-center pt-6 border-t border-gray-400">
