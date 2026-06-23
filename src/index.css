@@ -65,3 +65,32 @@
     background: #059669;
   }
 }
+
+/* 글로벌 인터랙티브 요소 마우스 포인터 강제 적용 */
+button, 
+a, 
+select, 
+[role="button"],
+[role="tab"],
+input[type="button"], 
+input[type="submit"], 
+input[type="reset"], 
+input[type="checkbox"], 
+input[type="radio"],
+.cursor-pointer {
+  cursor: pointer !important;
+}
+
+/* 모든 버튼 요소에 마우스 호버 시 살짝의 투명도 변화 및 부드러운 전환 효과 기본 적용 (개별 hover 클래스가 없을 경우를 대비) */
+button {
+  transition: all 0.2s ease-in-out;
+}
+button:hover:not(:disabled) {
+  filter: brightness(0.95);
+}
+button:active:not(:disabled) {
+  transform: scale(0.98);
+}
+button:disabled {
+  cursor: not-allowed !important;
+}

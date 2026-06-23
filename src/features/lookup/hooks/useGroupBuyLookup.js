@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { getGroupBuyHistory } from '../../../apis/groupBuyApi.js';
+import { groupBuyApi } from '../../../apis/groupBuyApi';
 import authStore from '../../../store/authStore.js';
 
 /**
