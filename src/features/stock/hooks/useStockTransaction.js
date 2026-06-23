@@ -148,7 +148,13 @@ export const useStockTransaction = (selectedStock, onClose, onSuccess) => {
       onClose();
     } catch (error) {
       console.error('Transaction Error:', error);
+
+      console.error("status:", error.response?.status);
+      console.error("response data:", error.response?.data);
+      console.error("request url:", error.config?.url);
+      console.error("request data:", error.config?.data);
       alert(error.response?.data || error.message || '거래 등록 중 오류가 발생했습니다.');
+
     } finally {
       setIsLoading(false);
     }

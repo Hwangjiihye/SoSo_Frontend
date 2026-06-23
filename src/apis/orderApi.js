@@ -1,22 +1,27 @@
+import axiosInstance from './axiosConfig.js';
 import maxios from './axiosConfig.js';
 
 // 발주 신청시, 내 재고 품목과 거래처 품목 대조
-export const check = async (itemName) => {
+export const check = async (itemName, storeSeq) => {
     const resp = await maxios.get('/order/check', {
-        params: {itemName}});
+        params: { itemName, storeSeq }
+    });
     return resp.data;
-}
+};
 
 // 발주 신청시, 거래처 품목 리스트 확인
-export const items = async (itemName) => {
+export const items = async (itemName = '') => {
     const resp = await maxios.get('/order/items', {
-        params: {itemName}});
+        params: { itemName }
+    });
     return resp.data;
 }
 
 // 발주 신청 폼에 사업자 정보 불러오기
-export const identityCheck = async () => {
-    const resp = await maxios.get('/order/identity');
+export const identityCheck = async (storeSeq) => {
+    const resp = await maxios.get('/order/identity', {
+        params: { storeSeq }
+    });
     return resp.data;
 }
 
@@ -27,14 +32,41 @@ export const orderForm = async (orderData) => {
 }
 
 // 발주서 목록으로 출력
-export const orderList = async (keyword = '') => {
-    const resp = await maxios.get('/order/list', {
-        params : {
-            keyword : keyword
-        }
-    });
-    return resp.data;
-}
+export const orderList = async (
+  storeSeq,
+  keyword = '',
+  status = '',
+  startDate = '',
+  endDate = ''
+) => {
+  const resp = await maxios.get('/order/list', {
+    params: {
+      storeSeq,
+      keyword,
+      status,
+      startDate,
+      endDate
+    }
+  });
+  return resp.data;
+};
+// export const orderList = async (storeSeq, keyword = '') => {
+//     const resp = await maxios.get('/order/list', {
+//         params: {
+//             storeSeq,
+//             keyword
+//         }
+//     });
+//     return resp.data;
+// }
+
+// 발주 신청시, 공급업체 목록 조회
+export const suppliers = async (storeSeq) => {
+  const resp = await maxios.get('/api/account/my-partners', {
+    params: { storeSeq }
+  });
+  return resp.data;
+};
 
 // 발주서 상세 조회
 export const getOrderDetail = async (orderSeq) => {
@@ -79,6 +111,16 @@ export const updatePartnerOrderStatus = async (orderSeq, status) => {
     });
     return resp.data;
 }
+
+
+// 거래처별 미결제 발주 목록 조회
+export const unpaidOrders = async (storeSeq, partnerSeq) => {
+  const response = await axiosInstance.get("/order/unpaid", {
+    params: { storeSeq, partnerSeq },
+  });
+
+  return response.data;
+};
 
 /**
  * [거래처 전용] 대시보드 지표 및 그래프 정보 조회 (실제 DB 기반)
