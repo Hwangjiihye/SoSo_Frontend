@@ -7,7 +7,8 @@ import authStore from '../store/authStore';
  */
 
 const axiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:80',
+  baseURL: import.meta.env.VITE_API_URL,
+  // baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:80',
   timeout: 10000,
   withCredentials: true, // 🚨 [필수 추가] 백엔드와 세션 쿠키(JSESSIONID)를 공유하기 위해 반드시 켜야 함!
 });

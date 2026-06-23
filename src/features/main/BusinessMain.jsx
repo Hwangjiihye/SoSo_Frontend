@@ -205,17 +205,6 @@ function BusinessMain({ setRole }) {
 
   const groupOrders = dashboard?.groupOrders || [];
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
-          <p className="text-gray-500 font-bold text-sm">실제 데이터 기반 소상공인 대시보드를 로딩 중...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="bg-gray-50 text-gray-800 font-sans">
       <main className="max-w-7xl mx-auto px-8 py-8">
