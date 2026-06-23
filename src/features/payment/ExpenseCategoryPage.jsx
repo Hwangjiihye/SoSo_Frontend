@@ -10,7 +10,7 @@ import {
 import { Doughnut } from 'react-chartjs-2';
 import MainFooter from '../../components/layout/MainFooter';
 import { useExpenseCategory } from './hooks/useExpenseCategory';
-import { insertExpense, getExpenseTotal, categoryCost, ExpenseDetails,getMyPartners, getGeneralOrdersForExpense } from "../../apis/account";
+import { insertExpense, getExpenseTotal, categoryCost, ExpenseDetails,getMyPartners, getGeneralOrdersForExpense, updateExpenseMemo, deleteExpense } from "../../apis/account";
 
 // Chart.js 컴포넌트 등록
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale);
@@ -32,6 +32,8 @@ const ExpenseCategoryPage = () => {
   const [totalAmount, setTotalAmount] = useState(0);
   const [expenseCategoryTotals, setExpenseCategoryTotals] = useState([]);
   const [isExporting, setIsExporting] = useState(false);
+  const [editingExpenseSeq, setEditingExpenseSeq] = useState(null); // 지출 내역 메모 수정
+  const [editingMemo, setEditingMemo] = useState(""); // 지출 내역 삭제 
 
 
   // 지출 내역 예시 데이터 상태
@@ -597,6 +599,102 @@ if (isIngredientCategory && ingredientExpenseType === "general") {
   }
 };
 
+// 상세목록 새로고침
+const refreshExpenseDetails = async () => {
+  const storeSeq = Number(localStorage.getItem("storeSeq"));
+
+  if (!storeSeq || !selectedCategory) return;
+
+  const categorySeq = selectedCategory.categorySeq ?? selectedCategory.id;
+
+  const result = await ExpenseDetails(
+    storeSeq,
+    selectedMonth,
+    categorySeq
+  );
+
+  setExpenses(Array.isArray(result) ? result : []);
+  await fetchExpenseTotal();
+};
+
+
+// 수정, 저장, 삭제
+const getExpenseSeq = (item) => {
+  return item.expenseSeq ?? item.expense_seq ?? item.EXPENSE_SEQ ?? item.id;
+};
+
+const handleStartEditMemo = (item) => {
+  const expenseSeq = getExpenseSeq(item);
+
+  setEditingExpenseSeq(expenseSeq);
+  setEditingMemo(item.memo && item.memo !== "-" ? item.memo : "");
+};
+
+const handleCancelEditMemo = () => {
+  setEditingExpenseSeq(null);
+  setEditingMemo("");
+};
+
+const handleSaveMemo = async (item) => {
+  const storeSeq = Number(localStorage.getItem("storeSeq"));
+  const expenseSeq = getExpenseSeq(item);
+
+  if (!storeSeq) {
+    alert("선택된 매장 정보가 없습니다.");
+    return;
+  }
+
+  if (!expenseSeq) {
+    alert("지출 번호가 없습니다.");
+    return;
+  }
+
+  try {
+    const result = await updateExpenseMemo(storeSeq, expenseSeq, editingMemo);
+
+    alert(result.message || "메모가 수정되었습니다.");
+
+    setEditingExpenseSeq(null);
+    setEditingMemo("");
+
+    await refreshExpenseDetails();
+  } catch (error) {
+    console.error("메모 수정 실패:", error);
+    alert(error.response?.data?.message || "메모 수정 중 오류가 발생했습니다.");
+  }
+};
+
+
+const handleDeleteExpense = async (item) => {
+  const storeSeq = Number(localStorage.getItem("storeSeq"));
+  const expenseSeq = getExpenseSeq(item);
+
+  if (!storeSeq) {
+    alert("선택된 매장 정보가 없습니다.");
+    return;
+  }
+
+  if (!expenseSeq) {
+    alert("지출 번호가 없습니다.");
+    return;
+  }
+
+  const ok = window.confirm("이 지출 내역을 삭제하시겠습니까?");
+
+  if (!ok) return;
+
+  try {
+    const result = await deleteExpense(storeSeq, expenseSeq);
+
+    alert(result.message || "지출 내역이 삭제되었습니다.");
+
+    await refreshExpenseDetails();
+  } catch (error) {
+    console.error("지출 삭제 실패:", error);
+    alert(error.response?.data?.message || "지출 삭제 중 오류가 발생했습니다.");
+  }
+};
+
   const chartData = {
     labels: localCategories.map(c => c.categoryName),
     datasets: [
@@ -632,10 +730,64 @@ if (isIngredientCategory && ingredientExpenseType === "general") {
     maintainAspectRatio: false
   };
 
+
   const totalExpense = localCategories.reduce(
   (acc, cat) => acc + Number(cat.totalAmount || 0),
   0
 );
+
+
+const getExpenseType = (expense) => {
+  const refType =
+    expense.refType ??
+    expense.ref_type ??
+    expense.REF_TYPE ??
+    expense.REFTYPE ??
+    "";
+
+  if (refType === "ORDER") return "general";
+  if (refType === "GROUP_ORDER") return "group";
+  if (refType === "DIRECT") return "direct";
+
+  return "etc";
+};
+
+const getExpenseAmount = (expense) => {
+  return Number(
+    expense.amount ??
+    expense.totalAmount ??
+    expense.total_amount ??
+    0
+  );
+};
+
+const selectedCategorySeq =
+  selectedCategory?.categorySeq ??
+  selectedCategory?.id;
+
+const detailExpenses = expenses.filter((expense) => {
+  const expenseCategorySeq =
+    expense.categorySeq ??
+    expense.category_seq ??
+    expense.CATEGORY_SEQ;
+
+  if (!expenseCategorySeq || !selectedCategorySeq) {
+    return true;
+  }
+
+  return Number(expenseCategorySeq) === Number(selectedCategorySeq);
+});
+
+const isSelectedDetailIngredientCategory =
+  selectedCategory?.categoryName === "식자재비" ||
+  selectedCategory?.name === "식자재비";
+
+const visibleExpenses =
+  isSelectedDetailIngredientCategory
+    ? detailExpenses.filter(
+        (expense) => getExpenseType(expense) === ingredientOrderType
+      )
+    : detailExpenses;
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-800 font-sans">
@@ -1355,15 +1507,19 @@ if (isIngredientCategory && ingredientExpenseType === "general") {
               {selectedCategory.categoryName === '식자재비' && (
                 <div className="mt-4 grid grid-cols-3 rounded-2xl bg-gray-100 p-1.5">
                   {[
-                    { value: 'general', label: '일반 발주' },
-                    { value: 'group', label: '공동 발주' },
-                    { value: 'personal', label: '개인 구매' },
+                    { value: "general", label: "일반 발주" },
+                    { value: "group", label: "공동 발주" },
+                    { value: "direct", label: "직접 구매" },
                   ].map((orderType) => {
-                    const matchingExpenses = expenses.filter(
-                      exp => exp.categorySeq === selectedCategory.id
-                        && ingredientTransactionDetails[exp.id]?.orderType === orderType.value
+                    const matchingExpenses = detailExpenses.filter(
+                      (expense) => getExpenseType(expense) === orderType.value
                     );
-                    const matchingAmount = matchingExpenses.reduce((total, exp) => total + exp.amount, 0);
+
+                    const matchingAmount = matchingExpenses.reduce(
+                      (total, expense) => total + getExpenseAmount(expense),
+                      0
+                    );
+
                     const isActive = ingredientOrderType === orderType.value;
 
                     return (
@@ -1373,21 +1529,28 @@ if (isIngredientCategory && ingredientExpenseType === "general") {
                         onClick={() => setIngredientOrderType(orderType.value)}
                         className={`rounded-xl px-3 py-3 text-left transition-all ${
                           isActive
-                            ? 'bg-white text-gray-900 shadow-sm'
-                            : 'text-gray-400 hover:text-gray-600'
+                            ? "bg-white text-gray-900 shadow-sm"
+                            : "text-gray-400 hover:text-gray-600"
                         }`}
                       >
                         <div className="flex items-center justify-between gap-2">
                           <span className="text-sm font-black">{orderType.label}</span>
-                          <span className={`rounded-full px-2 py-0.5 text-[10px] font-black ${
-                            isActive ? 'bg-emerald-50 text-emerald-600' : 'bg-gray-200/70 text-gray-500'
-                          }`}>
+                          <span
+                            className={`rounded-full px-2 py-0.5 text-[10px] font-black ${
+                              isActive
+                                ? "bg-emerald-50 text-emerald-600"
+                                : "bg-gray-200/70 text-gray-500"
+                            }`}
+                          >
                             {matchingExpenses.length}건
                           </span>
                         </div>
-                        <span className={`mt-1 block text-xs font-bold ${
-                          isActive ? 'text-emerald-600' : 'text-gray-400'
-                        }`}>
+
+                        <span
+                          className={`mt-1 block text-xs font-bold ${
+                            isActive ? "text-emerald-600" : "text-gray-400"
+                          }`}
+                        >
                           {formatCurrency(matchingAmount)}
                         </span>
                       </button>
@@ -1398,11 +1561,11 @@ if (isIngredientCategory && ingredientExpenseType === "general") {
             </header>
 
             <div className="flex-1 overflow-y-auto bg-gray-50/70 px-4 py-4 sm:px-8 sm:py-6">
-              {expenses.length > 0 ? (
+              {visibleExpenses.length > 0 ? (
                 <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white">
-                  {expenses.map((item, index, filteredItems) => (
+                  {visibleExpenses.map((item, index, filteredItems) => (
                       <article
-                        key={item.id}
+                        key={getExpenseSeq(item)}
                         className={`p-5 transition-colors hover:bg-gray-50/70 sm:p-6 ${
                           index < filteredItems.length - 1 ? 'border-b border-gray-100' : ''
                         }`}
@@ -1430,6 +1593,7 @@ if (isIngredientCategory && ingredientExpenseType === "general") {
                             <div className="flex items-center rounded-xl border border-gray-100 bg-gray-50 p-1">
                               <button
                                 type="button"
+                                onClick={() => handleStartEditMemo(item)}
                                 title="지출 내역 수정"
                                 className="inline-flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-[11px] font-black text-gray-500 transition-all hover:bg-white hover:text-emerald-600 hover:shadow-sm"
                               >
@@ -1441,6 +1605,7 @@ if (isIngredientCategory && ingredientExpenseType === "general") {
                               <span className="h-4 w-px bg-gray-200" />
                               <button
                                 type="button"
+                                onClick={() => handleDeleteExpense(item)}
                                 title="지출 내역 삭제"
                                 className="inline-flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-[11px] font-black text-gray-400 transition-all hover:bg-white hover:text-red-500 hover:shadow-sm"
                               >
@@ -1502,9 +1667,40 @@ if (isIngredientCategory && ingredientExpenseType === "general") {
 
                         <div className="mt-4 rounded-xl bg-gray-50 px-4 py-3">
                           <span className="mb-1 block text-[10px] font-bold text-gray-400">메모</span>
-                          <p className="break-words text-sm font-medium leading-relaxed text-gray-600">
-                            {item.memo && item.memo !== '-' ? item.memo : '등록된 메모가 없습니다.'}
-                          </p>
+
+                          {editingExpenseSeq === getExpenseSeq(item) ? (
+                            <div className="space-y-3">
+                              <textarea
+                                value={editingMemo}
+                                onChange={(e) => setEditingMemo(e.target.value)}
+                                maxLength={150}
+                                className="min-h-[90px] w-full resize-none rounded-2xl border border-emerald-200 bg-white p-4 text-sm font-medium text-gray-700 outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/10"
+                                placeholder="메모를 입력하세요."
+                              />
+
+                              <div className="flex justify-end gap-2">
+                                <button
+                                  type="button"
+                                  onClick={handleCancelEditMemo}
+                                  className="rounded-xl border border-gray-200 bg-white px-4 py-2 text-xs font-black text-gray-500 hover:bg-gray-50"
+                                >
+                                  취소
+                                </button>
+
+                                <button
+                                  type="button"
+                                  onClick={() => handleSaveMemo(item)}
+                                  className="rounded-xl bg-emerald-600 px-4 py-2 text-xs font-black text-white hover:bg-emerald-700"
+                                >
+                                  저장
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <p className="break-words text-sm font-medium leading-relaxed text-gray-600">
+                              {item.memo && item.memo !== "-" ? item.memo : "등록된 메모가 없습니다."}
+                            </p>
+                          )}
                         </div>
                       </article>
                     ))}
@@ -1625,7 +1821,39 @@ if (isIngredientCategory && ingredientExpenseType === "general") {
                                 <span className="text-lg">📋</span> 비고 및 상세 메모
                               </span>
                               <div className="bg-gray-50/50 rounded-2xl p-8 border border-gray-50 text-lg font-medium text-gray-600 leading-relaxed whitespace-pre-wrap">
-                                {item.memo && item.memo !== '-' ? item.memo : "등록된 추가 메모 사항이 없습니다."}
+                                {editingExpenseSeq === getExpenseSeq(item) ? (
+                                    <div className="space-y-3">
+                                      <textarea
+                                        value={editingMemo}
+                                        onChange={(e) => setEditingMemo(e.target.value)}
+                                        maxLength={150}
+                                        className="min-h-[90px] w-full resize-none rounded-2xl border border-emerald-200 bg-white p-4 text-sm font-medium text-gray-700 outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/10"
+                                        placeholder="메모를 입력하세요."
+                                      />
+
+                                      <div className="flex justify-end gap-2">
+                                        <button
+                                          type="button"
+                                          onClick={handleCancelEditMemo}
+                                          className="rounded-xl border border-gray-200 bg-white px-4 py-2 text-xs font-black text-gray-500"
+                                        >
+                                          취소
+                                        </button>
+
+                                        <button
+                                          type="button"
+                                          onClick={() => handleSaveMemo(item)}
+                                          className="rounded-xl bg-emerald-600 px-4 py-2 text-xs font-black text-white hover:bg-emerald-700"
+                                        >
+                                          저장
+                                        </button>
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    item.memo && item.memo !== "-"
+                                      ? item.memo
+                                      : "등록된 추가 메모 사항이 없습니다."
+                                  )}
                               </div>
                             </div>
                           </div>
