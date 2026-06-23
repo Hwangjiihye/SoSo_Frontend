@@ -1,142 +1,186 @@
-import React from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { usePartnerInfo } from './hooks/usePartnerInfo';
-import { InfoItem, SectionTitle, StoreImage } from './components/PartnerInfoSection';
-import logo from "../../assets/soso로고.png";
-import authStore from '../../store/authStore';
-
 /**
  * @file PartnerInfoPage.jsx
- * @description 거래처 업체정보 확인 페이지 (아키텍처 규칙 및 반응형 가이드 준수)
+ * @description 거래처 전용 마이페이지 컴포넌트입니다.
+ * 사업자 마이페이지(BusinessMyPage)의 UI를 동일하게 유지하며,
+ * 파트너 훅(usePartnerInfo) 데이터 로직만 연동합니다.
  */
-const PartnerInfoPage = () => {
-  const navigate = useNavigate();
-  const logout = authStore((state) => state.logout);
-  const { profile, isLoading, error, formattedDate, formattedOpeningDate, fullAddress,storeImg1,storeImg2} = usePartnerInfo();
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import authStore from "../../store/authStore";
+import { usePartnerInfo } from './hooks/usePartnerInfo';
 
-  const handleLogout = () => {
-    logout();
-    alert("로그아웃 되었습니다.");
-    navigate("/");
+// '업체 정보 확인' 탭에 대한 상세 콘텐츠
+const UserProfileTab = () => {
+  const { profile, isLoading, error, formattedDate, formattedOpeningDate, fullAddress, storeImg1, storeImg2 } = usePartnerInfo();
+
+  if (isLoading) return <div className="p-8 text-center text-gray-500">정보를 불러오는 중입니다...</div>;
+  if (error) return <div className="p-8 text-center text-red-500">정보를 불러오는데 실패했습니다.</div>;
+
+  // 데이터가 없을 경우를 대비한 초기값 설정
+  const userData = {
+    id: profile?.userId || '정보 없음',
+    nickname: profile?.nickname || '정보 없음',
+    name: profile?.name || '정보 없음',
+    joinDate: formattedDate, 
+    phone: profile?.phone || '정보 없음',
+    email: profile?.email || '정보 없음',
+    bizNumber: profile?.bizNumber?.replace(/(\d{3})(\d{2})(\d{5})/, '$1-$2-$3') || '정보 없음',
+    bizName: profile?.companyName || '정보 없음',
+    ceoName: profile?.repName || '정보 없음', // Partner용 필드(repName)
+    address: fullAddress,
+    openDate: formattedOpeningDate
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex flex-col justify-center items-center min-h-[60vh] space-y-4">
-        <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent"></div>
-        <p className="text-gray-500 font-medium">정보를 불러오는 중입니다...</p>
+  return (
+    <div className="bg-white border border-emerald-100 rounded-lg p-8 shadow-sm">
+      <h2 className="text-xl font-bold mb-2">업체 정보 확인</h2>
+      <p className="text-sm text-gray-500 mb-8 border-b border-gray-100 pb-4">가입 시 등록된 마이페이지 상세 정보를 확인합니다.</p>
+      
+      {/* 기본 계정 정보 */}
+      <div className="mb-10">
+        <h3 className="font-bold text-emerald-700 flex items-center gap-2 mb-4">
+          기본 계정 정보
+        </h3>
+        <div className="grid grid-cols-2 gap-x-6 gap-y-6 text-sm">
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 mb-1">아이디</label>
+            <div className="p-2 border-b">{userData.id}</div>
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 mb-1">닉네임</label>
+            <div className="p-2 border-b">{userData.nickname}</div>
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 mb-1">이름 (서비스 실명)</label>
+            <div className="p-2 border-b">{userData.name}</div>
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 mb-1">가입 일자</label>
+            <div className="p-2 border-b">{userData.joinDate}</div>
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 mb-1">휴대전화</label>
+            <div className="p-2 border-b">{userData.phone}</div>
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 mb-1">이메일</label>
+            <div className="p-2 border-b">{userData.email}</div>
+          </div>
+        </div>
       </div>
-    );
-  }
+      
+      {/* 사업자 정보 */}
+      <div className="mb-10">
+        <h3 className="font-bold text-emerald-700 flex items-center gap-2 mb-4">
+          사업자 정보
+        </h3>
+        <div className="grid grid-cols-2 gap-x-6 gap-y-6 text-sm">
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 mb-1">대표자명 (실명)</label>
+            <div className="p-2 border-b">{userData.ceoName}</div>
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 mb-1">사업자 번호</label>
+            <div className="p-2 border-b">{userData.bizNumber}</div>
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 mb-1">상호명</label>
+            <div className="p-2 border-b">{userData.bizName}</div>
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 mb-1">개업일자</label>
+            <div className="p-2 border-b">{userData.openDate}</div>
+          </div>
+          <div className="col-span-2">
+            <label className="block text-xs font-semibold text-gray-500 mb-1">가게 주소</label>
+            <div className="p-2 border-b">{userData.address}</div>
+          </div>
+        </div>
+      </div>
 
-  if (error) {
-    return (
-      <div className="max-w-2xl mx-auto my-20 p-8 bg-red-50 border border-red-100 rounded-3xl text-center space-y-4">
-        <div className="text-4xl text-red-500">⚠️</div>
-        <h2 className="text-xl font-bold text-red-800">데이터 로드 오류</h2>
-        <p className="text-red-600">인증 세션이 만료되었거나 정보를 가져올 수 없습니다.</p>
-        <button 
-          onClick={() => window.location.reload()}
-          className="px-6 py-2 bg-red-500 text-white rounded-xl font-bold hover:bg-red-600 transition-colors"
-        >
-          다시 시도
-        </button>
+      {/* 가게 사진 정보 */}
+      <div>
+        <h3 className="font-bold text-emerald-700 flex items-center gap-2 mb-4">
+          가게 사진
+        </h3>
+        <div className="grid grid-cols-2 gap-6">
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 mb-2">가게 외관</label>
+            <div className="w-full aspect-video rounded-xl overflow-hidden border border-gray-100 bg-gray-50 flex items-center justify-center text-4xl">
+              {storeImg1 ? <img src={storeImg1} alt="가게 외관" className="w-full h-full object-cover" /> : '🏢'}
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 mb-2">가게 내관</label>
+            <div className="w-full aspect-video rounded-xl overflow-hidden border border-gray-100 bg-gray-50 flex items-center justify-center text-4xl">
+              {storeImg2 ? <img src={storeImg2} alt="가게 내관" className="w-full h-full object-cover" /> : '🏪'}
+            </div>
+          </div>
+        </div>
       </div>
-    );
-  }
+    </div>
+  );
+};
+
+const PartnerInfoPage = () => {
+  const { bizname } = authStore();
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState('업체 정보 확인');
+
+  // 사업자 UI와 동일하되, '운영' 부분만 제거됨
+  const menuGroups = [
+    { title: '계정', items: ['업체 정보 확인', '업체 정보 수정', '회원 탈퇴'] },
+    { title: '설정', items: ['스마트 알림 설정'] }
+  ];
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col font-sans pb-12">
-      {/* 1. 상단 탑바 */}
-      <header className="bg-white border-b border-gray-200 h-14 flex items-center justify-between px-6 sticky top-0 z-50">
-        <Link to="/" className="flex items-center gap-2">
-          <img src={logo} alt="SoSo" className="h-8 w-8 object-contain" />
-          <span className="text-xl font-black text-emerald-600 tracking-tighter">SoSo</span>
-        </Link>
-        <button onClick={handleLogout} className="text-sm font-medium text-gray-500 hover:text-emerald-600 flex items-center gap-1 transition-colors">
-          <span>로그아웃</span>
-        </button>
-      </header>
-
-      {/* 2. 네비게이션 탭 */}
-      <nav className="bg-white border-b border-gray-200 flex px-6 overflow-x-auto scrollbar-hide">
-        {[
-          { name: '업체 정보 확인', icon: '🏢', path: '/partner-info' },
-          { name: '업체 정보 수정', icon: '📝', path: '/partner-edit' },
-          { name: '회원 탈퇴', icon: '👤', path: '/partner-withdrawal' },
-          { name: '스마트 알림 설정', icon: '🔔', path: '/partner-notification' }
-        ].map(tab => (
-          <div
-            key={tab.name}
-            onClick={() => tab.path !== '#' && navigate(tab.path)}
-            className={`px-4 py-4 text-sm font-bold flex items-center gap-2 cursor-pointer border-b-2 transition-all whitespace-nowrap ${
-              tab.name === '업체 정보 확인' 
-              ? 'text-emerald-600 border-emerald-600' 
-              : 'text-gray-400 border-transparent hover:text-gray-600'
-            }`}
-          >
-            <span>{tab.icon}</span>
-            {tab.name}
+    <div className="min-h-screen bg-[#FAFAFA] flex flex-col font-sans">
+      <main className="flex-grow w-full max-w-6xl mx-auto px-4 py-10 flex gap-8">
+        {/* 사이드바 */}
+        <aside className="w-64 shrink-0 flex flex-col gap-6">
+          <div className="bg-white border border-emerald-100 rounded-lg p-6 shadow-sm">
+            <h2 className="font-bold text-gray-900">{bizname || '거래처 업체'}</h2>
+            <p className="text-xs text-gray-500 mt-1">거래처 회원</p>
           </div>
-        ))}
-      </nav>
-
-      {/* 3. 페이지 헤더 */}
-      <div className="max-w-[600px] w-full mx-auto mt-8 px-4">
-        <h2 className="text-xl font-bold text-gray-900">업체 정보 확인</h2>
-        <p className="text-sm text-gray-500 mt-1">가입 시 등록된 마이페이지 상세 정보를 확인합니다.</p>
-      </div>
-
-      {/* 4. 메인 콘텐츠 */}
-      <div className="max-w-[600px] w-full mx-auto mt-6 px-4 flex flex-col gap-6">
+          {menuGroups.map((group) => (
+            <div key={group.title}>
+              <h4 className="text-xs font-bold text-gray-400 mb-2 px-2">{group.title}</h4>
+              <ul className="flex flex-col gap-1">
+                {group.items.map((item) => (
+                  <li key={item}>
+                    <button
+                      onClick={() => {
+                        if (item === '업체 정보 확인') navigate("/partner-info");
+                        else if (item === '업체 정보 수정') navigate("/partner-edit");
+                        else if (item === '회원 탈퇴') navigate("/partner-withdrawal");
+                        else if (item === '스마트 알림 설정') navigate("/partner-notification");
+                        else setActiveTab(item);
+                      }}
+                      className={`w-full text-left px-3 py-2.5 rounded-lg text-sm font-semibold ${
+                        activeTab === item ? 'bg-emerald-50 text-emerald-700' : 'text-gray-600 hover:bg-gray-100'
+                      }`}
+                    >
+                      {item}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </aside>
         
-        {/* 기본 계정 정보 섹션 */}
-        <section className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-6">
-          <SectionTitle title="기본 계정 정보" colorClass="border-blue-500" />
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <InfoItem label="아이디" value={profile?.userId} />
-            <InfoItem label="닉네임" value={profile?.nickname} />
-            <InfoItem label="이름" value={profile?.name} />
-            <InfoItem label="가입 일자" value={formattedDate} />
-            <div className="md:col-span-2">
-              <InfoItem label="이메일" value={profile?.email} />
+        {/* 콘텐츠 영역 */}
+        <section className="flex-grow">
+          {activeTab === '업체 정보 확인' ? (
+            <UserProfileTab />
+          ) : (
+            <div className="bg-white border border-gray-100 rounded-lg p-12 text-center text-gray-400">
+              <h2 className="font-bold text-lg mb-2">{activeTab}</h2>
+              <p>콘텐츠 준비 중입니다.</p>
             </div>
-            <InfoItem label="휴대전화" value={profile?.phone} />
-          </div>
+          )}
         </section>
-
-        {/* 사업자 정보 섹션 */}
-        <section className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-6">
-          <SectionTitle title="사업자 정보" colorClass="border-emerald-500" />
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <InfoItem label="사업자 번호" value={profile?.bizNumber} />
-            <InfoItem label="상호명" value={profile?.companyName} />
-            <InfoItem label="대표자명" value={profile?.repName} />
-            <InfoItem label="개업일자" value={formattedOpeningDate} />
-            <div className="md:col-span-2">
-              <InfoItem label="가게 주소" value={fullAddress} />
-            </div>
-          </div>
-        </section>
-
-        {/* 가게 사진 섹션 */}
-        <section className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-6">
-          <SectionTitle title="가게 사진" colorClass="border-amber-500" />
-          <StoreImage exteriorImg={storeImg1} interiorImg={storeImg2} />
-        </section>
-
-        {/* 수정 페이지 이동 버튼 */}
-        <button 
-          onClick={() => navigate('/partner-edit')}
-          className="w-full h-12 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-lg transition-all active:scale-[0.98]"
-        >
-          📝 정보 수정하러 가기
-        </button>
-
-        <p className="text-[10px] text-gray-400 font-medium text-center italic">
-          ℹ️ 정보 수정을 원하시면 위 버튼을 클릭하거나 상단 탭을 이용해 주세요.
-        </p>
-      </div>
+      </main>
     </div>
   );
 };
