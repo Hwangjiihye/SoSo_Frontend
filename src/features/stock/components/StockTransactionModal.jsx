@@ -96,6 +96,7 @@ const StockTransactionModal = ({ isOpen, onClose, selectedStock, onSuccess }) =>
                     onChange={handleInboundChange}
                     placeholder="0"
                     className={inputStyle}
+                    min="1"
                     required
                   />
                 </div>
@@ -127,6 +128,7 @@ const StockTransactionModal = ({ isOpen, onClose, selectedStock, onSuccess }) =>
                     onChange={handleOutboundChange}
                     placeholder="0"
                     className={inputStyle}
+                    min="1"
                     required
                   />
                 </div>
