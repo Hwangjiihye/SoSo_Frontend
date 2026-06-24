@@ -13,7 +13,7 @@ import { toast } from 'react-toastify';
 const useNotificationSocket = () => {
   const selectedStoreSeq = authStore((state) => state.selectedStoreSeq);
   const { setNotifications, addNotification } = useNotificationStore();
-  
+
   const stompClient = useRef(null);
   const subscriptionRef = useRef(null); // 매장 전환 시 해제를 위한 구독 레퍼런스
 
@@ -34,9 +34,10 @@ const useNotificationSocket = () => {
 
     // 웹소켓 클라이언트 생성 (기존 연결이 없을 때만 연결 가동)
     if (!stompClient.current) {
-      const socket = new SockJS(import.meta.env.VITE_API_BASE_URL ,'/ws', null, {
-    transports: ['websocket']
-});
+      const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:80';
+      const socket = new SockJS(`${baseURL}/ws`, null, {
+        transports: ['websocket']
+      });
       stompClient.current = new Client({
         webSocketFactory: () => socket,
         debug: (str) => {
@@ -82,7 +83,7 @@ const useNotificationSocket = () => {
     subscriptionRef.current = stompClient.current.subscribe(topic, (message) => {
       try {
         const notification = JSON.parse(message.body);
-        
+
         // 전역 상태 업데이트 (최근 3일 리스트 맨 앞에 추가)
         addNotification(notification);
 

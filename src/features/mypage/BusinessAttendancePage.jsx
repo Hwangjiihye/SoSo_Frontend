@@ -11,12 +11,12 @@ import EmployeeRegisterModal from './components/EmployeeRegisterModal';
 import AttendanceHistoryModal from './components/AttendanceHistoryModal';
 
 const AttendanceSection = () => {
-  const { 
-    staffList, 
-    isLoading, 
-    handleRegisterStaff, 
-    handleCheckIn, 
-    handleCheckOut 
+  const {
+    staffList,
+    isLoading,
+    handleRegisterStaff,
+    handleCheckIn,
+    handleCheckOut
   } = useBusinessAttendance();
 
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
@@ -83,9 +83,8 @@ const AttendanceSection = () => {
                   <td className="px-4 py-4 font-bold text-gray-700">{staff.empName}</td>
                   <td className="px-4 py-4 text-gray-500 font-mono">{staff.phone || '-'}</td>
                   <td className="px-4 py-4">
-                    <span className={`px-2 py-1 rounded-full text-[10px] font-black ${
-                      staff.status === 'WORK' ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-400'
-                    }`}>
+                    <span className={`px-2 py-1 rounded-full text-[10px] font-black ${staff.status === 'WORK' ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-400'
+                      }`}>
                       {staff.status === 'WORK' ? '근무 중' : '퇴근'}
                     </span>
                   </td>
@@ -93,23 +92,23 @@ const AttendanceSection = () => {
                   <td className="px-4 py-4 text-gray-500 font-mono">{staff.workEndTime ? staff.workEndTime.slice(0, 5) : '-'}</td>
                   <td className="px-4 py-4 text-center">
                     {staff.status === 'WORK' ? (
-                      <button 
+                      <button
                         onClick={() => handleCheckOut(staff.employeeSeq)}
                         className="px-3 py-1 bg-red-50 text-red-500 hover:bg-red-500 hover:text-white rounded-lg text-[10px] font-bold border border-red-200 cursor-pointer transition-colors"
                       >
-                        퇴근 시키기
+                        퇴근
                       </button>
                     ) : (
-                      <button 
+                      <button
                         onClick={() => handleCheckIn(staff.employeeSeq)}
                         className="px-3 py-1 bg-emerald-50 text-emerald-600 hover:bg-emerald-500 hover:text-white rounded-lg text-[10px] font-bold border border-emerald-200 cursor-pointer transition-colors"
                       >
-                        출근 시키기
+                        출근
                       </button>
                     )}
                   </td>
                   <td className="px-4 py-4 text-center">
-                    <button 
+                    <button
                       onClick={() => {
                         setSelectedStaff(staff);
                         setIsHistoryOpen(true);
@@ -128,7 +127,7 @@ const AttendanceSection = () => {
 
       <div className="mt-8 pt-6 border-t border-gray-50 flex justify-between items-center">
         <p className="text-[11px] text-gray-400">* 매장 PC/태블릿을 통해 수동으로 직원의 출퇴근 근태를 기록하고 조회합니다.</p>
-        <button 
+        <button
           onClick={() => setIsRegisterOpen(true)}
           className="px-6 py-2 bg-emerald-500 text-white rounded-xl text-xs font-bold hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-100 cursor-pointer"
         >
@@ -137,17 +136,17 @@ const AttendanceSection = () => {
       </div>
 
       {/* 등록 모달 */}
-      <EmployeeRegisterModal 
-        isOpen={isRegisterOpen} 
-        onClose={() => setIsRegisterOpen(false)} 
-        onRegister={handleRegisterStaff} 
+      <EmployeeRegisterModal
+        isOpen={isRegisterOpen}
+        onClose={() => setIsRegisterOpen(false)}
+        onRegister={handleRegisterStaff}
       />
 
       {/* 근태 이력 팝업 */}
-      <AttendanceHistoryModal 
-        isOpen={isHistoryOpen} 
-        onClose={() => setIsHistoryOpen(false)} 
-        employee={selectedStaff} 
+      <AttendanceHistoryModal
+        isOpen={isHistoryOpen}
+        onClose={() => setIsHistoryOpen(false)}
+        employee={selectedStaff}
       />
     </div>
   );
@@ -163,7 +162,7 @@ function BusinessAttendancePage() {
 
   // 🏪 [멀티 프로필] 사장님의 모든 매장 목록을 가져옵니다.
   const { stores, isLoading: isStoresLoading } = useStores();
-  
+
   const menuGroups = [
     { title: '계정', items: ['개인정보 확인', '개인정보 수정', '회원 탈퇴'] },
     { title: '설정', items: ['스마트 알림 설정'] },
@@ -219,9 +218,8 @@ function BusinessAttendancePage() {
                         else if (item === '스마트 알림 설정') navigate("/business-notification");
                         else setActiveTab(item);
                       }}
-                      className={`w-full text-left px-3 py-2.5 rounded-lg text-sm font-semibold ${
-                        activeTab === item ? 'bg-emerald-50 text-emerald-700' : 'text-gray-600 hover:bg-gray-100'
-                      }`}
+                      className={`w-full text-left px-3 py-2.5 rounded-lg text-sm font-semibold ${activeTab === item ? 'bg-emerald-50 text-emerald-700' : 'text-gray-600 hover:bg-gray-100'
+                        }`}
                     >
                       {item}
                     </button>
@@ -231,7 +229,7 @@ function BusinessAttendancePage() {
             </div>
           ))}
         </aside>
-        
+
         {/* 콘텐츠 영역 */}
         <section className="flex-grow">
           {activeTab === '직원 근태 관리' ? (

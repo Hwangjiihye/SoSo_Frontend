@@ -10,21 +10,21 @@ import { usePartnerOrder } from './hooks/usePartnerOrder';
 function PartnerOrderPage() {
   const [currentPage, setCurrentPage] = useState(1);
 
-  const { 
+  const {
     orders, // 필터링된 목록
     allOrders, // 전체 목록 (통계용)
-    loading, 
+    loading,
     keyword,
     filterStatus,
     handleKeywordChange,
     handleFilterChange,
     fetchOrders,
-    openOrderDetail, 
-    isModalOpen, 
-    closeModal, 
+    openOrderDetail,
+    isModalOpen,
+    closeModal,
     selectedOrderDetails,
     selectedOrder, // 선택된 발주서 추가
-    handleStatusChange 
+    handleStatusChange
   } = usePartnerOrder();
 
   // 발주 상태별 컬러 매핑
@@ -84,6 +84,13 @@ function PartnerOrderPage() {
     }
   }, [currentPage, totalPages]);
 
+  // 페이지네이션 그룹화 (최대 10개 표시)
+  const maxPageButtons = 10;
+  const currentGroup = Math.ceil(currentPage / maxPageButtons);
+  const startPage = (currentGroup - 1) * maxPageButtons + 1;
+  const endPage = Math.min(startPage + maxPageButtons - 1, totalPages);
+  const pageNumbers = Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i);
+
   return (
     <div className="min-h-screen bg-[#F8F9FA] text-gray-800 font-sans">
       <main className="max-w-7xl mx-auto px-6 py-10">
@@ -113,8 +120,8 @@ function PartnerOrderPage() {
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-10">
           {[
             { label: '전체 발주', value: stats.total, color: 'border-gray-200', text: 'text-gray-900' },
-            { label: '신규 요청', value: stats.requested, color: 'border-blue-200', text: 'text-blue-600'},
-            { label: '상품 준비', value: stats.preparing, color: 'border-amber-200', text: 'text-amber-600'},
+            { label: '신규 요청', value: stats.requested, color: 'border-blue-200', text: 'text-blue-600' },
+            { label: '상품 준비', value: stats.preparing, color: 'border-amber-200', text: 'text-amber-600' },
             { label: '배송 중', value: stats.shipping, color: 'border-purple-200', text: 'text-purple-600' },
             { label: '배송 완료', value: stats.delivered, color: 'border-emerald-200', text: 'text-emerald-600' },
           ].map((item, idx) => (
@@ -181,17 +188,17 @@ function PartnerOrderPage() {
               ))}
             </div>
           </div>
-          
+
           {/* 검색 바 */}
           <div className="flex gap-4">
             <div className="relative flex-grow">
               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">🔍</span>
-              <input 
-                type="text" 
+              <input
+                type="text"
                 value={keyword}
                 onChange={handleKeywordChange}
                 onKeyDown={(e) => e.key === 'Enter' && fetchOrders()}
-                placeholder="발주 번호 또는 주문 업체명을 입력하세요" 
+                placeholder="발주 번호 또는 주문 업체명을 입력하세요"
                 className="w-full bg-gray-50 border-none rounded-2xl py-4 pl-12 pr-4 text-sm font-medium focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
               />
             </div>
@@ -207,7 +214,7 @@ function PartnerOrderPage() {
               발주 상세 목록 <span className="text-gray-500 font-medium ml-1 text-sm">{orders.length}건</span>
             </h3>
           </div>
-          
+
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-gray-50/50">
@@ -260,7 +267,7 @@ function PartnerOrderPage() {
                       </div>
                     </td>
                     <td className="px-8 py-6 text-center">
-                      <button 
+                      <button
                         className="p-2 bg-gray-50 group-hover:bg-white rounded-xl transition-all border border-gray-100 shadow-sm text-gray-400 group-hover:text-emerald-500"
                         onClick={(e) => {
                           e.stopPropagation();
@@ -275,20 +282,50 @@ function PartnerOrderPage() {
               )}
             </tbody>
           </table>
-          
+
           <div className="px-8 py-6 bg-gray-50/50 flex justify-center border-t border-gray-50">
-             <div className="flex gap-2">
-               {Array.from({ length: totalPages }, (_, index) => index + 1).map(n => (
-                 <button
-                   key={n}
-                   type="button"
-                   onClick={() => setCurrentPage(n)}
-                   className={`w-10 h-10 rounded-xl font-bold text-sm transition-all ${n === currentPage ? 'bg-emerald-600 text-white shadow-lg' : 'bg-white text-gray-400 hover:bg-gray-100 border border-gray-100'}`}
-                 >
-                   {n}
-                 </button>
-               ))}
-             </div>
+            <div className="flex items-center gap-2">
+              {/* 이전 페이지 화살표 */}
+              <button
+                type="button"
+                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                disabled={currentPage === 1}
+                className={`w-10 h-10 rounded-xl font-bold text-sm transition-all border flex items-center justify-center ${currentPage === 1
+                  ? 'bg-gray-50 text-gray-300 border-gray-100 cursor-not-allowed'
+                  : 'bg-white text-gray-500 hover:bg-gray-100 hover:text-gray-700 border-gray-100 shadow-sm cursor-pointer'
+                  }`}
+              >
+                &lt;
+              </button>
+
+              {/* 페이지 번호 버튼들 */}
+              {pageNumbers.map(n => (
+                <button
+                  key={n}
+                  type="button"
+                  onClick={() => setCurrentPage(n)}
+                  className={`w-10 h-10 rounded-xl font-bold text-sm transition-all ${n === currentPage
+                    ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-100'
+                    : 'bg-white text-gray-400 hover:bg-gray-100 border border-gray-100 shadow-sm cursor-pointer'
+                    }`}
+                >
+                  {n}
+                </button>
+              ))}
+
+              {/* 다음 페이지 화살표 */}
+              <button
+                type="button"
+                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                disabled={currentPage === totalPages}
+                className={`w-10 h-10 rounded-xl font-bold text-sm transition-all border flex items-center justify-center ${currentPage === totalPages
+                  ? 'bg-gray-50 text-gray-300 border-gray-100 cursor-not-allowed'
+                  : 'bg-white text-gray-500 hover:bg-gray-100 hover:text-gray-700 border-gray-100 shadow-sm cursor-pointer'
+                  }`}
+              >
+                &gt;
+              </button>
+            </div>
           </div>
         </div>
       </main>
@@ -302,14 +339,14 @@ function PartnerOrderPage() {
                 <h3 className="text-2xl font-black text-gray-900">발주 품목 상세</h3>
                 <p className="text-gray-500 text-sm font-bold mt-1">선택하신 발주서의 세부 항목입니다.</p>
               </div>
-              <button 
+              <button
                 onClick={closeModal}
                 className="w-12 h-12 flex items-center justify-center rounded-2xl bg-white border border-gray-100 text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all shadow-sm font-black text-xl"
               >
                 ✕
               </button>
             </div>
-            
+
             <div className="p-10 max-h-[60vh] overflow-y-auto">
               {/* 추가된 배송지 및 메모 영역 */}
               {selectedOrder && (
@@ -323,7 +360,7 @@ function PartnerOrderPage() {
                       <span className="inline-block px-2 py-0.5 bg-gray-200 text-gray-700 rounded text-xs font-bold mr-2 mb-1">
                         {selectedOrder.zonecode || '우편번호 없음'}
                       </span>
-                      <br/>
+                      <br />
                       {selectedOrder.address1} {selectedOrder.address2}
                     </div>
                   </div>
@@ -372,7 +409,7 @@ function PartnerOrderPage() {
                   {selectedOrderDetails.reduce((sum, item) => sum + (item.totalPrice || 0), 0).toLocaleString()}원
                 </span>
               </div>
-              <button 
+              <button
                 onClick={closeModal}
                 className="bg-gray-900 text-white px-10 py-4 rounded-2xl font-black text-sm hover:bg-black transition-all shadow-lg shadow-gray-200"
               >
