@@ -15,9 +15,7 @@ const LoginPage = () => {
     setLoginType, 
     formData, 
     errors,
-    options,
     handleInputChange, 
-    handleOptionChange,
     handleLoginSubmit 
   } = useLogin();
 
@@ -127,26 +125,8 @@ const LoginPage = () => {
             </div>
           </div>
 
-          {/* 로그인 옵션 및 계정 찾기: 체크박스를 세로로 배치하여 가독성을 높였습니다. */}
-          <div className="flex items-center justify-between text-sm pt-2">
-            {/* 체크박스 그룹: 세로 정렬(flex-col)로 변경 */}
-            <div className="flex flex-col gap-3">
-              {/* 로그인 상태 유지 */}
-              <div className="flex items-center">
-                <input
-                  id="rememberMe"
-                  name="rememberMe"
-                  type="checkbox"
-                  checked={options.rememberMe}
-                  onChange={handleOptionChange}
-                  className="h-4 w-4 text-[#1D9E75] border-gray-300 rounded focus:ring-[#1D9E75] cursor-pointer"
-                />
-                <label htmlFor="rememberMe" className="ml-2.5 block text-gray-700 cursor-pointer select-none text-[13.5px] font-medium">
-                  로그인 상태 유지
-                </label>
-              </div>
-            </div>
-            
+          {/* 계정 찾기 */}
+          <div className="flex items-center justify-end pt-2 text-sm">
             {/* 계정 찾기 링크: 체크박스 그룹과 수직 중앙 정렬 유지 */}
             <div className="flex items-center gap-4 font-bold text-[#158A64] text-[13.5px] whitespace-nowrap">
               <span 
