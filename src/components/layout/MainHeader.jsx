@@ -242,14 +242,14 @@ function MainHeader({ activeMenu = '홈' }) {
           
           <div className={`absolute top-full left-0 w-48 pt-2 z-[60] transition-all duration-200 ${isLookupDropdownOpen ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-2'}`}>
             <div className="bg-white border border-gray-100 rounded-2xl shadow-xl p-2">
-              <Link to="/lookup" className="block w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl mb-1">
-                조회 센터 홈
-              </Link>
               <Link to="/lookup/stock" className="block w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl mb-1">
                 재고 변동 이력
               </Link>
               <Link to="/lookup/orders" className="block w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl mb-1">
                 발주 이력 조회
+              </Link>
+              <Link to="/lookup/group-orders" className="block w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl mb-1">
+                공동구매 이력
               </Link>
               <Link to="/lookup/business-logs" className="block w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl">
                 영업 일지 기록
@@ -257,6 +257,7 @@ function MainHeader({ activeMenu = '홈' }) {
             </div>
           </div>
         </div>
+
         {/* 고객지원 드롭다운 메뉴 */}
         <div 
           className="relative"
