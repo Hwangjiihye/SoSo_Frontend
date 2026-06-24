@@ -1490,7 +1490,7 @@ const handleRegisterCard = async () => {
           <div className="relative w-full max-w-lg rounded-3xl bg-white p-8 shadow-2xl animate-fade-in-up">
             <div className="mb-7 flex items-start justify-between gap-4">
               <div>
-                <h3 className="text-xl font-black text-gray-900">자동결제 카드 등록</h3>
+                <h3 className="text-xl font-black text-gray-900">카드 등록</h3>
                 <p className="mt-1 text-xs font-medium text-gray-400">
                   화면에 표시할 카드 정보를 입력한 뒤 포트원 카드 등록을 진행하세요.
                 </p>

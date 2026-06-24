@@ -188,16 +188,6 @@ function CollectionManagementPage() {
             </p>
           </div>
 
-          {/* 내보내기 버튼 */}
-          <button
-            type="button"
-            className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-5 text-sm font-bold text-slate-600 shadow-sm hover:border-emerald-200 hover:text-emerald-600"
-          >
-            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M12 3v12m0 0 4-4m-4 4-4-4M5 20h14" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-            내보내기
-          </button>
         </section>
 
         {/* 상단 요약 카드 영역 */}

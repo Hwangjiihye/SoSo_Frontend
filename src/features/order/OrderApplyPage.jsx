@@ -14,7 +14,6 @@ function OrderApplyPage() {
   const [recommendedStocks, setRecommendedStocks] = useState([]);
   const [selectedSupplierItem, setSelectedSupplierItem] = useState(null);
   const [openModal, setOpenModal] = useState(false);
-  const [connectQuantity, setConnectQuantity] = useState(1);
 
   const {
     orderInfo,
@@ -48,8 +47,6 @@ const supplierRealName = suppliers.find(
       return;
     }
 
-    setConnectQuantity(1);
-
     const result = await check(item.itemName, storeSeq);
     const list = Array.isArray(result) ? result : [];
 
@@ -82,68 +79,94 @@ const handleCloseModal = () => {
   setOpenModal(false);
 }
 
-const handleConnectStock = async (stock) => {
+// 추천 재고를 발주 품목과 연결
+const handleConnectStock = (stock) => {
   if (!selectedSupplierItem) return;
 
+  if (!stock.stockSeq) {
+    alert('연결할 재고 정보가 없습니다.');
+    return;
+  }
+
+  console.log('연결할 내 재고:', stock);
+
+  // 여기서는 재고 수량 증가 X
+  // 발주 품목 목록에 추가하면서 어떤 재고와 연결됐는지만 저장
+  addSelectedItem({
+    ...selectedSupplierItem,
+
+    // 발주 품목 목록에서 기본 수량 1로 시작
+    // 사용자가 아래 목록에서 수량 수정 가능
+    quantity: 1,
+
+    // 나중에 발주 신청하기 누를 때 이 stockSeq로 입고 처리
+    linkedStockSeq: stock.stockSeq,
+    linkedStockName: stock.stock,
+  });
+
+  setOpenModal(false);
+  setSelectedSupplierItem(null);
+  setRecommendedStocks([]);
+};
+
+// 발주 신청 + 연결된 재고 입고 처리
+const handleSubmitWithStockIncoming = async () => {
   try {
     const storeSeq = Number(localStorage.getItem('storeSeq'));
-    const quantity = Number(connectQuantity);
 
     if (!storeSeq) {
       alert('선택된 매장이 없습니다.');
       return;
     }
 
-    if (!quantity || quantity <= 0) {
-      alert('입고할 수량을 입력해주세요.');
+    // 발주 신청 전에 연결된 품목을 먼저 잡아둠
+    const linkedItems = items.filter(item => item.linkedStockSeq);
+
+    console.log("전체 발주 품목:", items);
+    console.log("재고 연결된 품목:", linkedItems);
+
+    // 1. 발주 신청 먼저 실행
+    const submitResult = await handleSubmit();
+
+    if (submitResult === false) {
       return;
     }
 
-    if (!stock.stockSeq) {
-      alert('연결할 재고 정보가 없습니다.');
-      return;
+    // 2. 연결된 재고 입고 처리
+    for (const item of linkedItems) {
+      const quantity = Number(item.quantity);
+
+      if (!quantity || quantity <= 0) continue;
+
+      const incomingData = {
+        stockSeq: Number(item.linkedStockSeq),
+        quantity,
+        changeQuantity: quantity,
+
+        detailProductName: item.itemName,
+        detailStockName: item.itemName,
+
+        incomingPrice: Number(item.unitPrice || 0),
+        price: Number(item.unitPrice || 0),
+
+        expirationDate: new Date().toISOString().slice(0, 10),
+
+        reason: '발주 신청서 추천 재고 연결',
+        memo: `${item.itemName} 발주 수량 ${quantity}개를 기존 재고 ${item.linkedStockName || ''}에 입고 처리`,
+      };
+
+      console.log('입고 요청 데이터:', incomingData);
+
+      await createIncomingStock(storeSeq, incomingData);
     }
 
-    const incomingData = {
-      // StockIncomingDTO로 들어가는 값
-      stockSeq: stock.stockSeq,
-      quantity: quantity,
-
-      // 혹시 DTO에서 changeQuantity를 쓰는 경우 대비
-      changeQuantity: quantity,
-
-      detailStockName: selectedSupplierItem.itemName,
-      price: selectedSupplierItem.unitPrice || 0,
-
-      // 임시 유통기한
-      expirationDate: new Date().toISOString().slice(0, 10),
-
-      reason: '발주 신청서 추천 재고 연결',
-      memo: `${selectedSupplierItem.itemName} 품목을 기존 재고 ${stock.stock}에 연결`,
-    };
-
-    console.log('입고 요청 storeSeq:', storeSeq);
-    console.log('입고 요청 데이터:', incomingData);
-
-    await createIncomingStock(storeSeq, incomingData);
-
-    addSelectedItem({
-      ...selectedSupplierItem,
-      quantity: quantity,
-      linkedStockSeq: stock.stockSeq,
-    });
-
-    alert('기존 재고에 입고 처리되었습니다.');
-
-    setOpenModal(false);
-    setSelectedSupplierItem(null);
-    setRecommendedStocks([]);
-    setConnectQuantity(1);
+    alert('발주 신청 및 재고 입고 처리가 완료되었습니다.');
+    navigate('/orders');
 
   } catch (error) {
-    console.error('재고 연결 실패:', error);
+    console.error('발주 신청 또는 재고 입고 처리 실패:', error);
     console.log('서버 응답:', error.response?.data);
-    alert('재고 연결 중 오류가 발생했습니다.');
+    alert('발주 신청 또는 재고 입고 처리 중 오류가 발생했습니다.');
   }
 };
 
@@ -163,7 +186,7 @@ const handleConnectStock = async (stock) => {
               취소
             </button>
             <button 
-              onClick={handleSubmit}
+              onClick={handleSubmitWithStockIncoming}
               className="px-6 py-3 bg-emerald-600 text-white rounded-2xl font-black hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-100"
             >
               발주 신청하기
@@ -390,18 +413,6 @@ const handleConnectStock = async (stock) => {
                   {selectedSupplierItem?.itemName}
                 </span>
               </p>
-              <div className="mb-5">
-                <label className="block text-xs font-black text-gray-500 mb-2">
-                  입고 수량
-                </label>
-                <input
-                  type="number"
-                  min="1"
-                  value={connectQuantity}
-                  onChange={(e) => setConnectQuantity(Math.max(1, Number(e.target.value)))}
-                  className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 px-4 text-sm font-bold text-gray-800 outline-none focus:ring-2 focus:ring-emerald-500/20"
-                />
-              </div>
 
               {recommendedStocks.length === 0 ? (
                 <>

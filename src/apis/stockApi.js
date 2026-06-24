@@ -49,8 +49,13 @@ export const getStockHistories = async (stockSeq) => {
 // 재고 입고 처리
 export const createIncomingStock = async (storeSeq, data) => {
   const response = await axiosInstance.post(
-    `/api/stocks/incoming?storeSeq=${storeSeq}`,
-    data
+    "/api/stocks/incoming",
+    data,
+    {
+      params: {
+        storeSeq: Number(storeSeq)
+      }
+    }
   );
 
   return response.data;
