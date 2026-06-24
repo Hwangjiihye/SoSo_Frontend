@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useOrderApply } from './hooks/useOrderApply';
 import {check} from '../../apis/orderApi';
+import { createIncomingStock } from '../../apis/stockApi';
 
 /**
  * @file OrderApplyPage.jsx
@@ -13,6 +14,7 @@ function OrderApplyPage() {
   const [recommendedStocks, setRecommendedStocks] = useState([]);
   const [selectedSupplierItem, setSelectedSupplierItem] = useState(null);
   const [openModal, setOpenModal] = useState(false);
+  const [connectQuantity, setConnectQuantity] = useState(1);
 
   const {
     orderInfo,
@@ -46,6 +48,8 @@ const supplierRealName = suppliers.find(
       return;
     }
 
+    setConnectQuantity(1);
+
     const result = await check(item.itemName, storeSeq);
     const list = Array.isArray(result) ? result : [];
 
@@ -72,45 +76,75 @@ const supplierRealName = suppliers.find(
     setOpenModal(true);
   }
 };
-//   const handleSelectSupplierItem = async (item) => {
-//   console.log('선택한 품목:', item);
-  
-//   try {
-//     const storeSeq = Number(localStorage.getItem('storeSeq'));
-
-//     if (!storeSeq) {
-//       alert('선택된 매장이 없습니다.');
-//       return;
-//     }
-//     const result = await check(item.itemName, storeSeq);
-
-//     console.log('재고 추천 응답:', result);
-//     setRecommendedStocks(result);
-//     addSelectedItem(item);
-//     setSelectedSupplierItem(item);
-//     setOpenModal(true);
-//   } catch (error) {
-//     console.error('재고 추천 조회 실패:', error);
-//     alert('재고 추천 조회에 실패했습니다.');
-//   }
-// };
 
 // 모달 Close
 const handleCloseModal = () => {
   setOpenModal(false);
 }
 
-const handleConnectStock = (stock) => {
+const handleConnectStock = async (stock) => {
   if (!selectedSupplierItem) return;
 
-  console.log('연결할 내 재고:', stock);
+  try {
+    const storeSeq = Number(localStorage.getItem('storeSeq'));
+    const quantity = Number(connectQuantity);
 
-  // 추천 재고를 선택하면 그때 발주 품목 목록에 추가
-  addSelectedItem(selectedSupplierItem);
+    if (!storeSeq) {
+      alert('선택된 매장이 없습니다.');
+      return;
+    }
 
-  setOpenModal(false);
-  setSelectedSupplierItem(null);
-  setRecommendedStocks([]);
+    if (!quantity || quantity <= 0) {
+      alert('입고할 수량을 입력해주세요.');
+      return;
+    }
+
+    if (!stock.stockSeq) {
+      alert('연결할 재고 정보가 없습니다.');
+      return;
+    }
+
+    const incomingData = {
+      // StockIncomingDTO로 들어가는 값
+      stockSeq: stock.stockSeq,
+      quantity: quantity,
+
+      // 혹시 DTO에서 changeQuantity를 쓰는 경우 대비
+      changeQuantity: quantity,
+
+      detailStockName: selectedSupplierItem.itemName,
+      price: selectedSupplierItem.unitPrice || 0,
+
+      // 임시 유통기한
+      expirationDate: new Date().toISOString().slice(0, 10),
+
+      reason: '발주 신청서 추천 재고 연결',
+      memo: `${selectedSupplierItem.itemName} 품목을 기존 재고 ${stock.stock}에 연결`,
+    };
+
+    console.log('입고 요청 storeSeq:', storeSeq);
+    console.log('입고 요청 데이터:', incomingData);
+
+    await createIncomingStock(storeSeq, incomingData);
+
+    addSelectedItem({
+      ...selectedSupplierItem,
+      quantity: quantity,
+      linkedStockSeq: stock.stockSeq,
+    });
+
+    alert('기존 재고에 입고 처리되었습니다.');
+
+    setOpenModal(false);
+    setSelectedSupplierItem(null);
+    setRecommendedStocks([]);
+    setConnectQuantity(1);
+
+  } catch (error) {
+    console.error('재고 연결 실패:', error);
+    console.log('서버 응답:', error.response?.data);
+    alert('재고 연결 중 오류가 발생했습니다.');
+  }
 };
 
   return (
@@ -337,7 +371,15 @@ const handleConnectStock = (stock) => {
           {/* 발주 추천 ui */}
           {openModal && selectedSupplierItem && (
             <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[9999]">
-            <section className="bg-white rounded-[32px] border border-gray-100 p-8 shadow-sm w-[500px] max-w-[90vw] max-h-[80vh] overflow-y-auto">
+            <section className="relative bg-white rounded-[32px] border border-gray-100 p-8 shadow-sm w-[500px] max-w-[90vw] max-h-[80vh] overflow-y-auto">
+              <button
+                type="button"
+                onClick={handleCloseModal}
+                aria-label="내 재고 추천 모달 닫기"
+                className="absolute right-6 top-6 flex h-9 w-9 items-center justify-center rounded-full text-2xl font-bold leading-none text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
+              >
+                ×
+              </button>
               <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
                 <span className="w-1.5 h-6 bg-emerald-500 rounded-full"></span>
                 내 재고 추천
@@ -348,6 +390,18 @@ const handleConnectStock = (stock) => {
                   {selectedSupplierItem?.itemName}
                 </span>
               </p>
+              <div className="mb-5">
+                <label className="block text-xs font-black text-gray-500 mb-2">
+                  입고 수량
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  value={connectQuantity}
+                  onChange={(e) => setConnectQuantity(Math.max(1, Number(e.target.value)))}
+                  className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 px-4 text-sm font-bold text-gray-800 outline-none focus:ring-2 focus:ring-emerald-500/20"
+                />
+              </div>
 
               {recommendedStocks.length === 0 ? (
                 <>
