@@ -128,14 +128,20 @@ export const useGroupBuy = () => {
       setMyCount(latestData.filter(i => i.isJoined).length);
     }
 
-    // 상단바 통계용 전체 현황 조회 (필터 영향 받지 않음)
+    // 상단바 통계용 전체 현황 및 완료된 그룹 수 조회
     try {
       const allData = await groupBuyApi.getGroupBuys('all');
       const ongoing = allData.filter(i => i.status === 'RECRUITING').length;
-      const delivered = allData.filter(i => i.status === 'COMPLETED').length;
+      
+      const completedData = await groupBuyApi.getCompletedCount();
+      const delivered = typeof completedData === 'number' ? completedData : (completedData?.count || 0);
+      
       setGlobalStats({ ongoing, delivered });
     } catch (statsError) {
       console.error('Failed to fetch global stats:', statsError);
+      const ongoing = latestData.filter(i => i.status === 'RECRUITING').length;
+      const delivered = latestData.filter(i => i.status === 'COMPLETED').length;
+      setGlobalStats({ ongoing, delivered });
     }
   }, [filter]);
 
