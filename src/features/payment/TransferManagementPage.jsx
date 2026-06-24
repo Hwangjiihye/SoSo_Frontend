@@ -1061,7 +1061,9 @@ const handleRegisterCard = async () => {
                     <th className="px-5 py-4">카드사</th>
                     <th className="px-5 py-4">카드번호</th>
                     <th className="px-5 py-4">보낸 사람</th>
-                    <th className="px-5 py-4">받는 사람</th>
+                    <th className="px-5 py-4">
+                      <span className="mx-auto block w-[150px] pl-12 text-left">받는 사람</span>
+                    </th>
                     <th className="px-5 py-4">결제 금액</th>
                     <th className="px-5 py-4">상태</th>
                   </tr>
@@ -1099,17 +1101,14 @@ const handleRegisterCard = async () => {
 
                           {/* 받는 사람: 거래처 */}
                           <td className="px-5 py-5">
-                            <div className="flex items-center justify-center gap-3">
+                            <div className="mx-auto flex w-[150px] items-center gap-3">
                               <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-xs font-black text-emerald-700">
                                 {partnerInitial}
                               </span>
 
-                              <div className="text-left">
-                                <p className="text-sm font-black text-gray-900">
+                              <div className="min-w-0 flex-1 text-left">
+                                <p className="truncate whitespace-nowrap text-sm font-black text-gray-900">
                                   {item.partnerName}
-                                </p>
-                                <p className="mt-0.5 text-xs font-semibold text-gray-400">
-                                  거래처
                                 </p>
                               </div>
                             </div>
