@@ -65,53 +65,22 @@ export const useGroupBuy = () => {
     setIsLoading(true);
     let latestData = [];
     try {
-      const data = filter === 'my' 
-        ? await groupBuyApi.getParticipatedGroupBuys()
-        : await groupBuyApi.getGroupBuys(filter);
+      let data;
+      if (filter === 'my') {
+        data = await groupBuyApi.getParticipatedGroupBuys();
+      } else if (filter === 'completed') {
+        data = await groupBuyApi.getCompletedGroupBuys();
+      } else {
+        data = await groupBuyApi.getGroupBuys(filter);
+      }
       // 데이터 변환 및 기본값 설정
-      const formattedData = data.map((item, index) => mapGroupBuyData(item, index, filter === 'my'));
+      const formattedData = data.map((item, index) => mapGroupBuyData(item, index, filter === 'my' || filter === 'completed'));
       latestData = formattedData;
       setGroupBuys(formattedData);
     } catch (error) {
       console.error('Failed to fetch group buys:', error);
-      // 개발용 목 데이터
-      const mockData = [
-        {
-          seq: 1,
-          groupName: '한우 등심 (1+ 등급, 10kg)',
-          partnerName: '상생 농장',
-          endDate: '2024-06-30',
-          pickupLocation: '(06236) 서울특별시 강남구 테헤란로 123 소소빌딩 1층',
-          dDay: 'D-12',
-          currentParticipants: 15,
-          targetParticipants: 20,
-          totalAmount: 380000,
-          status: 'RECRUITING',
-          category: '육류',
-          isJoined: false,
-          creatorType: 'PARTNER', // 거래처가 주최한 공동구매
-          isOwner: false
-        },
-        {
-          seq: 2,
-          groupName: '친환경 양파 (20kg 망)',
-          partnerName: '강남 김치찌개 (사업자)',
-          endDate: '2024-06-20',
-          pickupLocation: '(06666) 서울 서초구 서초대로 456 상가 102호',
-          dDay: 'D-2',
-          currentParticipants: 30,
-          targetParticipants: 30,
-          totalAmount: 28000,
-          status: 'COMPLETED',
-          category: '채소류',
-          isJoined: true,
-          creatorType: 'BUSINESS', // 사업자가 주최한 공동구매
-          isOwner: true
-        }
-      ];
-      const formattedMock = mockData.map((item, index) => mapGroupBuyData(item, index, false));
-      latestData = formattedMock;
-      setGroupBuys(formattedMock);
+      setGroupBuys([]);
+      latestData = [];
     } finally {
       setIsLoading(false);
     }
@@ -199,6 +168,9 @@ export const useGroupBuy = () => {
     
     // 2. 종류(전체, 참여, 주최자) 필터
     if (filter === 'my' && !item.isJoined) {
+      return false;
+    }
+    if (filter === 'completed' && (!item.isJoined || item.status !== 'COMPLETED')) {
       return false;
     }
     if (filter === 'business' && item.creatorType !== 'BUSINESS') {

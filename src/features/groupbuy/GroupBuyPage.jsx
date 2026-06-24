@@ -123,6 +123,14 @@ const GroupBuyPage = () => {
           >
             나의 참여 그룹
           </button>
+          <button
+            onClick={() => setFilter('completed')}
+            className={`px-6 sm:px-8 py-3 rounded-[16px] text-sm font-black transition-all ${
+              filter === 'completed' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-100' : 'text-gray-400 hover:text-gray-600'
+            }`}
+          >
+            완료된 그룹
+          </button>
           {/* 나중에 구현할 예정 (사업자 주관, 거래처 주관 필터)
           <button
             onClick={() => setFilter('business')}
