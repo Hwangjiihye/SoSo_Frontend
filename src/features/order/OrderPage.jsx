@@ -165,6 +165,15 @@ const paginatedOrders = sortedOrders.slice(
   currentPage * ordersPerPage,
 );
 
+const pagesPerGroup = 10;
+const currentPageGroup = Math.floor((currentPage - 1) / pagesPerGroup);
+const firstVisiblePage = currentPageGroup * pagesPerGroup + 1;
+const lastVisiblePage = Math.min(firstVisiblePage + pagesPerGroup - 1, totalPages);
+const visiblePageNumbers = Array.from(
+  { length: lastVisiblePage - firstVisiblePage + 1 },
+  (_, index) => firstVisiblePage + index,
+);
+
 useEffect(() => {
   if (currentPage > totalPages) {
     setCurrentPage(totalPages);
@@ -364,7 +373,19 @@ useEffect(() => {
 
           <div className="px-8 py-6 bg-gray-50/50 flex justify-center border-t border-gray-50">
             <div className="flex gap-2">
-              {Array.from({ length: totalPages }, (_, index) => index + 1).map(n => (
+              {totalPages > pagesPerGroup && (
+                <button
+                  type="button"
+                  onClick={() => setCurrentPage(Math.max(1, firstVisiblePage - pagesPerGroup))}
+                  disabled={firstVisiblePage === 1}
+                  aria-label="이전 페이지 묶음"
+                  className="w-10 h-10 rounded-xl border border-gray-100 bg-white text-sm font-bold text-gray-400 transition-all hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  &lt;
+                </button>
+              )}
+
+              {visiblePageNumbers.map(n => (
                 <button
                   key={n}
                   type="button"
@@ -374,6 +395,18 @@ useEffect(() => {
                   {n}
                 </button>
               ))}
+
+              {totalPages > pagesPerGroup && (
+                <button
+                  type="button"
+                  onClick={() => setCurrentPage(Math.min(totalPages, lastVisiblePage + 1))}
+                  disabled={lastVisiblePage === totalPages}
+                  aria-label="다음 페이지 묶음"
+                  className="w-10 h-10 rounded-xl border border-gray-100 bg-white text-sm font-bold text-gray-400 transition-all hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  &gt;
+                </button>
+              )}
             </div>
           </div>
         </div>

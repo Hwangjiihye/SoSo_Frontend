@@ -36,12 +36,28 @@ export const getStockHistories = async (stockSeq) => {
 
 // 5. 입고 등록
 // POST /api/stocks/incoming
-export const createIncomingStock = async (data) => {
-  // data: { stockSeq, detailProductName, quantity, incomingPrice, expirationDate, manager, memo }
-  const {storeSeq, ...body} = data;
-  const response = await axiosInstance.post('/api/stocks/incoming', body, {
-    params: {storeSeq}
-  });
+// export const createIncomingStock = async (data) => {
+//   // data: { stockSeq, detailProductName, quantity, incomingPrice, expirationDate, manager, memo }
+//   const {storeSeq, ...body} = data;
+//   const response = await axiosInstance.post('/api/stocks/incoming', body, {
+//     params: {storeSeq}
+//   });
+//   return response.data;
+// };
+// src/apis/stockApi.js
+
+// 재고 입고 처리
+export const createIncomingStock = async (storeSeq, data) => {
+  const response = await axiosInstance.post(
+    "/api/stocks/incoming",
+    data,
+    {
+      params: {
+        storeSeq: Number(storeSeq)
+      }
+    }
+  );
+
   return response.data;
 };
 

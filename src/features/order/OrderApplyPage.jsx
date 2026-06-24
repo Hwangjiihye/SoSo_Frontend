@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useOrderApply } from './hooks/useOrderApply';
 import {check} from '../../apis/orderApi';
+import { createIncomingStock } from '../../apis/stockApi';
 
 /**
  * @file OrderApplyPage.jsx
@@ -72,45 +73,101 @@ const supplierRealName = suppliers.find(
     setOpenModal(true);
   }
 };
-//   const handleSelectSupplierItem = async (item) => {
-//   console.log('선택한 품목:', item);
-  
-//   try {
-//     const storeSeq = Number(localStorage.getItem('storeSeq'));
-
-//     if (!storeSeq) {
-//       alert('선택된 매장이 없습니다.');
-//       return;
-//     }
-//     const result = await check(item.itemName, storeSeq);
-
-//     console.log('재고 추천 응답:', result);
-//     setRecommendedStocks(result);
-//     addSelectedItem(item);
-//     setSelectedSupplierItem(item);
-//     setOpenModal(true);
-//   } catch (error) {
-//     console.error('재고 추천 조회 실패:', error);
-//     alert('재고 추천 조회에 실패했습니다.');
-//   }
-// };
 
 // 모달 Close
 const handleCloseModal = () => {
   setOpenModal(false);
 }
 
+// 추천 재고를 발주 품목과 연결
 const handleConnectStock = (stock) => {
   if (!selectedSupplierItem) return;
 
+  if (!stock.stockSeq) {
+    alert('연결할 재고 정보가 없습니다.');
+    return;
+  }
+
   console.log('연결할 내 재고:', stock);
 
-  // 추천 재고를 선택하면 그때 발주 품목 목록에 추가
-  addSelectedItem(selectedSupplierItem);
+  // 여기서는 재고 수량 증가 X
+  // 발주 품목 목록에 추가하면서 어떤 재고와 연결됐는지만 저장
+  addSelectedItem({
+    ...selectedSupplierItem,
+
+    // 발주 품목 목록에서 기본 수량 1로 시작
+    // 사용자가 아래 목록에서 수량 수정 가능
+    quantity: 1,
+
+    // 나중에 발주 신청하기 누를 때 이 stockSeq로 입고 처리
+    linkedStockSeq: stock.stockSeq,
+    linkedStockName: stock.stock,
+  });
 
   setOpenModal(false);
   setSelectedSupplierItem(null);
   setRecommendedStocks([]);
+};
+
+// 발주 신청 + 연결된 재고 입고 처리
+const handleSubmitWithStockIncoming = async () => {
+  try {
+    const storeSeq = Number(localStorage.getItem('storeSeq'));
+
+    if (!storeSeq) {
+      alert('선택된 매장이 없습니다.');
+      return;
+    }
+
+    // 발주 신청 전에 연결된 품목을 먼저 잡아둠
+    const linkedItems = items.filter(item => item.linkedStockSeq);
+
+    console.log("전체 발주 품목:", items);
+    console.log("재고 연결된 품목:", linkedItems);
+
+    // 1. 발주 신청 먼저 실행
+    const submitResult = await handleSubmit();
+
+    if (submitResult === false) {
+      return;
+    }
+
+    // 2. 연결된 재고 입고 처리
+    for (const item of linkedItems) {
+      const quantity = Number(item.quantity);
+
+      if (!quantity || quantity <= 0) continue;
+
+      const incomingData = {
+        stockSeq: Number(item.linkedStockSeq),
+        quantity,
+        changeQuantity: quantity,
+
+        detailProductName: item.itemName,
+        detailStockName: item.itemName,
+
+        incomingPrice: Number(item.unitPrice || 0),
+        price: Number(item.unitPrice || 0),
+
+        expirationDate: new Date().toISOString().slice(0, 10),
+
+        reason: '발주 신청서 추천 재고 연결',
+        memo: `${item.itemName} 발주 수량 ${quantity}개를 기존 재고 ${item.linkedStockName || ''}에 입고 처리`,
+      };
+
+      console.log('입고 요청 데이터:', incomingData);
+
+      await createIncomingStock(storeSeq, incomingData);
+    }
+
+    alert('발주 신청 및 재고 입고 처리가 완료되었습니다.');
+    navigate('/orders');
+
+  } catch (error) {
+    console.error('발주 신청 또는 재고 입고 처리 실패:', error);
+    console.log('서버 응답:', error.response?.data);
+    alert('발주 신청 또는 재고 입고 처리 중 오류가 발생했습니다.');
+  }
 };
 
   return (
@@ -129,7 +186,7 @@ const handleConnectStock = (stock) => {
               취소
             </button>
             <button 
-              onClick={handleSubmit}
+              onClick={handleSubmitWithStockIncoming}
               className="px-6 py-3 bg-emerald-600 text-white rounded-2xl font-black hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-100"
             >
               발주 신청하기
@@ -337,7 +394,15 @@ const handleConnectStock = (stock) => {
           {/* 발주 추천 ui */}
           {openModal && selectedSupplierItem && (
             <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[9999]">
-            <section className="bg-white rounded-[32px] border border-gray-100 p-8 shadow-sm w-[500px] max-w-[90vw] max-h-[80vh] overflow-y-auto">
+            <section className="relative bg-white rounded-[32px] border border-gray-100 p-8 shadow-sm w-[500px] max-w-[90vw] max-h-[80vh] overflow-y-auto">
+              <button
+                type="button"
+                onClick={handleCloseModal}
+                aria-label="내 재고 추천 모달 닫기"
+                className="absolute right-6 top-6 flex h-9 w-9 items-center justify-center rounded-full text-2xl font-bold leading-none text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
+              >
+                ×
+              </button>
               <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
                 <span className="w-1.5 h-6 bg-emerald-500 rounded-full"></span>
                 내 재고 추천

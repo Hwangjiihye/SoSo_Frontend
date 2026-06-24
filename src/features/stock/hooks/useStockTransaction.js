@@ -104,14 +104,16 @@ export const useStockTransaction = (selectedStock, onClose, onSuccess) => {
         if (Number(inboundForm.incomingPrice) < 0) {
           throw new Error('입고 단가는 0원 이상이어야 합니다.');
         }
-        await createIncomingStock({ 
+        const requestData = {
           stockSeq: stockSeq,
-          storeSeq: selectedStoreSeq,
           detailStockName: inboundForm.detailStockName,
           quantity: Number(inboundForm.quantity),
           incomingPrice: Number(inboundForm.incomingPrice),
           memo: inboundForm.memo
-        });
+        };
+
+        await createIncomingStock(Number(selectedStoreSeq), requestData);
+        
       } else if (activeTab === 'OUTBOUND') {
         if (!outboundForm.quantity || !outboundForm.reason) {
           throw new Error('필수 입력 항목을 확인해주세요.');
