@@ -8,7 +8,7 @@ import { useStockLookup } from './hooks/useStockLookup';
 const StockLookupPage = () => {
   const [params, setParams] = useState({
     page: 1,
-    size: 15,
+    size: 10,
     transactionType: 'ALL',
     startDate: '',
     endDate: '',
@@ -165,19 +165,27 @@ const StockLookupPage = () => {
         >
           ←
         </button>
-        {[...Array(historyData.totalPages)].map((_, i) => (
-          <button
-            key={i + 1}
-            onClick={() => handlePageChange(i + 1)}
-            className={`w-10 h-10 rounded-xl font-black text-sm transition-all ${
-              params.page === i + 1 
-                ? 'bg-blue-500 text-white shadow-lg shadow-blue-200' 
-                : 'bg-white text-gray-400 hover:text-gray-900 border border-gray-100'
-            }`}
-          >
-            {i + 1}
-          </button>
-        ))}
+        {(() => {
+          const startPage = Math.floor((params.page - 1) / 10) * 10 + 1;
+          const endPage = Math.min(startPage + 9, historyData.totalPages);
+          const pageButtons = [];
+          for (let i = startPage; i <= endPage; i++) {
+            pageButtons.push(
+              <button
+                key={i}
+                onClick={() => handlePageChange(i)}
+                className={`w-10 h-10 rounded-xl font-black text-sm transition-all ${
+                  params.page === i 
+                    ? 'bg-blue-500 text-white shadow-lg shadow-blue-200' 
+                    : 'bg-white text-gray-400 hover:text-gray-900 border border-gray-100'
+                }`}
+              >
+                {i}
+              </button>
+            );
+          }
+          return pageButtons;
+        })()}
         <button 
           onClick={() => handlePageChange(params.page + 1)}
           disabled={params.page === historyData.totalPages}
