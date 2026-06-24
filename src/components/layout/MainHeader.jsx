@@ -21,6 +21,7 @@ function MainHeader({ activeMenu = '홈' }) {
   const [isSupportDropdownOpen, setIsSupportDropdownOpen] = useState(false);
   const [isStockDropdownOpen, setIsStockDropdownOpen] = useState(false);
   const [isGroupBuyDropdownOpen, setIsGroupBuyDropdownOpen] = useState(false);
+  const [isLookupDropdownOpen, setIsLookupDropdownOpen] = useState(false);
 
   useEffect(() => {
     if (!stores || stores.length === 0) return;
@@ -227,7 +228,35 @@ function MainHeader({ activeMenu = '홈' }) {
           </div>
         )}
 
-        <Link to="/lookup" className={getNavStyle('조회/기록')}>조회/기록</Link>
+        {/* 조회/기록 드롭다운 메뉴 */}
+        <div 
+          className="relative"
+          onMouseEnter={() => setIsLookupDropdownOpen(true)}
+          onMouseLeave={() => setIsLookupDropdownOpen(false)}
+        >
+          <div className={activeMenu === '조회/기록' 
+            ? "px-4 py-1.5 text-sm font-semibold bg-white text-emerald-600 rounded shadow-sm border border-gray-200 cursor-pointer transition-all whitespace-nowrap"
+            : "px-4 py-1.5 text-sm font-medium text-gray-500 hover:text-emerald-600 transition-all cursor-pointer whitespace-nowrap"}>
+            조회/기록
+          </div>
+          
+          <div className={`absolute top-full left-0 w-48 pt-2 z-[60] transition-all duration-200 ${isLookupDropdownOpen ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-2'}`}>
+            <div className="bg-white border border-gray-100 rounded-2xl shadow-xl p-2">
+              <Link to="/lookup" className="block w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl mb-1">
+                조회 센터 홈
+              </Link>
+              <Link to="/lookup/stock" className="block w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl mb-1">
+                재고 변동 이력
+              </Link>
+              <Link to="/lookup/orders" className="block w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl mb-1">
+                발주 이력 조회
+              </Link>
+              <Link to="/lookup/business-logs" className="block w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl">
+                영업 일지 기록
+              </Link>
+            </div>
+          </div>
+        </div>
 
         {/* 고객지원 드롭다운 메뉴 */}
         <div 

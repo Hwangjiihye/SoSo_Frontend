@@ -123,6 +123,7 @@ const GroupBuyPage = () => {
           >
             나의 참여 그룹
           </button>
+          {/* 나중에 구현할 예정 (사업자 주관, 거래처 주관 필터)
           <button
             onClick={() => setFilter('business')}
             className={`px-6 sm:px-8 py-3 rounded-[16px] text-sm font-black transition-all ${
@@ -139,6 +140,7 @@ const GroupBuyPage = () => {
           >
             거래처 주관
           </button>
+          */}
         </div>
 
         {/* 공동구매 리스트 (가로형 레이아웃 반영) */}
