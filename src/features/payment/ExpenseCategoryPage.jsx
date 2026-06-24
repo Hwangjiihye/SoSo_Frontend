@@ -10,7 +10,7 @@ import {
 import { Doughnut } from 'react-chartjs-2';
 import MainFooter from '../../components/layout/MainFooter';
 import { useExpenseCategory } from './hooks/useExpenseCategory';
-import { insertExpense, getExpenseTotal, categoryCost, ExpenseDetails,getMyPartners, getGeneralOrdersForExpense } from "../../apis/account";
+import { insertExpense, getExpenseTotal, categoryCost, ExpenseDetails,getMyPartners, getGeneralOrdersForExpense, updateExpenseMemo, deleteExpense } from "../../apis/account";
 
 // Chart.js 컴포넌트 등록
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale);
@@ -32,6 +32,8 @@ const ExpenseCategoryPage = () => {
   const [totalAmount, setTotalAmount] = useState(0);
   const [expenseCategoryTotals, setExpenseCategoryTotals] = useState([]);
   const [isExporting, setIsExporting] = useState(false);
+  const [editingExpenseSeq, setEditingExpenseSeq] = useState(null); // 지출 내역 메모 수정
+  const [editingMemo, setEditingMemo] = useState(""); // 지출 내역 삭제 
 
 
   // 지출 내역 예시 데이터 상태
@@ -325,12 +327,101 @@ const handleExportCsv = async () => {
   const [selectedPurchaseOrder, setSelectedPurchaseOrder] = useState('');
   const [selectedGroupPurchase, setSelectedGroupPurchase] = useState('');
   const [selectedGroupPurchaseOrder, setSelectedGroupPurchaseOrder] = useState('');
-  const [selectedDirectPurchaseItems, setSelectedDirectPurchaseItems] = useState([]);
+  const [directPurchaseRows, setDirectPurchaseRows] = useState([{supplierName: "", amount: ""}]);
   const [ingredientExpenseType, setIngredientExpenseType] = useState('general');
   const [partnerList, setPartnerList] = useState([]);
   const [generalOrderList, setGeneralOrderList] = useState([]);
   const [selectedGeneralOrder, setSelectedGeneralOrder] = useState(null);
   const [isGeneralOrderLoading, setIsGeneralOrderLoading] = useState(false);
+
+  // 직접 구매 입력 목록의 총 금액 계산 함수
+  // 줄을 추가/삭제/수정해도 항상 현재 directPurchaseRows 기준으로 다시 계산한다.
+  const calculateDirectPurchaseTotal = (rows) => {
+    return rows.reduce(
+      (total, row) => total + Number(row.amount || 0),
+      0
+    );
+  };
+
+
+  // 직접 구매 입력 줄 추가
+  // + 버튼을 누르면 구매처/금액 입력칸이 한 줄 더 생긴다.
+  // 직접 구매 입력 줄 추가
+  const handleAddDirectPurchaseRow = () => {
+    setDirectPurchaseRows((prevRows) => {
+      const updatedRows = [
+        ...prevRows,
+        {
+          supplierName: "",
+          amount: "",
+        },
+      ];
+
+      // 줄 추가 후 현재 총 금액 다시 계산
+      const totalAmount = calculateDirectPurchaseTotal(updatedRows);
+
+      setExpenseForm((prevForm) => ({
+        ...prevForm,
+        amount: String(totalAmount),
+      }));
+
+      return updatedRows;
+    });
+  };
+
+
+// 직접 구매 입력값 변경
+// index: 몇 번째 줄인지
+// field: supplierName 또는 amount
+// value: 사용자가 입력한 값
+// 직접 구매 입력값 변경
+const handleChangeDirectPurchaseRow = (index, field, value) => {
+  setDirectPurchaseRows((prevRows) => {
+    const updatedRows = prevRows.map((row, rowIndex) =>
+      rowIndex === index
+        ? { ...row, [field]: value }
+        : row
+    );
+
+    // 입력값 변경 후 현재 총 금액 다시 계산
+    const totalAmount = calculateDirectPurchaseTotal(updatedRows);
+
+    setExpenseForm((prevForm) => ({
+      ...prevForm,
+      amount: String(totalAmount),
+    }));
+
+    return updatedRows;
+  });
+};
+
+
+// 직접 구매 입력 줄 삭제
+// 최소 1줄은 남겨둔다.
+// 직접 구매 입력 줄 삭제
+const handleRemoveDirectPurchaseRow = (index) => {
+  setDirectPurchaseRows((prevRows) => {
+    // 최소 1줄은 남김
+    if (prevRows.length === 1) {
+      return prevRows;
+    }
+
+    const updatedRows = prevRows.filter(
+      (_, rowIndex) => rowIndex !== index
+    );
+
+    // 삭제 후 현재 총 금액 다시 계산
+    const totalAmount = calculateDirectPurchaseTotal(updatedRows);
+
+    setExpenseForm((prevForm) => ({
+      ...prevForm,
+      amount: String(totalAmount),
+    }));
+
+    return updatedRows;
+  });
+}
+
 
   // 카테고리 판단용
   const selectedExpenseCategory = localCategories.find(
@@ -454,20 +545,20 @@ useEffect(() => {
   };
 
   // 비용 등록 핸들러 (지출 비용 입력 폼 저장 로직)
-  const handleAddExpense = async (e) => {
+  // 비용 등록 핸들러
+// 일반 발주, 공동 발주, 직접 구매를 구분해서 expenses 테이블에 저장한다.
+const handleAddExpense = async (e) => {
   e.preventDefault();
 
+  // 카테고리 선택 여부 확인
   if (!expenseForm.categorySeq) {
     alert("지출 카테고리를 선택해 주세요.");
     return;
   }
 
-  if (!expenseForm.amount || Number(expenseForm.amount) <= 0) {
-    alert("올바른 지출 금액을 입력해 주세요.");
-    return;
-  }
-
-  if (!expenseForm.title) {
+  // 지출 내역 입력 여부 확인
+  // 직접 구매도 공통으로 지출 내역은 필요하다.
+  if (!expenseForm.title.trim()) {
     alert("지출 내역을 입력해 주세요.");
     return;
   }
@@ -478,35 +569,211 @@ useEffect(() => {
     if (!storeSeq) {
       alert("선택된 매장 정보가 없습니다. 상단에서 매장을 선택해 주세요.");
       return;
-}
+    }
 
-const selectedPartner = partnerList.find((partner) => {
-  const partnerStoreSeq =
-    partner.partnerStoreSeq ??
-    partner.storeSeq ??
-    partner.partner_store_seq;
+    // ================================
+    // 직접 구매 등록 처리
+    // ================================
+    // 직접 구매는 한 번에 여러 줄을 입력할 수 있으므로
+    // 입력 줄마다 expenses에 각각 1건씩 저장한다.
+    // ================================
+    if (isIngredientCategory && ingredientExpenseType === "direct") {
+      // 구매처와 금액이 정상 입력된 줄만 사용
+      const validRows = directPurchaseRows
+        .map((row) => ({
+          supplierName: row.supplierName.trim(),
+          amount: Number(row.amount || 0),
+        }))
+        .filter((row) => row.supplierName && row.amount > 0);
 
-  return Number(partnerStoreSeq) === Number(selectedSupplier);
-});
+      if (validRows.length === 0) {
+        alert("직접 구매 내역을 1건 이상 입력해 주세요.");
+        return;
+      }
 
-const selectedPartnerName =
-  selectedPartner?.partnerName ??
-  selectedPartner?.companyName ??
-  selectedPartner?.company_name ??
-  "";
+      // 직접 구매 최종 총액
+      // 등록 직전에 다시 계산해서 금액 꼬임 방지
+      const finalDirectPurchaseTotal = calculateDirectPurchaseTotal(validRows);
 
-if (isIngredientCategory && ingredientExpenseType === "general") {
-  if (!selectedSupplier) {
-    alert("거래처를 선택해 주세요.");
-    return;
-  }
+      if (finalDirectPurchaseTotal <= 0) {
+        alert("올바른 지출 금액을 입력해 주세요.");
+        return;
+      }
 
-  if (!selectedGeneralOrder) {
-    alert("연결할 일반 발주서를 선택해 주세요.");
-    return;
-  }
-}
+      await Promise.all(
+        validRows.map((row) =>
+          insertExpense(storeSeq, {
+            categorySeq: Number(expenseForm.categorySeq),
+            expenseDate: expenseForm.date,
+            title: expenseForm.title,
+            amount: row.amount,
+            memo: expenseForm.memo || "",
+            paymentMethod: "card",
+            supplierName: row.supplierName,
+            refType: "DIRECT",
+            refSeq: null,
+          })
+        )
+      );
 
+      alert("직접 구매 지출이 등록되었습니다.");
+
+      await fetchExpenseTotal();
+
+      setIsExpenseModalOpen(false);
+
+      setExpenseForm({
+        date: new Date().toISOString().substring(0, 10),
+        categorySeq: "",
+        amount: "",
+        title: "",
+        memo: "",
+      });
+
+      setDirectPurchaseRows([
+        {
+          supplierName: "",
+          amount: "",
+        },
+      ]);
+
+      setIngredientExpenseType("general");
+
+      return;
+    }
+
+    // ================================
+    // 공동 발주 직접 등록 처리
+    // ================================
+    // 공동 발주는 실제 공동구매 테이블과 연결하지 않고,
+    // 사용자가 입력한 구매처/금액/지출내역/메모를 expenses에 직접 저장한다.
+    if (isIngredientCategory && ingredientExpenseType === "group") {
+      // 공동 발주명 또는 구매처 입력 확인
+      if (!selectedSupplier.trim()) {
+        alert("공동 발주명 또는 구매처를 입력해 주세요.");
+        return;
+      }
+
+      // 지출 금액 확인
+      if (!expenseForm.amount || Number(expenseForm.amount) <= 0) {
+        alert("올바른 지출 금액을 입력해 주세요.");
+        return;
+      }
+
+      // 공동 발주 지출 등록 데이터
+      const requestData = {
+        categorySeq: Number(expenseForm.categorySeq),
+        expenseDate: expenseForm.date,
+
+        // 사용자가 입력한 지출 내역
+        title: expenseForm.title,
+
+        // 사용자가 입력한 공동 발주 금액
+        amount: Number(expenseForm.amount),
+
+        // 사용자가 입력한 메모
+        memo: expenseForm.memo || "",
+
+        // 일단 카드로 저장
+        paymentMethod: "card",
+
+        // 공동 발주명 또는 구매처
+        supplierName: selectedSupplier.trim(),
+
+        // 이 값이 핵심
+        // GROUP_ORDER로 저장되어야 상세 모달의 공동 발주 카드에 집계된다.
+        refType: "GROUP_ORDER",
+
+        // 아직 실제 공동구매 테이블과 연결하지 않으므로 null
+        refSeq: null,
+      };
+
+      const result = await insertExpense(storeSeq, requestData);
+
+      if (result.success) {
+        alert("공동 발주 지출이 등록되었습니다.");
+
+        // 상단 카테고리 금액/건수 새로고침
+        await fetchExpenseTotal();
+
+        // 모달 닫기
+        setIsExpenseModalOpen(false);
+
+        // 입력 폼 초기화
+        setExpenseForm({
+          date: new Date().toISOString().substring(0, 10),
+          categorySeq: "",
+          amount: "",
+          title: "",
+          memo: "",
+        });
+
+        // 선택값 초기화
+        setSelectedSupplier("");
+        setSelectedPurchaseOrder("");
+        setSelectedGroupPurchase("");
+        setSelectedGroupPurchaseOrder("");
+        setSelectedGeneralOrder(null);
+        setGeneralOrderList([]);
+
+        setDirectPurchaseRows([
+          {
+            supplierName: "",
+            amount: "",
+          },
+        ]);
+
+        setIngredientExpenseType("general");
+
+        return;
+      }
+
+      alert(result.message || "등록 실패");
+      return;
+    }
+
+    // ================================
+    // 일반 발주 등록 검증
+    // ================================
+    if (isIngredientCategory && ingredientExpenseType === "general") {
+      if (!selectedSupplier) {
+        alert("거래처를 선택해 주세요.");
+        return;
+      }
+
+      if (!selectedGeneralOrder) {
+        alert("연결할 일반 발주서를 선택해 주세요.");
+        return;
+      }
+    }
+
+    // ================================
+    // 일반/기타 지출 금액 검증
+    // ================================
+    // 직접 구매는 위에서 따로 처리하고 return 했으므로
+    // 여기서는 일반 발주나 일반 카테고리만 검사한다.
+    if (!expenseForm.amount || Number(expenseForm.amount) <= 0) {
+      alert("올바른 지출 금액을 입력해 주세요.");
+      return;
+    }
+
+    // 선택한 거래처 정보 찾기
+    const selectedPartner = partnerList.find((partner) => {
+      const partnerStoreSeq =
+        partner.partnerStoreSeq ??
+        partner.storeSeq ??
+        partner.partner_store_seq;
+
+      return Number(partnerStoreSeq) === Number(selectedSupplier);
+    });
+
+    const selectedPartnerName =
+      selectedPartner?.partnerName ??
+      selectedPartner?.companyName ??
+      selectedPartner?.company_name ??
+      "";
+
+    // 일반 발주 또는 일반 지출 등록 데이터
     const requestData = {
       categorySeq: Number(expenseForm.categorySeq),
       expenseDate: expenseForm.date,
@@ -515,16 +782,20 @@ if (isIngredientCategory && ingredientExpenseType === "general") {
       memo: expenseForm.memo || "",
       paymentMethod: "card",
 
+      // 일반 발주면 거래처명, 아니면 직접 입력된 supplier 사용
       supplierName:
         isIngredientCategory && ingredientExpenseType === "general"
           ? selectedPartnerName
           : selectedSupplier || "",
 
+      // 일반 발주는 ORDER로 저장
+      // 그 외에는 일단 null
       refType:
         isIngredientCategory && ingredientExpenseType === "general"
           ? "ORDER"
           : null,
 
+      // 일반 발주는 연결된 orderSeq 저장
       refSeq:
         isIngredientCategory && ingredientExpenseType === "general"
           ? Number(
@@ -540,9 +811,13 @@ if (isIngredientCategory && ingredientExpenseType === "general") {
     if (result.success) {
       alert(result.message);
 
+      // 등록 후 상단 금액/건수 새로고침
       await fetchExpenseTotal();
+
+      // 모달 닫기
       setIsExpenseModalOpen(false);
 
+      // 폼 초기화
       setExpenseForm({
         date: new Date().toISOString().substring(0, 10),
         categorySeq: "",
@@ -551,16 +826,22 @@ if (isIngredientCategory && ingredientExpenseType === "general") {
         memo: "",
       });
 
+      // 선택값 초기화
       setSelectedSupplier("");
       setSelectedPurchaseOrder("");
       setSelectedGroupPurchase("");
       setSelectedGroupPurchaseOrder("");
-      setSelectedDirectPurchaseItems([]);
-      setIngredientExpenseType("general");
+      setSelectedGeneralOrder(null);
+      setGeneralOrderList([]);
 
-      // insert 후 화면 새로고침용
-      // 아직 조회 API 없으면 일단 주석 처리
-      // fetchExpenseCategories();
+      setDirectPurchaseRows([
+        {
+          supplierName: "",
+          amount: "",
+        },
+      ]);
+
+      setIngredientExpenseType("general");
     } else {
       alert(result.message || "등록 실패");
     }
@@ -594,6 +875,102 @@ if (isIngredientCategory && ingredientExpenseType === "general") {
   } catch (error) {
     console.error(error);
     alert("지출 상세 내역을 불러오는 중 오류가 발생했습니다.");
+  }
+};
+
+// 상세목록 새로고침
+const refreshExpenseDetails = async () => {
+  const storeSeq = Number(localStorage.getItem("storeSeq"));
+
+  if (!storeSeq || !selectedCategory) return;
+
+  const categorySeq = selectedCategory.categorySeq ?? selectedCategory.id;
+
+  const result = await ExpenseDetails(
+    storeSeq,
+    selectedMonth,
+    categorySeq
+  );
+
+  setExpenses(Array.isArray(result) ? result : []);
+  await fetchExpenseTotal();
+};
+
+
+// 수정, 저장, 삭제
+const getExpenseSeq = (item) => {
+  return item.expenseSeq ?? item.expense_seq ?? item.EXPENSE_SEQ ?? item.id;
+};
+
+const handleStartEditMemo = (item) => {
+  const expenseSeq = getExpenseSeq(item);
+
+  setEditingExpenseSeq(expenseSeq);
+  setEditingMemo(item.memo && item.memo !== "-" ? item.memo : "");
+};
+
+const handleCancelEditMemo = () => {
+  setEditingExpenseSeq(null);
+  setEditingMemo("");
+};
+
+const handleSaveMemo = async (item) => {
+  const storeSeq = Number(localStorage.getItem("storeSeq"));
+  const expenseSeq = getExpenseSeq(item);
+
+  if (!storeSeq) {
+    alert("선택된 매장 정보가 없습니다.");
+    return;
+  }
+
+  if (!expenseSeq) {
+    alert("지출 번호가 없습니다.");
+    return;
+  }
+
+  try {
+    const result = await updateExpenseMemo(storeSeq, expenseSeq, editingMemo);
+
+    alert(result.message || "메모가 수정되었습니다.");
+
+    setEditingExpenseSeq(null);
+    setEditingMemo("");
+
+    await refreshExpenseDetails();
+  } catch (error) {
+    console.error("메모 수정 실패:", error);
+    alert(error.response?.data?.message || "메모 수정 중 오류가 발생했습니다.");
+  }
+};
+
+
+const handleDeleteExpense = async (item) => {
+  const storeSeq = Number(localStorage.getItem("storeSeq"));
+  const expenseSeq = getExpenseSeq(item);
+
+  if (!storeSeq) {
+    alert("선택된 매장 정보가 없습니다.");
+    return;
+  }
+
+  if (!expenseSeq) {
+    alert("지출 번호가 없습니다.");
+    return;
+  }
+
+  const ok = window.confirm("이 지출 내역을 삭제하시겠습니까?");
+
+  if (!ok) return;
+
+  try {
+    const result = await deleteExpense(storeSeq, expenseSeq);
+
+    alert(result.message || "지출 내역이 삭제되었습니다.");
+
+    await refreshExpenseDetails();
+  } catch (error) {
+    console.error("지출 삭제 실패:", error);
+    alert(error.response?.data?.message || "지출 삭제 중 오류가 발생했습니다.");
   }
 };
 
@@ -632,10 +1009,65 @@ if (isIngredientCategory && ingredientExpenseType === "general") {
     maintainAspectRatio: false
   };
 
+
   const totalExpense = localCategories.reduce(
   (acc, cat) => acc + Number(cat.totalAmount || 0),
   0
 );
+
+
+const getExpenseType = (expense) => {
+  const refType =
+    expense.refType ??
+    expense.ref_type ??
+    expense.REF_TYPE ??
+    expense.REFTYPE ??
+    "";
+
+  if (refType === "ORDER") return "general";
+  if (refType === "GROUP_ORDER") return "group";
+  if (refType === "DIRECT") return "direct";
+
+  // 식자재비인데 refType이 비어 있는 기존 데이터는 직접 구매로 본다.
+  return "direct";
+};
+
+const getExpenseAmount = (expense) => {
+  return Number(
+    expense.amount ??
+    expense.totalAmount ??
+    expense.total_amount ??
+    0
+  );
+};
+
+const selectedCategorySeq =
+  selectedCategory?.categorySeq ??
+  selectedCategory?.id;
+
+const detailExpenses = expenses.filter((expense) => {
+  const expenseCategorySeq =
+    expense.categorySeq ??
+    expense.category_seq ??
+    expense.CATEGORY_SEQ;
+
+  if (!expenseCategorySeq || !selectedCategorySeq) {
+    return true;
+  }
+
+  return Number(expenseCategorySeq) === Number(selectedCategorySeq);
+});
+
+const isSelectedDetailIngredientCategory =
+  selectedCategory?.categoryName === "식자재비" ||
+  selectedCategory?.name === "식자재비";
+
+const visibleExpenses =
+  isSelectedDetailIngredientCategory
+    ? detailExpenses.filter(
+        (expense) => getExpenseType(expense) === ingredientOrderType
+      )
+    : detailExpenses;
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-800 font-sans">
@@ -797,7 +1229,8 @@ if (isIngredientCategory && ingredientExpenseType === "general") {
                     setSelectedPurchaseOrder('');
                     setSelectedGroupPurchase('');
                     setSelectedGroupPurchaseOrder('');
-                    setSelectedDirectPurchaseItems([]);
+                    // 직접 구매 입력 목록 초기화
+                    setDirectPurchaseRows([{supplierName: "", amount: ""}]);
                     setSelectedGeneralOrder(null);
                     setGeneralOrderList([]);
                     setIngredientExpenseType('general');
@@ -848,7 +1281,10 @@ if (isIngredientCategory && ingredientExpenseType === "general") {
                             setSelectedPurchaseOrder('');
                             setSelectedGroupPurchase('');
                             setSelectedGroupPurchaseOrder('');
-                            setSelectedDirectPurchaseItems([]);
+                            // 구매 유형을 바꿀 때 직접 구매 입력 목록 초기화
+                            setDirectPurchaseRows([{supplierName: "", amount: ""}]);
+                            // 구매 유형이 바뀌면 기존 금액도 초기화
+                            setExpenseForm((prev) => ({...prev, amount: ""}));
                           }}
                           className={`rounded-lg px-2 py-3 text-center transition-all ${
                             isSelected
@@ -1036,201 +1472,135 @@ if (isIngredientCategory && ingredientExpenseType === "general") {
                       )}
                     </div>
                   ) : ingredientExpenseType === 'group' ? (
-                    <div className="h-[300px] space-y-3 overflow-hidden rounded-xl border border-emerald-100 bg-white/60 p-4">
+                    <div className="space-y-4 rounded-xl border border-emerald-100 bg-white/60 p-4">
                       <div>
-                        <h5 className="text-xs font-black text-gray-800">공동 발주 내역 연결</h5>
+                        <h5 className="text-xs font-black text-gray-800">공동 발주 직접 등록</h5>
                         <p className="mt-1 text-[11px] font-medium text-gray-400">
-                          공동 구매 그룹을 선택한 뒤 비용과 연결할 구매 내역을 확인하세요.
+                          공동 발주 비용 정보를 직접 입력해 주세요.
                         </p>
                       </div>
 
-                      <div>
-                        <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-widest text-gray-400">
-                          공동 구매 그룹명
-                        </label>
-                        <div className="relative">
-                          <select
-                            value={selectedGroupPurchase}
-                            onChange={(e) => {
-                              setSelectedGroupPurchase(e.target.value);
-                              setSelectedGroupPurchaseOrder('');
-                            }}
-                            className="w-full appearance-none rounded-xl border border-gray-200 bg-white px-4 py-3 pr-10 text-sm font-bold text-gray-700 outline-none transition-all focus:border-emerald-300 focus:ring-2 focus:ring-emerald-500/10"
-                          >
-                            {partnerList.map((partner) => {
-                              const partnerStoreSeq =
-                                partner.partnerStoreSeq ??
-                                partner.storeSeq ??
-                                partner.partner_store_seq;
-
-                              const partnerName =
-                                partner.partnerName ??
-                                partner.companyName ??
-                                partner.company_name;
-
-                              return (
-                                <option key={partnerStoreSeq} value={partnerStoreSeq}>
-                                  {partnerName}
-                                </option>
-                              );
-                            })}
-                          </select>
-                          <svg className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                          </svg>
-                        </div>
+                      <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
+                        <p className="text-[11px] font-bold text-amber-700">
+                          공동 발주는 현장 거래이므로 직접 등록해야 합니다.
+                        </p>
                       </div>
 
-                      {selectedGroupPurchase ? (
+                      <div className="grid gap-3 sm:grid-cols-2">
                         <div>
-                          <div className="mb-2 flex items-center justify-between">
-                            <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
-                              공동구매 품목 목록
-                            </label>
-                            <span className="text-[10px] font-bold text-gray-400">최근 공동구매 3건</span>
-                          </div>
-
-                          <div className="max-h-28 space-y-2 overflow-y-auto">
-                            {[
-                              { id: 'GO-20260611-01', date: '2026.06.11', item: '국내산 양파 20kg 외 2개 품목', amount: '890,000원', status: '분배 완료', members: '8개 매장' },
-                              { id: 'GO-20260607-04', date: '2026.06.07', item: '냉동 삼겹살 50kg 외 1개 품목', amount: '2,450,000원', status: '수령 완료', members: '5개 매장' },
-                              { id: 'GO-20260602-02', date: '2026.06.02', item: '대용량 식용유 외 5개 품목', amount: '1,360,000원', status: '정산 대기', members: '10개 매장' },
-                            ].map((groupOrder) => {
-                              const isSelected = selectedGroupPurchaseOrder === groupOrder.id;
-
-                              return (
-                                <button
-                                  key={groupOrder.id}
-                                  type="button"
-                                  onClick={() => setSelectedGroupPurchaseOrder(groupOrder.id)}
-                                  className={`w-full rounded-xl border p-4 text-left transition-all ${
-                                    isSelected
-                                      ? 'border-emerald-400 bg-white ring-2 ring-emerald-500/10'
-                                      : 'border-gray-100 bg-white/80 hover:border-emerald-200 hover:bg-white'
-                                  }`}
-                                >
-                                  <div className="flex items-start gap-3">
-                                    <span className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${
-                                      isSelected ? 'border-emerald-500 bg-emerald-500' : 'border-gray-300 bg-white'
-                                    }`}>
-                                      {isSelected && <span className="h-2 w-2 rounded-full bg-white" />}
-                                    </span>
-                                    <div className="min-w-0 flex-1">
-                                      <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-                                        <div className="flex flex-wrap items-center gap-2">
-                                          <span className="text-xs font-black text-gray-800">{groupOrder.id}</span>
-                                          <span className="rounded-md bg-emerald-50 px-2 py-0.5 text-[9px] font-bold text-emerald-600">
-                                            {groupOrder.status}
-                                          </span>
-                                          <span className="rounded-md bg-gray-100 px-2 py-0.5 text-[9px] font-bold text-gray-500">
-                                            {groupOrder.members}
-                                          </span>
-                                        </div>
-                                        <strong className="text-sm font-black text-emerald-600">{groupOrder.amount}</strong>
-                                      </div>
-                                      <div className="mt-1 flex items-center gap-2 text-xs font-medium text-gray-500">
-                                        <span>{groupOrder.date}</span>
-                                        <span className="h-1 w-1 rounded-full bg-gray-300" />
-                                        <span className="truncate">{groupOrder.item}</span>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </button>
-                              );
-                            })}
-                          </div>
+                        <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-widest text-gray-400">
+                            공동 발주명 또는 구매처
+                        </label>
+                          <input
+                            type="text"
+                            value={selectedSupplier}
+                            onChange={(e) => setSelectedSupplier(e.target.value)}
+                            placeholder="예: 중앙시장 채소 공동 발주"
+                            className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-bold text-gray-700 outline-none transition-all focus:border-emerald-300 focus:ring-2 focus:ring-emerald-500/10"
+                            required
+                          />
                         </div>
-                      ) : (
-                        <div className="flex h-24 items-center justify-center rounded-xl border border-dashed border-emerald-200 bg-white/60 px-4 text-center">
-                          <p className="text-xs font-bold text-gray-400">
-                            공동 구매 그룹을 선택하면 구매 품목 목록이 표시됩니다.
-                          </p>
+                        <div>
+                          <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-widest text-gray-400">
+                            지출 금액 (원)
+                          </label>
+                          <input
+                            type="number"
+                            value={expenseForm.amount}
+                            onChange={(e) => setExpenseForm({...expenseForm, amount: e.target.value})}
+                            placeholder="금액 입력"
+                            min="0"
+                            className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-black text-gray-700 outline-none transition-all focus:border-emerald-300 focus:ring-2 focus:ring-emerald-500/10"
+                            required
+                          />
                         </div>
-                      )}
+                      </div>
                     </div>
                   ) : (
-                    <div className="flex h-[300px] flex-col gap-3 overflow-hidden rounded-xl border border-emerald-100 bg-white/60 p-4">
+                    <div className="space-y-4 rounded-xl border border-emerald-100 bg-white/60 p-4">
                       <div className="flex items-start justify-between gap-4">
                         <div>
                           <h5 className="text-xs font-black text-gray-800">직접 구매</h5>
                           <p className="mt-1 text-[11px] font-medium text-gray-400">
-                            재고관리 품목 목록에서 직접 구매한 품목을 선택하세요.
+                            직접 구매한 비용 정보를 입력해 주세요.
                           </p>
                         </div>
-                        <span className="shrink-0 rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-black text-emerald-600">
-                          {selectedDirectPurchaseItems.length}개 선택
-                        </span>
+
+                        {/* 직접 구매 입력 줄 추가 버튼 */}
+                        <button
+                          type="button"
+                          onClick={handleAddDirectPurchaseRow}
+                          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-emerald-600 text-lg font-black text-white transition-colors hover:bg-emerald-700"
+                          aria-label="직접 구매 입력 추가"
+                        >
+                          +
+                        </button>
                       </div>
 
-                      <div className="flex min-h-0 flex-1 flex-col">
-                        <div className="mb-2 flex items-center justify-between">
-                          <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
-                            재고관리 품목 목록
-                          </label>
-                          <span className="text-[10px] font-bold text-gray-400">총 6개 품목</span>
-                        </div>
+                      <div className="max-h-44 space-y-3 overflow-y-auto pr-1">
+                        {directPurchaseRows.map((row, index) => (
+                          <div
+                            key={index}
+                            className="grid gap-3 rounded-xl bg-gray-50 p-3 sm:grid-cols-[1fr_1fr_auto]"
+                          >
+                            {/* 구매처 입력 */}
+                            <div>
+                              <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-widest text-gray-400">
+                                구매처 {index + 1}
+                              </label>
 
-                        <div className="min-h-0 flex-1 overflow-y-auto rounded-xl border border-gray-100 bg-white">
-                          {[
-                            { id: 'INV-001', name: '양파', category: '채소류', unit: 'kg', stock: '12kg', price: 3200 },
-                            { id: 'INV-002', name: '대파', category: '채소류', unit: '단', stock: '6단', price: 2800 },
-                            { id: 'INV-003', name: '감자', category: '채소류', unit: 'kg', stock: '8kg', price: 4500 },
-                            { id: 'INV-004', name: '냉동 삼겹살', category: '육류', unit: 'kg', stock: '15kg', price: 17500 },
-                            { id: 'INV-005', name: '식용유', category: '조미료', unit: '개', stock: '4개', price: 12800 },
-                            { id: 'INV-006', name: '고추장', category: '조미료', unit: '개', stock: '3개', price: 9600 },
-                          ].map((inventoryItem, index, inventoryItems) => {
-                            const isSelected = selectedDirectPurchaseItems.includes(inventoryItem.id);
+                              <input
+                                type="text"
+                                value={row.supplierName}
+                                onChange={(e) =>
+                                  handleChangeDirectPurchaseRow(
+                                    index,
+                                    "supplierName",
+                                    e.target.value
+                                  )
+                                }
+                                placeholder="예: 하나 식자재 마트"
+                                className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-bold text-gray-700 outline-none transition-all focus:border-emerald-300 focus:ring-2 focus:ring-emerald-500/10"
+                                required
+                              />
+                            </div>
 
-                            return (
+                            {/* 지출 금액 입력 */}
+                            <div>
+                              <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-widest text-gray-400">
+                                지출 금액 (원)
+                              </label>
+
+                              <input
+                                type="number"
+                                value={row.amount}
+                                onChange={(e) =>
+                                  handleChangeDirectPurchaseRow(
+                                    index,
+                                    "amount",
+                                    e.target.value
+                                  )
+                                }
+                                placeholder="금액 입력"
+                                min="0"
+                                className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-black text-gray-700 outline-none transition-all focus:border-emerald-300 focus:ring-2 focus:ring-emerald-500/10"
+                                required
+                              />
+                            </div>
+
+                            {/* 입력 줄 삭제 버튼 */}
+                            <div className="flex items-end">
                               <button
-                                key={inventoryItem.id}
                                 type="button"
-                                onClick={() => {
-                                  setSelectedDirectPurchaseItems((currentItems) => (
-                                    isSelected
-                                      ? currentItems.filter(itemId => itemId !== inventoryItem.id)
-                                      : [...currentItems, inventoryItem.id]
-                                  ));
-                                }}
-                                className={`flex w-full items-center gap-3 px-4 py-2 text-left transition-colors ${
-                                  index < inventoryItems.length - 1 ? 'border-b border-gray-100' : ''
-                                } ${isSelected ? 'bg-emerald-50/70' : 'hover:bg-gray-50'}`}
+                                onClick={() => handleRemoveDirectPurchaseRow(index)}
+                                disabled={directPurchaseRows.length === 1}
+                                className="h-11 rounded-xl border border-gray-200 bg-white px-3 text-xs font-black text-gray-400 hover:text-red-500 disabled:opacity-30"
                               >
-                                <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md border transition-colors ${
-                                  isSelected
-                                    ? 'border-emerald-500 bg-emerald-500 text-white'
-                                    : 'border-gray-300 bg-white text-transparent'
-                                }`}>
-                                  <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
-                                  </svg>
-                                </span>
-
-                                <div className="min-w-0 flex-1">
-                                  <div className="flex items-center gap-2">
-                                    <strong className="truncate text-sm font-black text-gray-800">
-                                      {inventoryItem.name}
-                                    </strong>
-                                    <span className="rounded-md bg-gray-100 px-2 py-0.5 text-[9px] font-bold text-gray-500">
-                                      {inventoryItem.category}
-                                    </span>
-                                  </div>
-                                  <span className="mt-0.5 block text-[10px] font-medium text-gray-400">
-                                    현재 재고 {inventoryItem.stock}
-                                  </span>
-                                </div>
-
-                                <div className="shrink-0 text-right">
-                                  <span className="block text-[9px] font-bold text-gray-400">가격</span>
-                                  <strong className="mt-0.5 block text-sm font-black text-emerald-600">
-                                    {formatCurrency(inventoryItem.price)}
-                                  </strong>
-                                </div>
-
+                                삭제
                               </button>
-                            );
-                          })}
-                        </div>
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     </div>
                   )}
@@ -1355,15 +1725,19 @@ if (isIngredientCategory && ingredientExpenseType === "general") {
               {selectedCategory.categoryName === '식자재비' && (
                 <div className="mt-4 grid grid-cols-3 rounded-2xl bg-gray-100 p-1.5">
                   {[
-                    { value: 'general', label: '일반 발주' },
-                    { value: 'group', label: '공동 발주' },
-                    { value: 'personal', label: '개인 구매' },
+                    { value: "general", label: "일반 발주" },
+                    { value: "group", label: "공동 발주" },
+                    { value: "direct", label: "직접 구매" },
                   ].map((orderType) => {
-                    const matchingExpenses = expenses.filter(
-                      exp => exp.categorySeq === selectedCategory.id
-                        && ingredientTransactionDetails[exp.id]?.orderType === orderType.value
+                    const matchingExpenses = detailExpenses.filter(
+                      (expense) => getExpenseType(expense) === orderType.value
                     );
-                    const matchingAmount = matchingExpenses.reduce((total, exp) => total + exp.amount, 0);
+
+                    const matchingAmount = matchingExpenses.reduce(
+                      (total, expense) => total + getExpenseAmount(expense),
+                      0
+                    );
+
                     const isActive = ingredientOrderType === orderType.value;
 
                     return (
@@ -1373,21 +1747,28 @@ if (isIngredientCategory && ingredientExpenseType === "general") {
                         onClick={() => setIngredientOrderType(orderType.value)}
                         className={`rounded-xl px-3 py-3 text-left transition-all ${
                           isActive
-                            ? 'bg-white text-gray-900 shadow-sm'
-                            : 'text-gray-400 hover:text-gray-600'
+                            ? "bg-white text-gray-900 shadow-sm"
+                            : "text-gray-400 hover:text-gray-600"
                         }`}
                       >
                         <div className="flex items-center justify-between gap-2">
                           <span className="text-sm font-black">{orderType.label}</span>
-                          <span className={`rounded-full px-2 py-0.5 text-[10px] font-black ${
-                            isActive ? 'bg-emerald-50 text-emerald-600' : 'bg-gray-200/70 text-gray-500'
-                          }`}>
+                          <span
+                            className={`rounded-full px-2 py-0.5 text-[10px] font-black ${
+                              isActive
+                                ? "bg-emerald-50 text-emerald-600"
+                                : "bg-gray-200/70 text-gray-500"
+                            }`}
+                          >
                             {matchingExpenses.length}건
                           </span>
                         </div>
-                        <span className={`mt-1 block text-xs font-bold ${
-                          isActive ? 'text-emerald-600' : 'text-gray-400'
-                        }`}>
+
+                        <span
+                          className={`mt-1 block text-xs font-bold ${
+                            isActive ? "text-emerald-600" : "text-gray-400"
+                          }`}
+                        >
                           {formatCurrency(matchingAmount)}
                         </span>
                       </button>
@@ -1398,11 +1779,11 @@ if (isIngredientCategory && ingredientExpenseType === "general") {
             </header>
 
             <div className="flex-1 overflow-y-auto bg-gray-50/70 px-4 py-4 sm:px-8 sm:py-6">
-              {expenses.length > 0 ? (
+              {visibleExpenses.length > 0 ? (
                 <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white">
-                  {expenses.map((item, index, filteredItems) => (
+                  {visibleExpenses.map((item, index, filteredItems) => (
                       <article
-                        key={item.id}
+                        key={getExpenseSeq(item)}
                         className={`p-5 transition-colors hover:bg-gray-50/70 sm:p-6 ${
                           index < filteredItems.length - 1 ? 'border-b border-gray-100' : ''
                         }`}
@@ -1430,6 +1811,7 @@ if (isIngredientCategory && ingredientExpenseType === "general") {
                             <div className="flex items-center rounded-xl border border-gray-100 bg-gray-50 p-1">
                               <button
                                 type="button"
+                                onClick={() => handleStartEditMemo(item)}
                                 title="지출 내역 수정"
                                 className="inline-flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-[11px] font-black text-gray-500 transition-all hover:bg-white hover:text-emerald-600 hover:shadow-sm"
                               >
@@ -1441,6 +1823,7 @@ if (isIngredientCategory && ingredientExpenseType === "general") {
                               <span className="h-4 w-px bg-gray-200" />
                               <button
                                 type="button"
+                                onClick={() => handleDeleteExpense(item)}
                                 title="지출 내역 삭제"
                                 className="inline-flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-[11px] font-black text-gray-400 transition-all hover:bg-white hover:text-red-500 hover:shadow-sm"
                               >
@@ -1502,9 +1885,40 @@ if (isIngredientCategory && ingredientExpenseType === "general") {
 
                         <div className="mt-4 rounded-xl bg-gray-50 px-4 py-3">
                           <span className="mb-1 block text-[10px] font-bold text-gray-400">메모</span>
-                          <p className="break-words text-sm font-medium leading-relaxed text-gray-600">
-                            {item.memo && item.memo !== '-' ? item.memo : '등록된 메모가 없습니다.'}
-                          </p>
+
+                          {editingExpenseSeq === getExpenseSeq(item) ? (
+                            <div className="space-y-3">
+                              <textarea
+                                value={editingMemo}
+                                onChange={(e) => setEditingMemo(e.target.value)}
+                                maxLength={150}
+                                className="min-h-[90px] w-full resize-none rounded-2xl border border-emerald-200 bg-white p-4 text-sm font-medium text-gray-700 outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/10"
+                                placeholder="메모를 입력하세요."
+                              />
+
+                              <div className="flex justify-end gap-2">
+                                <button
+                                  type="button"
+                                  onClick={handleCancelEditMemo}
+                                  className="rounded-xl border border-gray-200 bg-white px-4 py-2 text-xs font-black text-gray-500 hover:bg-gray-50"
+                                >
+                                  취소
+                                </button>
+
+                                <button
+                                  type="button"
+                                  onClick={() => handleSaveMemo(item)}
+                                  className="rounded-xl bg-emerald-600 px-4 py-2 text-xs font-black text-white hover:bg-emerald-700"
+                                >
+                                  저장
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <p className="break-words text-sm font-medium leading-relaxed text-gray-600">
+                              {item.memo && item.memo !== "-" ? item.memo : "등록된 메모가 없습니다."}
+                            </p>
+                          )}
                         </div>
                       </article>
                     ))}
@@ -1625,7 +2039,39 @@ if (isIngredientCategory && ingredientExpenseType === "general") {
                                 <span className="text-lg">📋</span> 비고 및 상세 메모
                               </span>
                               <div className="bg-gray-50/50 rounded-2xl p-8 border border-gray-50 text-lg font-medium text-gray-600 leading-relaxed whitespace-pre-wrap">
-                                {item.memo && item.memo !== '-' ? item.memo : "등록된 추가 메모 사항이 없습니다."}
+                                {editingExpenseSeq === getExpenseSeq(item) ? (
+                                    <div className="space-y-3">
+                                      <textarea
+                                        value={editingMemo}
+                                        onChange={(e) => setEditingMemo(e.target.value)}
+                                        maxLength={150}
+                                        className="min-h-[90px] w-full resize-none rounded-2xl border border-emerald-200 bg-white p-4 text-sm font-medium text-gray-700 outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/10"
+                                        placeholder="메모를 입력하세요."
+                                      />
+
+                                      <div className="flex justify-end gap-2">
+                                        <button
+                                          type="button"
+                                          onClick={handleCancelEditMemo}
+                                          className="rounded-xl border border-gray-200 bg-white px-4 py-2 text-xs font-black text-gray-500"
+                                        >
+                                          취소
+                                        </button>
+
+                                        <button
+                                          type="button"
+                                          onClick={() => handleSaveMemo(item)}
+                                          className="rounded-xl bg-emerald-600 px-4 py-2 text-xs font-black text-white hover:bg-emerald-700"
+                                        >
+                                          저장
+                                        </button>
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    item.memo && item.memo !== "-"
+                                      ? item.memo
+                                      : "등록된 추가 메모 사항이 없습니다."
+                                  )}
                               </div>
                             </div>
                           </div>

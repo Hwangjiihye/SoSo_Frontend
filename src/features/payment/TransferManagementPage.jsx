@@ -318,6 +318,7 @@ const [cards, setCards] = useState([]);
 const [activeCardIndex, setActiveCardIndex] = useState(0);
 // 이체관리 화면 아래에 보여줄 최근 카드 결제 내역
 const [recentPayments, setRecentPayments] = useState([]);
+const [recentPaymentsPage, setRecentPaymentsPage] = useState(1);
 
 const fetchCards = async (storeSeq) => {
   try {
@@ -377,11 +378,13 @@ const fetchRecentPayments = async (storeSeqParam) => {
 
     // 조회 결과를 화면 state에 저장한다.
     setRecentPayments(data ?? []);
+    setRecentPaymentsPage(1);
   } catch (error) {
     console.error("최근 결제 내역 조회 실패:", error);
 
     // 실패해도 화면이 터지지 않도록 빈 배열 처리한다.
     setRecentPayments([]);
+    setRecentPaymentsPage(1);
   }
 };
 
@@ -668,6 +671,16 @@ const handleRegisterCard = async () => {
     setSelectedStore(storeSeq, companyName);
     setIsProfileOpen(false);
   };
+
+  const recentPaymentsPerPage = 5;
+  const recentPaymentsTotalPages = Math.max(
+    1,
+    Math.ceil(recentPayments.length / recentPaymentsPerPage)
+  );
+  const paginatedRecentPayments = recentPayments.slice(
+    (recentPaymentsPage - 1) * recentPaymentsPerPage,
+    recentPaymentsPage * recentPaymentsPerPage
+  );
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-800 font-sans">
@@ -1054,8 +1067,8 @@ const handleRegisterCard = async () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
-                  {recentPayments.length > 0 ? (
-                    recentPayments.map((item) => {
+                  {paginatedRecentPayments.length > 0 ? (
+                    paginatedRecentPayments.map((item) => {
                       // 받는 사람 이름 첫 글자
                       const partnerInitial = item.partnerName?.substring(0, 1) || "거";
 
@@ -1129,32 +1142,22 @@ const handleRegisterCard = async () => {
                 </tbody>
               </table>
             </div>
-            <div className="flex items-center justify-between border-t border-gray-100 px-7 py-4">
-              <span className="text-xs font-bold text-gray-400">
-                총 {recentPayments.length}건 · 5개씩 보기
-              </span>
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  aria-label="이전 이체 내역"
-                  disabled
-                  className="flex h-9 w-9 items-center justify-center rounded-xl border border-gray-200 text-gray-300 disabled:cursor-not-allowed disabled:bg-gray-50"
-                >
-                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
-                  </svg>
-                </button>
-                <span className="min-w-14 text-center text-xs font-black text-gray-600">1 / 1</span>
-                <button
-                  type="button"
-                  aria-label="다음 이체 내역"
-                  disabled={recentPayments.length <= 5}
-                  className="flex h-9 w-9 items-center justify-center rounded-xl border border-gray-200 text-gray-500 transition-colors hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-600 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-300"
-                >
-                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" />
-                  </svg>
-                </button>
+            <div className="px-8 py-6 bg-gray-50/50 flex justify-center border-t border-gray-50">
+              <div className="flex gap-2">
+                {Array.from({ length: recentPaymentsTotalPages }, (_, index) => index + 1).map((pageNumber) => (
+                  <button
+                    key={pageNumber}
+                    type="button"
+                    onClick={() => setRecentPaymentsPage(pageNumber)}
+                    className={`w-10 h-10 rounded-xl font-bold text-sm transition-all ${
+                      pageNumber === recentPaymentsPage
+                        ? 'bg-emerald-600 text-white shadow-lg'
+                        : 'bg-white text-gray-400 hover:bg-gray-100 border border-gray-100'
+                    }`}
+                  >
+                    {pageNumber}
+                  </button>
+                ))}
               </div>
             </div>
           </section>

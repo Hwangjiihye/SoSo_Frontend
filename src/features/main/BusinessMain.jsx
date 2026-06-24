@@ -74,21 +74,26 @@ function BusinessMain({ setRole }) {
   const handleSend = async () => {
     if (!question.trim()) return;
 
-    const userQuestion = question;
+  const userQuestion = question;
 
-    setMessages((prev) => [
-      ...prev,
-      {
-        role: "user",
-        content: userQuestion,
-      },
-    ]);
+  setMessages((prev) => [
+    ...prev,
+    {
+      role: "user",
+      content: userQuestion,
+    },
+  ]);
 
-    setQuestion("");
-    setLoading(true);
+  setQuestion("");
+  setLoading(true);
 
-    try {
-      const result = await askRag(userQuestion);
+  try {
+    const result = await askRag({
+      message: userQuestion,
+      storeSeq: selectedStoreSeq,
+      userSeq: userSeq,
+      userType: user_type
+    });
 
       setMessages((prev) => [
         ...prev,

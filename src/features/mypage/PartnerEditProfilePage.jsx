@@ -214,7 +214,7 @@ const PartnerEditProfilePage = () => {
         <aside className="w-64 shrink-0 flex flex-col gap-6">
           <div className="bg-white border border-emerald-100 rounded-lg p-6 shadow-sm">
             <h2 className="font-bold text-gray-900">{bizname || '거래처 업체'}</h2>
-            <p className="text-xs text-gray-500 mt-1">거래처 회원</p>
+            <p className="text-xs text-gray-500 mt-1">거래처 회원 {formData.representativeName && `| ${formData.representativeName} 대표`}</p>
           </div>
           {menuGroups.map((group) => (
             <div key={group.title}>

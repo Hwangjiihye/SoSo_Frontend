@@ -182,3 +182,21 @@ export const getGeneralOrdersForExpense = async (storeSeq, partnerStoreSeq) => {
   return response.data;
 };
 
+// 지출 메모 수정
+export const updateExpenseMemo = async (storeSeq, expenseSeq, memo) => {
+  const response = await axiosInstance.put(
+    `/expense/${storeSeq}/${expenseSeq}/memo`,
+    { memo }
+  );
+
+  return response.data;
+};
+
+// 지출 내역 삭제
+export const deleteExpense = async (storeSeq, expenseSeq) => {
+  const response = await axiosInstance.delete(
+    `/expense/${storeSeq}/${expenseSeq}`
+  );
+
+  return response.data;
+};
