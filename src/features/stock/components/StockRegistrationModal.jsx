@@ -46,6 +46,10 @@ const [categories, setCategories] = useState([]);
       alert('필수 항목을 모두 입력해주세요.');
       return;
     }
+    if (formData.safetyStock !== '' && Number(formData.safetyStock) <= 0) {
+      alert('안전 재고 수량은 1개 이상으로 설정해야 합니다.');
+      return;
+    }
     onRegister(formData);
     setFormData({
       stockName: '',
@@ -134,6 +138,7 @@ const [categories, setCategories] = useState([]);
                 onChange={handleChange}
                 placeholder="0"
                 className={inputStyle}
+                min="1"
               />
             </div>
             <div>

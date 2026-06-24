@@ -124,6 +124,15 @@ const GroupBuyPage = () => {
             나의 참여 그룹
           </button>
           <button
+            onClick={() => setFilter('completed')}
+            className={`px-6 sm:px-8 py-3 rounded-[16px] text-sm font-black transition-all ${
+              filter === 'completed' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-100' : 'text-gray-400 hover:text-gray-600'
+            }`}
+          >
+            완료된 그룹
+          </button>
+          {/* 나중에 구현할 예정 (사업자 주관, 거래처 주관 필터)
+          <button
             onClick={() => setFilter('business')}
             className={`px-6 sm:px-8 py-3 rounded-[16px] text-sm font-black transition-all ${
               filter === 'business' ? 'bg-blue-600 text-white shadow-lg shadow-blue-100' : 'text-gray-400 hover:text-gray-600'
@@ -139,6 +148,7 @@ const GroupBuyPage = () => {
           >
             거래처 주관
           </button>
+          */}
         </div>
 
         {/* 공동구매 리스트 (가로형 레이아웃 반영) */}
@@ -171,7 +181,7 @@ const GroupBuyPage = () => {
                           <span className={`px-3 py-1 rounded-lg text-[10px] font-black border tracking-wider transition-colors ${statusColors[displayStatus] || 'bg-gray-100 text-gray-600'}`}>
                             {displayStatus}
                           </span>
-                          {/* 사업자 / 거래처 제안 구분 뱃지 */}
+                          {/* 사업자 / 거래처 제안 구분 뱃지 나중에 필요 시 해제
                           {item.creatorType === 'BUSINESS' ? (
                             <span className="bg-blue-50 text-blue-600 px-3 py-1 rounded-lg text-[10px] font-black border border-blue-100 shadow-sm">
                               사업자 제안
@@ -181,11 +191,7 @@ const GroupBuyPage = () => {
                               거래처 제안
                             </span>
                           )}
-                          {isJoined && (
-                            <span className="bg-emerald-500 text-white px-3 py-1 rounded-lg text-[10px] font-black animate-pulse shadow-sm shadow-emerald-200">
-                              참여 중
-                            </span>
-                          )}
+                          */}
                           {item.paymentStatus && (
                             <span className="bg-indigo-50 text-indigo-600 px-3 py-1 rounded-lg text-[10px] font-black border border-indigo-100 shadow-sm">
                               💳 {item.paymentStatus}
@@ -275,12 +281,14 @@ const GroupBuyPage = () => {
                               배송 안내
                             </button>
                           </div>
+                          {/* 나중에 구현할 예정 (채팅방)
                           <button
                             onClick={() => navigate(`/chat/${item.groupBuySeq || item.seq}`)}
                             className="w-full py-2.5 bg-white border-2 border-gray-900 text-gray-900 rounded-xl font-black text-xs hover:bg-gray-50 transition-all"
                           >
                             채팅방 입장
                           </button>
+                          */}
                         </>
                       )}
                       
