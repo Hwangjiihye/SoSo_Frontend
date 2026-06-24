@@ -13,6 +13,7 @@ const OrderLookupPage = () => {
     endDate: '',
     keyword: ''
   });
+  const [currentPage, setCurrentPage] = useState(1);
 
   const { orders, isLoading, orderDetail, setOrderDetail, fetchOrders, fetchOrderDetail } = useOrderLookup();
 
@@ -23,11 +24,16 @@ const OrderLookupPage = () => {
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
     setParams(prev => ({ ...prev, [name]: value }));
+    setCurrentPage(1);
   };
 
   const handleOrderClick = (orderSeq) => {
     fetchOrderDetail(orderSeq);
   };
+
+  const itemsPerPage = 5;
+  const totalPages = Math.ceil(orders.length / itemsPerPage) || 1;
+  const displayedOrders = orders.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   return (
     <div className="p-8 max-w-7xl mx-auto">
@@ -98,8 +104,8 @@ const OrderLookupPage = () => {
       <div className="space-y-4">
         {isLoading ? (
           <div className="bg-white p-20 rounded-[3rem] text-center text-gray-400 font-bold animate-pulse">발주 내역을 불러오는 중...</div>
-        ) : orders.length > 0 ? (
-          orders.map((order) => (
+        ) : displayedOrders.length > 0 ? (
+          displayedOrders.map((order) => (
             <div 
               key={order.orderSeq} 
               onClick={() => handleOrderClick(order.orderSeq)}
@@ -147,6 +153,47 @@ const OrderLookupPage = () => {
           </div>
         )}
       </div>
+
+      {/* 페이지네이션 */}
+      {!isLoading && orders.length > 0 && (
+        <div className="mt-8 flex justify-center items-center gap-2">
+          <button 
+            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+            disabled={currentPage === 1}
+            className="w-10 h-10 rounded-xl bg-white border border-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-900 disabled:opacity-30 transition-all"
+          >
+            ←
+          </button>
+          {(() => {
+            const startPage = Math.floor((currentPage - 1) / 10) * 10 + 1;
+            const endPage = Math.min(startPage + 9, totalPages);
+            const pageButtons = [];
+            for (let i = startPage; i <= endPage; i++) {
+              pageButtons.push(
+                <button
+                  key={i}
+                  onClick={() => setCurrentPage(i)}
+                  className={`w-10 h-10 rounded-xl font-black text-sm transition-all ${
+                    currentPage === i 
+                      ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-200' 
+                      : 'bg-white text-gray-400 hover:text-gray-900 border border-gray-100'
+                  }`}
+                >
+                  {i}
+                </button>
+              );
+            }
+            return pageButtons;
+          })()}
+          <button 
+            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+            disabled={currentPage === totalPages}
+            className="w-10 h-10 rounded-xl bg-white border border-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-900 disabled:opacity-30 transition-all"
+          >
+            →
+          </button>
+        </div>
+      )}
 
       {/* 상세 모달 */}
       <OrderDetailModal 

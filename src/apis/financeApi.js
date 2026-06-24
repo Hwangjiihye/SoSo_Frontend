@@ -18,3 +18,9 @@ export const getDailySummary = async (yearMonth, storeSeq) => {
   });
   return response.data;
 };
+
+// 3. 지출/수익 등록
+export const insertFinance = async (data) => {
+  const response = await axiosInstance.post('/api/finance', data);
+  return response.data;
+};

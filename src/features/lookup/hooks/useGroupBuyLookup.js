@@ -14,7 +14,7 @@ export const useGroupBuyLookup = () => {
   const fetchHistory = useCallback(async () => {
     setIsLoading(true);
     try {
-      const data = await getGroupBuyHistory(selectedStoreSeq);
+      const data = await groupBuyApi.getGroupBuyHistory(selectedStoreSeq);
       setHistory(data);
     } catch (error) {
       console.error('공동구매 이력을 불러오는데 실패했습니다.', error);
