@@ -205,25 +205,27 @@ function MainHeader({ activeMenu = '홈' }) {
         </div>
 
         {/* 공동발주 드롭다운 메뉴 */}
-        <div 
-          className="relative"
-          onMouseEnter={() => setIsGroupBuyDropdownOpen(true)}
-          onMouseLeave={() => setIsGroupBuyDropdownOpen(false)}
-        >
-          <div className={activeMenu === '공동발주' 
-            ? "px-4 py-1.5 text-sm font-semibold bg-white text-emerald-600 rounded shadow-sm border border-gray-200 cursor-pointer transition-all whitespace-nowrap"
-            : "px-4 py-1.5 text-sm font-medium text-gray-500 hover:text-emerald-600 transition-all cursor-pointer whitespace-nowrap"}>
-            공동발주
-          </div>
-          
-          <div className={`absolute top-full left-0 w-48 pt-2 z-[60] transition-all duration-200 ${isGroupBuyDropdownOpen ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-2'}`}>
-            <div className="bg-white border border-gray-100 rounded-2xl shadow-xl p-2">
-              <Link to="/group-buy" className="block w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl">
-                공동발주 현황
-              </Link>
+        {user_type !== 'PARTNER' && user_type !== 'Partner' && (
+          <div 
+            className="relative"
+            onMouseEnter={() => setIsGroupBuyDropdownOpen(true)}
+            onMouseLeave={() => setIsGroupBuyDropdownOpen(false)}
+          >
+            <div className={activeMenu === '공동발주' 
+              ? "px-4 py-1.5 text-sm font-semibold bg-white text-emerald-600 rounded shadow-sm border border-gray-200 cursor-pointer transition-all whitespace-nowrap"
+              : "px-4 py-1.5 text-sm font-medium text-gray-500 hover:text-emerald-600 transition-all cursor-pointer whitespace-nowrap"}>
+              공동발주
+            </div>
+            
+            <div className={`absolute top-full left-0 w-48 pt-2 z-[60] transition-all duration-200 ${isGroupBuyDropdownOpen ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-2'}`}>
+              <div className="bg-white border border-gray-100 rounded-2xl shadow-xl p-2">
+                <Link to="/group-buy" className="block w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl">
+                  공동발주 현황
+                </Link>
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         <Link to="/lookup" className={getNavStyle('조회/기록')}>조회/기록</Link>
 
@@ -247,9 +249,9 @@ function MainHeader({ activeMenu = '홈' }) {
               <Link to="/support/faq" className="block w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl mb-1">
                 자주 묻는 질문
               </Link>
-              <Link to="/support/inquiry" className="block w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl">
+              {/* <Link to="/support/inquiry" className="block w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl">
                 문의 하기
-              </Link>
+              </Link> */}
             </div>
           </div>
         </div>

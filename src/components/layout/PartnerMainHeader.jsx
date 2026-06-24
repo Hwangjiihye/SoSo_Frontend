@@ -75,9 +75,9 @@ function PartnerMainHeader({ activeMenu = '홈' }) {
               <Link to="/orders" className="block w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl mb-1">
                 일반 발주 현황
               </Link>
-              <Link to="/group-orders" className="block w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl mb-1">
+              {/* <Link to="/group-orders" className="block w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl mb-1">
                 공동 발주 현황
-              </Link>
+              </Link> */}
               {user_type !== 'PARTNER' && user_type !== 'Partner' && (
                 <Link to="/orders/new" className="block w-full text-left px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl">
                   발주 신청
