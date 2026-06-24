@@ -173,7 +173,7 @@ const GroupBuyPage = () => {
                           <span className={`px-3 py-1 rounded-lg text-[10px] font-black border tracking-wider transition-colors ${statusColors[displayStatus] || 'bg-gray-100 text-gray-600'}`}>
                             {displayStatus}
                           </span>
-                          {/* 사업자 / 거래처 제안 구분 뱃지 */}
+                          {/* 사업자 / 거래처 제안 구분 뱃지 나중에 필요 시 해제
                           {item.creatorType === 'BUSINESS' ? (
                             <span className="bg-blue-50 text-blue-600 px-3 py-1 rounded-lg text-[10px] font-black border border-blue-100 shadow-sm">
                               사업자 제안
@@ -183,11 +183,7 @@ const GroupBuyPage = () => {
                               거래처 제안
                             </span>
                           )}
-                          {isJoined && (
-                            <span className="bg-emerald-500 text-white px-3 py-1 rounded-lg text-[10px] font-black animate-pulse shadow-sm shadow-emerald-200">
-                              참여 중
-                            </span>
-                          )}
+                          */}
                           {item.paymentStatus && (
                             <span className="bg-indigo-50 text-indigo-600 px-3 py-1 rounded-lg text-[10px] font-black border border-indigo-100 shadow-sm">
                               💳 {item.paymentStatus}
