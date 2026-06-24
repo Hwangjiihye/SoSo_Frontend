@@ -1,14 +1,13 @@
 // React 상태 관리와 화면 첫 로딩 시 API 호출을 위해 사용
 import { useEffect, useMemo, useState } from "react";
 
-// 공통 하단 Footer 컴포넌트
-import MainFooter from "../../components/layout/MainFooter";
-
 // 거래처 로그인 기준 수금관리 대시보드 조회 API
 // 현재 파일 위치: src/features/payment/CollectionManagementPage.jsx
 // API 파일 위치: src/apis/paymentApi.js
 // payment 폴더에서 src까지 두 번 올라가야 하므로 ../../apis/paymentApi 사용
 import { getCollectionDashboard } from "../../apis/account";
+
+const ROWS_PER_PAGE = 10;
 
 // 상단 요약 카드 색상 스타일 정의
 const cardStyles = {
@@ -58,6 +57,8 @@ function CollectionManagementPage() {
   // 거래처명 필터 선택 상태
   const [selectedClient, setSelectedClient] = useState('전체');
 
+  const [currentPage, setCurrentPage] = useState(1);
+
   // 금액을 1,000원 형식으로 변환하는 함수
   const money = (value) => {
     // 값이 없으면 0으로 처리하고 원화 형식으로 반환
@@ -97,6 +98,7 @@ function CollectionManagementPage() {
 
       // 거래처 수금 이력 데이터 저장
       setCollectionRows(data.collectionRows || []);
+      setCurrentPage(1);
     } catch (error) {
       // API 호출 실패 시 콘솔에 에러 출력
       console.error('수금관리 조회 실패:', error);
@@ -155,6 +157,13 @@ function CollectionManagementPage() {
     // 특정 거래처 선택 시 해당 거래처 데이터만 반환
     return collectionRows.filter((row) => row.client === selectedClient);
   }, [collectionRows, selectedClient]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredRows.length / ROWS_PER_PAGE));
+
+  const paginatedRows = useMemo(() => {
+    const startIndex = (currentPage - 1) * ROWS_PER_PAGE;
+    return filteredRows.slice(startIndex, startIndex + ROWS_PER_PAGE);
+  }, [currentPage, filteredRows]);
 
   // 단일 객체와 배열 형태의 사업자 정보를 모두 목록으로 변환
   const businessInfoList = useMemo(() => {
@@ -348,7 +357,10 @@ function CollectionManagementPage() {
                 <button
                   key={filter}
                   type="button"
-                  onClick={() => setSelectedClient(filter)}
+                  onClick={() => {
+                    setSelectedClient(filter);
+                    setCurrentPage(1);
+                  }}
                   className={`rounded-xl px-4 py-2 text-xs font-bold ${
                     selectedClient === filter
                       ? 'bg-emerald-600 text-white'
@@ -385,7 +397,7 @@ function CollectionManagementPage() {
                   </tr>
                 ) : (
                   // 수금 이력이 있을 때 테이블 행 출력
-                  filteredRows.map((row) => {
+                  paginatedRows.map((row, index) => {
                     // 상태별 배지 스타일 지정
                     const statusStyle = {
                       입금완료: 'bg-emerald-50 text-emerald-700',
@@ -395,7 +407,9 @@ function CollectionManagementPage() {
 
                     // 수금 이력 행 반환
                     return (
-                      <tr key={row.id} className="hover:bg-slate-50/70">
+                      // <tr key={row.id} className="hover:bg-slate-50/70">
+                      <tr
+                      key={`${row.client}-${row.expected}-${row.paid}-${row.account}-${index}`} className="hover:bg-slate-50/70">
                         <td className="px-6 py-5 text-sm font-black text-slate-800">{row.client || '-'}</td>
                         <td className="px-6 py-5 text-sm text-slate-500">{row.type || '-'}</td>
                         <td className="px-6 py-5 text-sm font-bold text-slate-700">
@@ -417,11 +431,47 @@ function CollectionManagementPage() {
               </tbody>
             </table>
           </div>
+
+          <nav
+            className="flex flex-wrap items-center justify-center gap-2 border-t border-slate-200 bg-slate-50 px-6 py-5"
+            aria-label="수금 이력 페이지 이동"
+          >
+            <button
+              type="button"
+              onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+              disabled={currentPage === 1}
+              className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold text-slate-500 hover:border-emerald-200 hover:text-emerald-600 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              이전
+            </button>
+
+            {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
+              <button
+                key={page}
+                type="button"
+                onClick={() => setCurrentPage(page)}
+                aria-current={currentPage === page ? 'page' : undefined}
+                className={`h-9 min-w-9 rounded-lg px-3 text-xs font-bold ${
+                  currentPage === page
+                    ? 'bg-emerald-600 text-white'
+                    : 'border border-slate-200 text-slate-500 hover:border-emerald-200 hover:text-emerald-600'
+                }`}
+              >
+                {page}
+              </button>
+            ))}
+
+            <button
+              type="button"
+              onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
+              disabled={currentPage === totalPages}
+              className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold text-slate-500 hover:border-emerald-200 hover:text-emerald-600 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              다음
+            </button>
+          </nav>
         </section>
       </main>
-
-      {/* 공통 Footer 출력 */}
-      <MainFooter />
     </div>
   );
 }
