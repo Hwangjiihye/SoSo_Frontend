@@ -1,5 +1,5 @@
+import { Navigate } from 'react-router-dom';
 import LookupLayout from '../components/layout/LookupLayout';
-import LookupHubPage from '../features/lookup/LookupHubPage';
 import StockLookupPage from '../features/lookup/StockLookupPage';
 import OrderLookupPage from '../features/lookup/OrderLookupPage';
 import GroupOrderLookupPage from '../features/lookup/GroupOrderLookupPage';
@@ -16,7 +16,7 @@ const lookupRoutes = [
     children: [
       {
         index: true,
-        element: <LookupHubPage />,
+        element: <Navigate to="/lookup/stock" replace />,
       },
       {
         path: 'stock',

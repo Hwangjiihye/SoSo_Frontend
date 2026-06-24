@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { getFinanceList, getDailySummary } from '../../../apis/financeApi.js';
+import { getFinanceList, getDailySummary, insertFinance } from '../../../apis/financeApi.js';
 import authStore from '../../../store/authStore.js';
 
 /**
@@ -36,11 +36,25 @@ export const useFinance = () => {
     }
   }, [selectedStoreSeq]);
 
+  const addFinance = useCallback(async (data) => {
+    setIsLoading(true);
+    try {
+      await insertFinance(data);
+      return true;
+    } catch (error) {
+      console.error('장부 등록에 실패했습니다.', error);
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
   return {
     financeList,
     dailySummary,
     isLoading,
     fetchFinanceList,
     fetchDailySummary,
+    addFinance
   };
 };

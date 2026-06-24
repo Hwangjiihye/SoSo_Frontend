@@ -78,7 +78,7 @@ function GuestMain({ setRole }) {
             한 화면에서 모든 관리가 가능해집니다.
           </p>
           <button
-            onClick={() => setRole('business')}
+            onClick={() => navigate('/login')}
             className="px-12 py-5 bg-emerald-600 text-white rounded-2xl font-black shadow-2xl shadow-emerald-200 hover:-translate-y-1 transition-all text-lg"
           >
             지금 무료로 시작하기 →
@@ -264,7 +264,7 @@ function GuestMain({ setRole }) {
 
           <div className="text-center">
             <button
-              onClick={() => setRole('business')}
+              onClick={() => navigate('/login')}
               className="px-16 py-6 bg-white text-emerald-600 text-xl rounded-2xl font-black hover:scale-105 transition-transform shadow-2xl"
             >
               지금 바로 무료로 시작하기

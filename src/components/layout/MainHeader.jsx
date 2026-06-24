@@ -257,7 +257,6 @@ function MainHeader({ activeMenu = '홈' }) {
             </div>
           </div>
         </div>
-
         {/* 고객지원 드롭다운 메뉴 */}
         <div 
           className="relative"
