@@ -86,13 +86,7 @@ const SmartNotificationTab = () => {
               onToggle={() => toggleSetting('orderAlert')}
               disabled={!settings.pushEnabled}
             />
-            <NotificationRow 
-              title="거래처 채팅 알림" 
-              desc="납품 업체나 고객과의 새로운 채팅 메시지를 놓치지 않게 알려드려요." 
-              isOn={settings.chatAlert} 
-              onToggle={() => toggleSetting('chatAlert')}
-              disabled={!settings.pushEnabled}
-            />
+
             <NotificationRow 
               title="재고 부족 알림" 
               desc="설정해둔 안전 재고 수량보다 적어지면 즉시 알려드려요." 

@@ -78,13 +78,7 @@ const NotificationTab = ({ settings, isSubmitting, toggleSetting, handleSave }) 
               onToggle={() => toggleSetting('orderAlert')}
               disabled={!settings.pushEnabled}
             />
-            <NotificationRow 
-              title="채팅 및 상담 알림" 
-              desc="거래처와의 채팅 메시지 및 문의 답변을 알려드려요." 
-              isOn={settings.chatAlert} 
-              onToggle={() => toggleSetting('chatAlert')}
-              disabled={!settings.pushEnabled}
-            />
+
             <NotificationRow 
               title="재고 부족 알림" 
               desc="즐겨찾는 상품의 재고가 부족할 때 알려드려요." 

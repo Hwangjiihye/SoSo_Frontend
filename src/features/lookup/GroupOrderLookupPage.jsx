@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useGroupBuyLookup } from './hooks/useGroupBuyLookup';
 
 /**
@@ -7,10 +7,19 @@ import { useGroupBuyLookup } from './hooks/useGroupBuyLookup';
  */
 const GroupOrderLookupPage = () => {
   const { history, isLoading, fetchHistory } = useGroupBuyLookup();
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     fetchHistory();
   }, [fetchHistory]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [history]);
+
+  const itemsPerPage = 5;
+  const totalPages = Math.ceil(history.length / itemsPerPage) || 1;
+  const displayedHistory = history.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   return (
     <div className="p-8 max-w-7xl mx-auto">
@@ -63,8 +72,8 @@ const GroupOrderLookupPage = () => {
           <tbody className="divide-y divide-gray-50">
             {isLoading ? (
               <tr><td colSpan="5" className="px-8 py-20 text-center text-gray-400 font-bold animate-pulse">데이터를 불러오는 중...</td></tr>
-            ) : history.length > 0 ? (
-              history.map((gb) => (
+            ) : displayedHistory.length > 0 ? (
+              displayedHistory.map((gb) => (
                 <tr key={gb.groupBuySeq} className="hover:bg-gray-50/50 transition-colors">
                   <td className="px-8 py-6 text-sm font-bold text-gray-400 text-center">
                     {gb.createdAt?.split('T')[0]}
@@ -84,11 +93,11 @@ const GroupOrderLookupPage = () => {
                     <div className="w-full max-w-[120px] mx-auto bg-gray-100 h-2 rounded-full overflow-hidden mb-1">
                       <div 
                         className="bg-emerald-500 h-full rounded-full transition-all" 
-                        style={{ width: `${Math.min(100, (gb.currentQuantity / gb.targetQuantity) * 100)}%` }}
+                        style={{ width: `${Math.min(100, ((gb.currentParticipants || 0) / (gb.targetParticipants || 1)) * 100)}%` }}
                       ></div>
                     </div>
                     <span className="text-[11px] font-bold text-gray-400">
-                      {gb.currentQuantity} / {gb.targetQuantity}
+                      {gb.currentParticipants || 0} / {gb.targetParticipants || 0}
                     </span>
                   </td>
                   <td className="px-8 py-6 text-sm font-bold text-rose-500 text-center uppercase">
@@ -107,6 +116,47 @@ const GroupOrderLookupPage = () => {
           </tbody>
         </table>
       </div>
+
+      {/* 페이지네이션 */}
+      {!isLoading && history.length > 0 && (
+        <div className="mt-8 flex justify-center items-center gap-2">
+          <button 
+            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+            disabled={currentPage === 1}
+            className="w-10 h-10 rounded-xl bg-white border border-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-900 disabled:opacity-30 transition-all"
+          >
+            ←
+          </button>
+          {(() => {
+            const startPage = Math.floor((currentPage - 1) / 10) * 10 + 1;
+            const endPage = Math.min(startPage + 9, totalPages);
+            const pageButtons = [];
+            for (let i = startPage; i <= endPage; i++) {
+              pageButtons.push(
+                <button
+                  key={i}
+                  onClick={() => setCurrentPage(i)}
+                  className={`w-10 h-10 rounded-xl font-black text-sm transition-all ${
+                    currentPage === i 
+                      ? 'bg-purple-600 text-white shadow-lg shadow-purple-200' 
+                      : 'bg-white text-gray-400 hover:text-gray-900 border border-gray-100'
+                  }`}
+                >
+                  {i}
+                </button>
+              );
+            }
+            return pageButtons;
+          })()}
+          <button 
+            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+            disabled={currentPage === totalPages}
+            className="w-10 h-10 rounded-xl bg-white border border-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-900 disabled:opacity-30 transition-all"
+          >
+            →
+          </button>
+        </div>
+      )}
     </div>
   );
 };

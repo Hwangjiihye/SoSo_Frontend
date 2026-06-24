@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useOrder } from './hooks/useOrder';
+import authStore from '../../store/authStore';
 
 import SockJS from 'sockjs-client';
 import { Client } from '@stomp/stompjs';
@@ -15,8 +16,8 @@ function OrderPage() {
   const { orders, setOrders, keyword, filterStatus, dateRange, handleKeywordChange, fetchSearch, reset, handleFilterChange, handleDateRangeChange } = useOrder();
   const navigate = useNavigate();
 
-  // 로그인한 사업자 userSeq
-  const [userSeq, setUserSeq] = useState(null);
+  // 멀티 프로필 대응: 선택된 매장 번호(storeSeq)를 authStore에서 가져옴
+  const selectedStoreSeq = authStore((state) => state.selectedStoreSeq);
   // 웹소켓 연결 객체 저장용
   const stompClientRef = useRef(null);
   // 웹소켓으로 받은 최신 발주 상태
@@ -27,25 +28,14 @@ function OrderPage() {
   const [sortType, setSortType] = useState('latest');
   const [currentPage, setCurrentPage] = useState(1);
 
-  // userSeq 가져오기
+  // selectedStoreSeq를 기반으로 웹소켓 연결 및 발주 상태 토픽 구독
   useEffect(() => {
-    const fetchWebSocketMe = async () => {
-      try {
-        const data = await webSocketMe();
-        console.log("웹소켓 구독용 userSeq : " + data);
-        setUserSeq(data);
-      } catch (err) {
-        console.error('웹소켓 사용자 조회 실패:', err);
-      }
-    }
-    fetchWebSocketMe();
-  }, []);
+    if (!selectedStoreSeq) return;
 
-  // userSeq를 가져온 뒤 웹소켓 연결
-  useEffect(() => {
-    if (!userSeq) return;
-
-    const socket = new SockJS(import.meta.env.VITE_API_BASE_URL ,'/ws');
+    const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:80';
+    const socket = new SockJS(`${baseURL}/ws`, null, {
+      transports: ['websocket']
+    });
 
     const client = new Client({
       webSocketFactory: () => socket,
@@ -53,16 +43,15 @@ function OrderPage() {
 
       onConnect: () => {
         console.log('웹소켓 연결 성공');
-        console.log(`구독 주소: /sub/order/${userSeq}`);
+        console.log(`구독 주소: /sub/order/${selectedStoreSeq}`);
 
-        client.subscribe(`/sub/order/${userSeq}`, (message) => {
+        client.subscribe(`/sub/order/${selectedStoreSeq}`, (message) => {
           const data = JSON.parse(message.body);
           console.log('발주 상태 변경 알림:', data);
-          // 1. 단건 상태 저장 (기존 코드)
+          // 1. 단건 상태 저장
           setLiveOrderStatus(data.status);
 
           // ⭐️ 2. [핵심 추가] 전체 목록(orders) 상태를 실시간으로 직접 업데이트!
-          // data 내부의 orderSeq와 일치하는 주문의 status를 업데이트해 준다.
           setOrders((prevOrders) =>
             prevOrders.map((order) =>
               order.orderSeq === data.orderSeq
@@ -70,8 +59,6 @@ function OrderPage() {
                 : order
             )
           );
-          // 최신 DB를 다시 가져오라는 명령어 (주석 처리 이유 : setOrders가 다시 업데이트되서 안먹힘)
-          // fetchSearch();
         });
       },
 
@@ -92,7 +79,7 @@ function OrderPage() {
         stompClientRef.current.deactivate();
       }
     };
-  }, [userSeq]);
+  }, [selectedStoreSeq]);
 
   // 발주 상태별 컬러 매핑
   const statusSteps = [

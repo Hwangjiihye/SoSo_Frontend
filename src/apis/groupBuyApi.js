@@ -36,6 +36,22 @@ export const groupBuyApi = {
   },
 
   /**
+   * 내가 참여한 그룹 중 상태가 COMPLETED인 그룹 수 조회
+   */
+  getCompletedCount: async () => {
+    const response = await axiosInstance.get(`${GROUP_BUY_BASE_URL}/completed/count`);
+    return response.data;
+  },
+
+  /**
+   * 내가 참여한 그룹 중 상태가 COMPLETED인 그룹 리스트 조회
+   */
+  getCompletedGroupBuys: async () => {
+    const response = await axiosInstance.get(`${GROUP_BUY_BASE_URL}/completed`);
+    return response.data;
+  },
+
+  /**
    * 공동구매 상세 조회
    * @param {number} seq - 공동구매 시퀀스 번호
    */

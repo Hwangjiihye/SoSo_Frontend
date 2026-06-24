@@ -5,10 +5,33 @@ import { useStockLookup } from './hooks/useStockLookup';
  * @file StockLookupPage.jsx
  * @description 재고 변동 이력 조회 페이지 (입출고이력.png 기반)
  */
+const formatDateTime = (dateTimeStr) => {
+  if (!dateTimeStr) return '-';
+  try {
+    let isoStr = dateTimeStr.replace(' ', 'T');
+    if (!isoStr.endsWith('Z') && !isoStr.includes('+') && !isoStr.includes('-')) {
+      isoStr += 'Z';
+    }
+    const date = new Date(isoStr);
+    if (isNaN(date.getTime())) {
+      return dateTimeStr.replace('T', ' ');
+    }
+    const yyyy = date.getFullYear();
+    const mm = String(date.getMonth() + 1).padStart(2, '0');
+    const dd = String(date.getDate()).padStart(2, '0');
+    const hh = String(date.getHours()).padStart(2, '0');
+    const min = String(date.getMinutes()).padStart(2, '0');
+    const ss = String(date.getSeconds()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd} ${hh}:${min}:${ss}`;
+  } catch (e) {
+    return dateTimeStr.replace('T', ' ');
+  }
+};
+
 const StockLookupPage = () => {
   const [params, setParams] = useState({
     page: 1,
-    size: 15,
+    size: 10,
     transactionType: 'ALL',
     startDate: '',
     endDate: '',
@@ -113,7 +136,7 @@ const StockLookupPage = () => {
               historyData.historyList.map((hist) => (
                 <tr key={hist.historySeq} className="hover:bg-gray-50/50 transition-colors">
                   <td className="px-6 py-5 text-[11px] font-bold text-gray-400 text-center uppercase tracking-tighter">
-                    {hist.createdAt?.replace('T', ' ')}
+                    {formatDateTime(hist.createdAt)}
                   </td>
                   <td className="px-6 py-5 text-center">
                     <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${
@@ -165,19 +188,27 @@ const StockLookupPage = () => {
         >
           ←
         </button>
-        {[...Array(historyData.totalPages)].map((_, i) => (
-          <button
-            key={i + 1}
-            onClick={() => handlePageChange(i + 1)}
-            className={`w-10 h-10 rounded-xl font-black text-sm transition-all ${
-              params.page === i + 1 
-                ? 'bg-blue-500 text-white shadow-lg shadow-blue-200' 
-                : 'bg-white text-gray-400 hover:text-gray-900 border border-gray-100'
-            }`}
-          >
-            {i + 1}
-          </button>
-        ))}
+        {(() => {
+          const startPage = Math.floor((params.page - 1) / 10) * 10 + 1;
+          const endPage = Math.min(startPage + 9, historyData.totalPages);
+          const pageButtons = [];
+          for (let i = startPage; i <= endPage; i++) {
+            pageButtons.push(
+              <button
+                key={i}
+                onClick={() => handlePageChange(i)}
+                className={`w-10 h-10 rounded-xl font-black text-sm transition-all ${
+                  params.page === i 
+                    ? 'bg-blue-500 text-white shadow-lg shadow-blue-200' 
+                    : 'bg-white text-gray-400 hover:text-gray-900 border border-gray-100'
+                }`}
+              >
+                {i}
+              </button>
+            );
+          }
+          return pageButtons;
+        })()}
         <button 
           onClick={() => handlePageChange(params.page + 1)}
           disabled={params.page === historyData.totalPages}

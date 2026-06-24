@@ -1517,14 +1517,13 @@ const handleRegisterCard = async () => {
                 >
                   <option value="">카드사를 선택해 주세요</option>
                   <option value="신한카드">신한카드</option>
-                  <option value="국민카드">국민카드</option>
                   <option value="삼성카드">삼성카드</option>
                   <option value="현대카드">현대카드</option>
                   <option value="롯데카드">롯데카드</option>
                   <option value="BC카드">BC카드</option>
                   <option value="하나카드">하나카드</option>
                   <option value="우리카드">우리카드</option>
-                  <option value="KG이니시스 테스트카드">KG이니시스 테스트카드</option>
+                  <option value="토스카드">토스카드</option>
                 </select>
               </div>
 
@@ -1536,7 +1535,7 @@ const handleRegisterCard = async () => {
                   type="text"
                   value={newCard.cardName}
                   onChange={(e) => setNewCard({ ...newCard, cardName: e.target.value })}
-                  placeholder="예: 대표 사업자카드, 국민 개인카드"
+                  placeholder="예: 대표 사업자카드, 개인카드"
                   className="w-full rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-sm font-bold text-gray-700 outline-none transition-all placeholder:font-medium placeholder:text-gray-300 focus:ring-2 focus:ring-emerald-500/20"
                 />
               </div>
