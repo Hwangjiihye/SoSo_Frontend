@@ -273,12 +273,14 @@ const GroupBuyPage = () => {
                               배송 안내
                             </button>
                           </div>
+                          {/* 나중에 구현할 예정 (채팅방)
                           <button
                             onClick={() => navigate(`/chat/${item.groupBuySeq || item.seq}`)}
                             className="w-full py-2.5 bg-white border-2 border-gray-900 text-gray-900 rounded-xl font-black text-xs hover:bg-gray-50 transition-all"
                           >
                             채팅방 입장
                           </button>
+                          */}
                         </>
                       )}
                       
