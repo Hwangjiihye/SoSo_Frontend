@@ -1176,17 +1176,6 @@ const visibleExpenses =
 
         </div>
 
-        {/* 하단 안내 섹션 */}
-        <div className="mt-12 bg-emerald-50/50 rounded-3xl p-8 border border-emerald-100 flex items-center gap-6">
-          <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-2xl shadow-sm shadow-emerald-200/50">💡</div>
-          <div>
-            <h4 className="font-black text-emerald-800 mb-1">스마트 비용 관리 팁</h4>
-            <p className="text-sm text-emerald-600/70 font-medium leading-relaxed">
-              카테고리별로 예산을 설정하면 지출이 예산을 초과할 때 실시간 알림을 받을 수 있습니다.<br />
-              정기적인 비용(임대료, 인건비 등)은 자동이체와 연결하여 더욱 편리하게 관리해 보세요.
-            </p>
-          </div>
-        </div>
       </main>
       {/* 지출 비용 등록 모달 (카테고리입력.jpg 디자인 참고) */}
       {isExpenseModalOpen && (
@@ -2233,7 +2222,6 @@ const visibleExpenses =
         </div>
       )}
 
-      <MainFooter />
     </div>
   );
 };

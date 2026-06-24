@@ -15,10 +15,12 @@ const orderRoutes = [
     path: '/orders/new', // 신규 발주 신청
     element: <OrderApplyPage />,
   },
+  /*
   {
     path: '/group-orders', // 공동 발주 현황
     element: <GroupOrderList />,
   },
+  */
 ];
 
 export default orderRoutes;
