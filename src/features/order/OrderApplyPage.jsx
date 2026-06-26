@@ -152,7 +152,7 @@ const handleSubmitWithStockIncoming = async () => {
         expirationDate: new Date().toISOString().slice(0, 10),
 
         reason: '발주 신청서 추천 재고 연결',
-        memo: `${item.itemName} 발주 수량 ${quantity}개를 기존 재고 ${item.linkedStockName || ''}에 입고 처리`,
+        memo: `${item.itemName} 발주 수량 ${quantity}개 ${item.linkedStockName || ''}에 입고`,
       };
 
       console.log('입고 요청 데이터:', incomingData);

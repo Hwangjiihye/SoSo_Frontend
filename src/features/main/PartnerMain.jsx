@@ -216,7 +216,7 @@ function PartnerMain({ setRole }) {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
            <div className="bg-white rounded-[2.5rem] border border-gray-200 p-8 shadow-sm">
               <h3 className="text-xl font-black mb-8 flex justify-between items-center text-gray-900">
                 사업자별 매출 요약
@@ -250,6 +250,7 @@ function PartnerMain({ setRole }) {
               </div>
            </div>
 
+           {/*
            <div className="bg-white rounded-[2.5rem] border border-gray-200 p-8 shadow-sm">
               <h3 className="text-xl font-black mb-8 flex justify-between items-center text-gray-900">
                 공동 발주 현황
@@ -278,6 +279,7 @@ function PartnerMain({ setRole }) {
                 )}
               </div>
            </div>
+           */}
 
            <MainNotificationSession />
         </div>
