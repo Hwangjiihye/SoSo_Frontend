@@ -20,9 +20,9 @@ const LoginPage = () => {
   } = useLogin();
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+    <div className="min-h-dvh overflow-y-auto flex items-center justify-center bg-gray-50 px-4 py-6 sm:px-6">
       {/* 로그인 박스 컨테이너: 가로 너비를 520px로 최적화하고 세로 패딩(py-14)과 요소 간 간격(space-y-8)을 조정했습니다. */}
-      <div className="max-w-[520px] w-full space-y-8 bg-white py-14 px-12 rounded-3xl shadow-2xl border border-gray-100">
+      <div className="w-full max-w-[520px] space-y-5 bg-white px-6 py-8 sm:space-y-8 sm:px-12 sm:py-14 rounded-3xl shadow-2xl border border-gray-100">
         
         {/* 상단 브랜드 영역: 로고와 타이틀의 조화로운 배치 */}
         <div className="text-center flex flex-col items-center">
@@ -37,13 +37,13 @@ const LoginPage = () => {
             </Link>
             {/* 타이틀: 브랜드의 정체성을 나타내는 굵고 선명한 폰트 적용 */}
             <Link to="/">
-              <h1 className="text-[40px] font-black leading-none tracking-tight" style={{ color: '#1D9E75' }}>
+              <h1 className="text-[36px] sm:text-[40px] font-black leading-none tracking-tight" style={{ color: '#1D9E75' }}>
                 SoSo
               </h1>
             </Link>
           </div>
           {/* 하단 안내 문구: 넉넉한 상단 여백(mt-5)으로 가독성 확보 */}
-          <p className="mt-5 text-[16px] text-gray-500 font-medium">
+          <p className="mt-3 sm:mt-5 text-[15px] sm:text-[16px] text-gray-500 font-medium">
             {loginType === 'business' ? '사업자' : '거래처'} 전용 로그인 서비스
           </p>
         </div>
@@ -52,7 +52,7 @@ const LoginPage = () => {
         <div className="flex bg-gray-100 p-1.5 rounded-2xl">
           <button
             onClick={() => setLoginType('business')}
-            className={`flex-1 py-3 text-sm font-bold rounded-xl transition-all ${
+            className={`flex-1 py-2.5 sm:py-3 text-sm font-bold rounded-xl transition-all ${
               loginType === 'business'
                 ? 'bg-white shadow-md text-[#1D9E75]'
                 : 'text-gray-400 hover:text-gray-600'
@@ -62,7 +62,7 @@ const LoginPage = () => {
           </button>
           <button
             onClick={() => setLoginType('partner')}
-            className={`flex-1 py-3 text-sm font-bold rounded-xl transition-all ${
+            className={`flex-1 py-2.5 sm:py-3 text-sm font-bold rounded-xl transition-all ${
               loginType === 'partner'
                 ? 'bg-white shadow-md text-[#1D9E75]'
                 : 'text-gray-400 hover:text-gray-600'
@@ -73,8 +73,8 @@ const LoginPage = () => {
         </div>
 
         {/* 로그인 입력 영역: 요소 간 세로 여백(space-y-5)을 유지하여 깔끔함을 유지합니다. */}
-        <form className="space-y-5" onSubmit={(e) => { e.preventDefault(); handleLoginSubmit(); }}>
-          <div className="space-y-5">
+        <form className="space-y-4 sm:space-y-5" onSubmit={(e) => { e.preventDefault(); handleLoginSubmit(); }}>
+          <div className="space-y-4 sm:space-y-5">
             {/* 아이디 입력란 */}
             <div>
               <label htmlFor="id" className="block text-sm font-bold text-gray-700 mb-2 ml-1">
@@ -86,7 +86,7 @@ const LoginPage = () => {
                 type="text"
                 value={formData.user_id}
                 onChange={handleInputChange}
-                className={`block w-full px-5 py-3 rounded-2xl border transition-all outline-none bg-gray-50 focus:bg-white ${
+                className={`block w-full px-4 py-2.5 sm:px-5 sm:py-3 rounded-2xl border transition-all outline-none bg-gray-50 focus:bg-white ${
                   errors.id 
                     ? 'border-red-400 focus:ring-2 focus:ring-red-100 focus:border-red-400' 
                     : 'border-gray-200 focus:ring-2 focus:ring-[#1D9E75] focus:border-transparent'
@@ -110,7 +110,7 @@ const LoginPage = () => {
                 type="password"
                 value={formData.password}
                 onChange={handleInputChange}
-                className={`block w-full px-5 py-3 rounded-2xl border transition-all outline-none bg-gray-50 focus:bg-white ${
+                className={`block w-full px-4 py-2.5 sm:px-5 sm:py-3 rounded-2xl border transition-all outline-none bg-gray-50 focus:bg-white ${
                   errors.password 
                     ? 'border-red-400 focus:ring-2 focus:ring-red-100 focus:border-red-400' 
                     : 'border-gray-200 focus:ring-2 focus:ring-[#1D9E75] focus:border-transparent'
@@ -126,9 +126,9 @@ const LoginPage = () => {
           </div>
 
           {/* 계정 찾기 */}
-          <div className="flex items-center justify-end pt-2 text-sm">
+          <div className="flex items-center justify-center pt-1 text-sm sm:pt-2">
             {/* 계정 찾기 링크: 체크박스 그룹과 수직 중앙 정렬 유지 */}
-            <div className="flex items-center gap-4 font-bold text-[#158A64] text-[13.5px] whitespace-nowrap">
+            <div className="flex w-full items-center justify-center gap-3 font-bold text-[#158A64] text-[13px] whitespace-nowrap sm:gap-4 sm:text-[13.5px]">
               <span 
                 onClick={() => navigate('/find-id')}
                 className="hover:text-[#0D6B50] cursor-pointer transition-colors hover:underline underline-offset-4"
@@ -160,8 +160,8 @@ const LoginPage = () => {
         </form>
 
         {/* 하단 회원가입 유도 영역: 상단에 회색 구분선 추가 */}
-        <div className="text-center pt-6 border-t border-gray-400">
-          <p className="text-[15px] text-gray-500 font-medium">
+        <div className="text-center pt-4 sm:pt-6 border-t border-gray-400">
+          <p className="text-[14px] sm:text-[15px] text-gray-500 font-medium">
             아직 SoSo 회원이 아니신가요?{' '}
             <Link to="/signup">
               <button className="font-extrabold text-[#0D6B50] hover:underline transition-all underline-offset-4 ml-1.5">

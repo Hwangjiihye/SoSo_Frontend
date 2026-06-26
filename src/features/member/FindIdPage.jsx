@@ -25,9 +25,9 @@ const FindIdPage = () => {
   } = useFindId();
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+    <div className="w-full min-h-[calc(100dvh-170px)] overflow-y-auto flex items-start justify-center bg-gray-50 px-4 pt-4 pb-8 sm:px-6 sm:pt-5">
       {/* 컨테이너: LoginPage와 동일한 520px 너비 및 스타일 적용 */}
-      <div className="max-w-[520px] w-full space-y-8 bg-white py-14 px-12 rounded-3xl shadow-2xl border border-gray-100">
+      <div className="w-full max-w-md mx-auto space-y-5 sm:space-y-6 bg-white px-6 py-7 sm:px-10 sm:py-10 rounded-3xl shadow-2xl border border-gray-100">
         
         {/* 상단 헤더 영역 */}
         <div className="text-center flex flex-col items-center">
@@ -37,12 +37,13 @@ const FindIdPage = () => {
               alt="SoSo Logo" 
               className="w-13 h-13 object-contain transform translate-y-[4px]"
             />
-            <h1 className="text-[40px] font-black leading-none tracking-tight" style={{ color: '#1D9E75' }}>
+            {/* inline color style을 Tailwind arbitrary color 클래스로 변환 */}
+            <h1 className="text-[36px] sm:text-[40px] font-black leading-none tracking-tight text-[#1D9E75]">
               SoSo
             </h1>
           </div>
-          <h2 className="mt-4 text-[24px] font-extrabold text-gray-900">아이디 찾기</h2>
-          <p className="mt-2 text-[15px] text-gray-500 font-medium text-center">
+          <h2 className="mt-3 text-[22px] sm:text-[24px] font-extrabold text-gray-900">아이디 찾기</h2>
+          <p className="mt-2 text-[15px] text-gray-500 font-medium text-center break-keep">
             {!isFound 
               ? "회원가입 시 등록한 정보를 입력해주세요." 
               : "고객님의 정보와 일치하는 아이디를 확인하세요."}
@@ -51,7 +52,7 @@ const FindIdPage = () => {
 
         {!isFound ? (
           /* 1단계: 정보 입력 및 인증 단계 */
-          <div className="space-y-6 pt-2">
+          <div className="space-y-4 sm:space-y-5">
             {/* 이름 입력 */}
             <div>
               <label htmlFor="name" className="block text-sm font-bold text-gray-700 mb-2 ml-1">
@@ -64,7 +65,7 @@ const FindIdPage = () => {
                 value={formData.name}
                 onChange={handleInputChange}
                 disabled={isVerifying}
-                className={`block w-full px-5 py-3 rounded-2xl border outline-none transition-all ${
+                className={`block w-full px-4 py-3 sm:px-5 rounded-2xl border outline-none transition-all ${
                   isVerifying 
                     ? 'bg-gray-100 text-gray-400 border-gray-200' 
                     : errors.name
@@ -92,7 +93,7 @@ const FindIdPage = () => {
                 value={formData.email}
                 onChange={handleInputChange}
                 disabled={isVerifying}
-                className={`block w-full px-5 py-3 rounded-2xl border outline-none transition-all ${
+                className={`block w-full px-4 py-3 sm:px-5 rounded-2xl border outline-none transition-all ${
                   isVerifying 
                     ? 'bg-gray-100 text-gray-400 border-gray-200' 
                     : errors.email
@@ -109,14 +110,12 @@ const FindIdPage = () => {
             </div>
 
             {/* 아이디 찾기 (인증번호 발송) 버튼 */}
-            <div className="pt-2">
+            <div>
               <button
                 type="button"
                 onClick={handleFindIdClick}
-                className="w-full flex justify-center py-3 px-4 border border-transparent text-ml font-black rounded-2xl text-white shadow-lg transition-all transform active:scale-[0.98]"
-                style={{ backgroundColor: '#1D9E75' }}
-                onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#158A64')}
-                onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#1D9E75')}
+                // inline background style과 hover style 조작을 Tailwind 클래스로 변환
+                className="w-full flex justify-center py-3 px-4 border border-transparent text-ml font-black rounded-2xl text-white shadow-lg transition-all transform active:scale-[0.98] bg-[#1D9E75] hover:bg-[#158A64]"
               >
                 {isVerifying ? '인증번호 재발송' : '인증번호 전송'}
               </button>
@@ -124,18 +123,18 @@ const FindIdPage = () => {
 
             {/* 2단계: 이메일 인증 영역 */}
             {isVerifying && (
-              <div className="space-y-4 pt-4 border-t border-gray-100 animate-in fade-in slide-in-from-top-2 duration-500">
-                <div className="bg-gray-50 rounded-2xl p-6 border border-gray-100">
+              <div className="space-y-3 pt-3 border-t border-gray-100 animate-in fade-in slide-in-from-top-2 duration-500">
+                <div className="bg-gray-50 rounded-2xl p-4 sm:p-5 border border-gray-100">
                   <label htmlFor="verificationCode" className="block text-sm font-bold text-gray-700 mb-3 ml-1">
                     인증번호 입력
                   </label>
-                  <div className="flex gap-3">
+                  <div className="flex flex-col gap-3 sm:flex-row">
                     <input
                       id="verificationCode"
                       type="text"
                       value={verificationCode}
                       onChange={handleVerificationCodeChange}
-                      className={`flex-1 px-5 py-3 rounded-2xl border outline-none transition-all font-bold tracking-widest ${
+                      className={`w-full min-w-0 sm:flex-1 px-4 py-3 sm:px-5 rounded-2xl border outline-none transition-all font-bold tracking-widest ${
                         errors.verificationCode
                           ? 'border-red-400 focus:ring-2 focus:ring-red-100 focus:border-red-400 bg-white'
                           : 'border-gray-200 focus:ring-2 focus:ring-[#1D9E75] focus:border-transparent bg-white'
@@ -146,7 +145,7 @@ const FindIdPage = () => {
                     <button
                       type="button"
                       onClick={handleVerifyConfirm}
-                      className="px-6 py-3 bg-gray-800 text-white font-bold rounded-2xl hover:bg-black transition-all active:scale-95 whitespace-nowrap"
+                      className="w-full px-6 py-3 bg-gray-800 text-white font-bold rounded-2xl hover:bg-black transition-all active:scale-95 whitespace-nowrap sm:w-auto"
                     >
                       확인
                     </button>
@@ -164,7 +163,7 @@ const FindIdPage = () => {
               </div>
             )}
 
-            <div className="text-center pt-2">
+            <div className="text-center pt-1">
               <button 
                 type="button"
                 onClick={() => navigate('/login')}
@@ -176,11 +175,12 @@ const FindIdPage = () => {
           </div>
         ) : (
           /* 3단계: 최종 결과 단계 */
-          <div className="space-y-6 -mt-3 animate-in fade-in zoom-in-95 duration-500">
-            <div className="bg-gray-50 rounded-2xl p-8 text-center border border-gray-100 flex flex-col items-center justify-center">
-              <p className="text-gray-500 font-bold text-[16px] mb-4">고객님의 아이디는 다음과 같습니다.</p>
-              <div className="py-4 px-10 bg-white rounded-xl border border-gray-200 shadow-sm inline-block">
-                <span className="text-[25px] font-black tracking-tight" style={{ color: '#1D9E75' }}>
+          <div className="space-y-4 -mt-1 animate-in fade-in zoom-in-95 duration-500">
+            <div className="bg-gray-50 rounded-2xl p-5 sm:p-6 text-center border border-gray-100 flex flex-col items-center justify-center">
+              <p className="text-gray-500 font-bold text-[16px] mb-4 break-keep">고객님의 아이디는 다음과 같습니다.</p>
+              <div className="w-full max-w-full py-4 px-6 sm:px-10 bg-white rounded-xl border border-gray-200 shadow-sm inline-block overflow-hidden">
+                {/* inline color style을 Tailwind arbitrary color 클래스로 변환 */}
+                <span className="text-[23px] sm:text-[25px] font-black tracking-tight text-[#1D9E75] break-all">
                   {foundId}
                 </span>
               </div>
@@ -190,10 +190,8 @@ const FindIdPage = () => {
               <button
                 type="button"
                 onClick={() => navigate('/login')}
-                className="w-full py-2 px-4 border border-transparent text-ml font-black rounded-2xl text-white shadow-lg transition-all transform active:scale-[0.98]"
-                style={{ backgroundColor: '#1D9E75' }}
-                onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#158A64')}
-                onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#1D9E75')}
+                // inline background style과 hover style 조작을 Tailwind 클래스로 변환
+                className="w-full py-2 px-4 border border-transparent text-ml font-black rounded-2xl text-white shadow-lg transition-all transform active:scale-[0.98] bg-[#1D9E75] hover:bg-[#158A64]"
               >
                 로그인하기
               </button>
