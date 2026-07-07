@@ -30,6 +30,17 @@ function OrderPage() {
 
   // selectedStoreSeq를 기반으로 웹소켓 연결 및 발주 상태 토픽 구독
   useEffect(() => {
+    const fetchWebSocketMe = async () => {
+      try {
+        const data = await webSocketMe();
+        setUserSeq(data);
+      } catch (err) {
+        console.error('웹소켓 사용자 조회 실패:', err);
+      }
+    }
+    fetchWebSocketMe();
+  }, []);
+  useEffect(()=>{
     if (!selectedStoreSeq) return;
 
     const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:80';
@@ -42,12 +53,10 @@ function OrderPage() {
       reconnectDelay: 5000,
 
       onConnect: () => {
-        console.log('웹소켓 연결 성공');
-        console.log(`구독 주소: /sub/order/${selectedStoreSeq}`);
+
 
         client.subscribe(`/sub/order/${selectedStoreSeq}`, (message) => {
           const data = JSON.parse(message.body);
-          console.log('발주 상태 변경 알림:', data);
           // 1. 단건 상태 저장
           setLiveOrderStatus(data.status);
 
@@ -122,20 +131,16 @@ function OrderPage() {
 
   // 상세보기
   const handleOpenDetail = async (orderSeq) => {
-  console.log('상세보기 클릭:', orderSeq);
+    try {
+      const data = await getOrderDetail(orderSeq);
 
-  try {
-    const data = await getOrderDetail(orderSeq);
-
-    console.log('상세 조회 결과:', data);
-
-    setSelectedOrder(data);
-    setIsDetailOpen(true);
-  } catch (error) {
-    console.error('상세 조회 실패:', error);
-    alert('발주 상세 조회에 실패했습니다.');
-  }
-};
+      setSelectedOrder(data);
+      setIsDetailOpen(true);
+    } catch (error) {
+      console.error('상세 조회 실패:', error);
+      alert('발주 상세 조회에 실패했습니다.');
+    }
+  };
 
 const handleCloseDetail = () => {
   setIsDetailOpen(false);

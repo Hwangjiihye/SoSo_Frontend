@@ -112,7 +112,6 @@ const MainNotificationSession = () => {
           최근 발생 이슈 리스트
         </span>
       </div>
-
       {filteredNotifications.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12 text-gray-400 gap-2 flex-grow">
           <span className="text-3xl">🕊️</span>
@@ -120,7 +119,7 @@ const MainNotificationSession = () => {
         </div>
       ) : (
         // 알림이 5개 이상이면 스크롤 생성 (max-h로 조절, 1개당 약 80px 높이 기준)
-        <div className="flex flex-col gap-3 max-h-[380px] overflow-y-auto pr-1 scrollbar-thin flex-grow">
+        (<div className="flex flex-col gap-3 max-h-[380px] overflow-y-auto pr-1 scrollbar-thin flex-grow">
           {filteredNotifications.map((noti) => {
             const styles = getTypeStyles(noti.type);
             const isRead = noti.isRead === 'Y';
@@ -161,7 +160,7 @@ const MainNotificationSession = () => {
               </div>
             );
           })}
-        </div>
+        </div>)
       )}
     </div>
   );

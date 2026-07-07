@@ -20,9 +20,8 @@ const [categories, setCategories] = useState([]);
     if (isOpen) {
       // 카테고리 목록을 가져오는 API (백엔드에 GET /api/categories 가 있다고 가정)
       getCategories().then(response => {
-        console.log(response)
-          setCategories(response); // 예: [{ category_seq: 1, category_name: '육류' }, ...]
-        })
+        setCategories(response); // 예: [{ category_seq: 1, category_name: '육류' }, ...]
+      })
         .catch(error => {
           console.error('카테고리 목록을 불러오는데 실패했습니다.', error);
         });
@@ -48,6 +47,10 @@ const [categories, setCategories] = useState([]);
     }
     if (formData.safetyStock !== '' && Number(formData.safetyStock) <= 0) {
       alert('안전 재고 수량은 1개 이상으로 설정해야 합니다.');
+      return;
+    }
+    if (formData.defaultExpiryDays !== '' && Number(formData.defaultExpiryDays) <= 0) {
+      alert('기본 소비기한은 1일 이상으로 설정해야 합니다.');
       return;
     }
     onRegister(formData);
@@ -151,6 +154,7 @@ const [categories, setCategories] = useState([]);
                   onChange={handleChange}
                   placeholder="0"
                   className={`${inputStyle} pr-12`}
+                  min="1"
                 />
                 <span className="absolute right-5 top-1/2 -translate-y-1/2 text-xs font-black text-gray-400">DAYS</span>
               </div>

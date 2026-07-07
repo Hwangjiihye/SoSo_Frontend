@@ -168,8 +168,6 @@ const [paymentEndDate, setPaymentEndDate] = useState('');
         Number(partnerSeq)
       );
 
-      console.log("미결제 발주 목록:", orders);
-
       setPayableOrders(orders ?? []);
     } catch (error) {
       console.error("미결제 발주 목록 조회 실패:", error);
@@ -238,8 +236,6 @@ const [paymentEndDate, setPaymentEndDate] = useState('');
         orderSeqList: selectedOrderIds,          // 결제할 발주 번호 목록
       });
 
-      console.log("결제 결과:", result);
-
       // 백엔드에서 success true를 내려주면 결제 성공 처리
       if (result.success) {
         alert("결제가 완료되었습니다.");
@@ -300,13 +296,11 @@ const [paymentEndDate, setPaymentEndDate] = useState('');
   const currentStoreSeq = selectedStoreSeq ?? stores?.[0]?.storeSeq;
 
   if (!currentStoreSeq) {
-    console.log("사업장 번호 없음");
     return;
   }
 
   try {
     const data = await accountList(Number(currentStoreSeq));
-    console.log("계좌 목록 조회 결과:", data);
     setAccounts(data);
   } catch (error) {
     console.error("계좌 목록 조회 실패:", error);
@@ -359,7 +353,6 @@ const fetchRecentPayments = async (storeSeqParam) => {
 
   // 매장 번호가 없으면 조회하지 않는다.
   if (!currentStoreSeq) {
-    console.log("사업장 번호 없음");
     return;
   }
 
@@ -373,8 +366,6 @@ const fetchRecentPayments = async (storeSeqParam) => {
       endDate: paymentEndDate,
       keyword: paymentKeyword,
     });
-
-    console.log("최근 결제 내역 조회 결과:", data);
 
     // 조회 결과를 화면 state에 저장한다.
     setRecentPayments(data ?? []);
@@ -405,8 +396,6 @@ const handleOpenOrderPaymentModal = async () => {
   try {
     const partners = await getSupplierList(Number(currentStoreSeq));
 
-    console.log("발주 결제 거래처 목록:", partners);
-
     setOrderPaymentPartners(partners ?? []);
     setSelectedPartnerId("");
     setSelectedOrderIds([]);
@@ -426,11 +415,6 @@ const CHANNEL_KEY = "channel-key-3ac881ab-bc4c-4016-b0d0-3c6eb420b83c";
 const handleRegisterCard = async () => {
   try {
     const currentStoreSeq = selectedStoreSeq ?? stores?.[0]?.storeSeq;
-
-    console.log("selectedStoreSeq:", selectedStoreSeq);
-    console.log("stores:", stores);
-    console.log("currentStoreSeq:", currentStoreSeq);
-    console.log("userSeq:", userSeq);
 
     if (!currentStoreSeq) {
       alert("사업장 정보가 없습니다.");
@@ -472,8 +456,6 @@ const handleRegisterCard = async () => {
       
     });
 
-    console.log("포트원 응답:", response);
-
     if (!response) {
       alert("카드 등록이 취소되었습니다.");
       return;
@@ -484,8 +466,6 @@ const handleRegisterCard = async () => {
       alert(`카드 등록 실패: ${response.message}`);
       return;
     }
-
-    console.log("빌링키 발급 성공:", response);
 
     await registerPaymentCard({
       userSeq: Number(userSeq),
@@ -508,7 +488,6 @@ const handleRegisterCard = async () => {
     });
 
     await fetchCards(currentStoreSeq);
-
   } catch (error) {
     console.error("카드 등록 오류:", error);
     alert(error.message || "카드 등록 중 오류가 발생했습니다.");
@@ -529,7 +508,6 @@ const handleRegisterCard = async () => {
 
 // 신규 계좌 등록할때 검증/저장
   const handleAddAccount = async () => {
-
     if (accounts.length >= 4) {
       alert("계좌는 최대 4개까지 등록할 수 있습니다.");
       setIsRegisterModalOpen(false);
@@ -551,7 +529,7 @@ const handleRegisterCard = async () => {
       alert(`${newAccount.bankName} 계좌번호 형식이 올바르지 않습니다.`);
       return;
     }
-  
+
     if (!newAccount.accountName) {
       alert("예금주를 입력해 주세요.");
       return;
@@ -577,8 +555,6 @@ const handleRegisterCard = async () => {
       accountName: newAccount.accountName
     };
 
-    console.log("계좌 정보 : " , accountData);
-
     await insertAccount(accountData);
 
     setIsRegisterModalOpen(false);
@@ -586,7 +562,7 @@ const handleRegisterCard = async () => {
     await fetchAccountList();
 
     setIsRegisterModalOpen(false);
-    
+
     // 모달 필드 초기화
     setNewAccount({
       bankName: '', 
@@ -624,34 +600,31 @@ const handleRegisterCard = async () => {
   };
 
   const handleDeleteAccount = async (acc, e) => {
-  e.stopPropagation();
+    e.stopPropagation();
 
-  console.log("삭제할 계좌 acc:", acc);
-  console.log("삭제할 accountSeq:", acc.accountSeq);
+    const ok = confirm(
+      `정말 ${acc.bankName} (${acc.accountNumber}) 계좌를 삭제하시겠습니까?`
+    );
 
-  const ok = confirm(
-    `정말 ${acc.bankName} (${acc.accountNumber}) 계좌를 삭제하시겠습니까?`
-  );
+    if (!ok) return;
 
-  if (!ok) return;
+    try {
+      await accountDel(acc.accountSeq);
 
-  try {
-    await accountDel(acc.accountSeq);
+      alert("계좌가 삭제되었습니다.");
 
-    alert("계좌가 삭제되었습니다.");
+      await fetchAccountList();
 
-    await fetchAccountList();
+      setActiveAccountIndex(0);
+    } catch (error) {
+      const message =
+        error.response?.data?.message ||
+        error.response?.data ||
+        "계좌 삭제 중 오류가 발생했습니다.";
 
-    setActiveAccountIndex(0);
-  } catch (error) {
-    const message =
-      error.response?.data?.message ||
-      error.response?.data ||
-      "계좌 삭제 중 오류가 발생했습니다.";
-
-    alert(message);
-  }
-};
+      alert(message);
+    }
+  };
 
   const handlePrevAccount = () => {
     setActiveAccountIndex((prev) => (prev === 0 ? accounts.length - 1 : prev - 1));
@@ -735,103 +708,103 @@ const handleRegisterCard = async () => {
 
         <div className="space-y-7">
           {cards.length > 0 ? (
-            <section className="rounded-[28px] border border-gray-100 bg-white p-8 text-gray-900 shadow-sm">
-      <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
-        
-        {/* 카드 정보 */}
-        <div className="flex items-center gap-5">
-          <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-lg font-black text-emerald-700">
-            {cards[activeCardIndex]?.cardCompany?.substring(0, 2) || "카드"}
-          </div>
+            (<section className="rounded-[28px] border border-gray-100 bg-white p-8 text-gray-900 shadow-sm">
+              <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
+                
+                {/* 카드 정보 */}
+                <div className="flex items-center gap-5">
+                  <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-lg font-black text-emerald-700">
+                    {cards[activeCardIndex]?.cardCompany?.substring(0, 2) || "카드"}
+                  </div>
 
-          <div>
-            <div className="flex items-center gap-3">
-              <h3 className="text-2xl font-black">
-                {cards[activeCardIndex]?.cardCompany || "등록 카드"}
-              </h3>
+                  <div>
+                    <div className="flex items-center gap-3">
+                      <h3 className="text-2xl font-black">
+                        {cards[activeCardIndex]?.cardCompany || "등록 카드"}
+                      </h3>
 
-              {cards[activeCardIndex]?.isDefault === "Y" && (
-                <span className="rounded-lg bg-emerald-50 px-3 py-1 text-xs font-black text-emerald-700">
-                  대표
-                </span>
-              )}
-            </div>
+                      {cards[activeCardIndex]?.isDefault === "Y" && (
+                        <span className="rounded-lg bg-emerald-50 px-3 py-1 text-xs font-black text-emerald-700">
+                          대표
+                        </span>
+                      )}
+                    </div>
 
-            <p className="mt-2 text-base font-semibold text-gray-400">
-              {cards[activeCardIndex]?.cardNumberMasked || "**** **** **** ****"}
-            </p>
+                    <p className="mt-2 text-base font-semibold text-gray-400">
+                      {cards[activeCardIndex]?.cardNumberMasked || "**** **** **** ****"}
+                    </p>
 
-            <p className="mt-1 text-sm font-semibold text-gray-400">
-              {cards[activeCardIndex]?.cardName || "자동결제 카드"}
-            </p>
-          </div>
-        </div>
+                    <p className="mt-1 text-sm font-semibold text-gray-400">
+                      {cards[activeCardIndex]?.cardName || "자동결제 카드"}
+                    </p>
+                  </div>
+                </div>
 
-        {/* 카드 상태 */}
-        <div className="text-left lg:text-right">
-          <span className="text-sm font-bold text-gray-400">결제수단 상태</span>
+                {/* 카드 상태 */}
+                <div className="text-left lg:text-right">
+                  <span className="text-sm font-bold text-gray-400">결제수단 상태</span>
 
-          <div className="mt-2 flex flex-col items-start gap-2 lg:items-end">
-            <span className="rounded-xl bg-emerald-50 px-4 py-2 text-sm font-black text-emerald-700">
-              사용 가능
-            </span>
+                  <div className="mt-2 flex flex-col items-start gap-2 lg:items-end">
+                    <span className="rounded-xl bg-emerald-50 px-4 py-2 text-sm font-black text-emerald-700">
+                      사용 가능
+                    </span>
 
-            <span className="text-sm font-bold text-gray-400">
-              {cards[activeCardIndex]?.cardType || "CARD"}
-            </span>
+                    <span className="text-sm font-bold text-gray-400">
+                      {cards[activeCardIndex]?.cardType || "CARD"}
+                    </span>
 
-            <button
-              type="button"
-              onClick={handleDeleteCard}
-              className="rounded-xl border border-red-200 px-4 py-2 text-sm font-black text-red-500 transition-colors hover:bg-red-50"
-            >
-              삭제
-            </button>
-          </div>
-        </div>
-      </div>
-      {/* 보유 카드 여러개 출력 */}
-      {cards.length > 1 && (
-      <div className="mt-8 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
-        {cards.map((card, index) => {
-          const isActive = index === activeCardIndex;
-
-          return (
-            <button
-              key={card.cardSeq}
-              type="button"
-              onClick={() => setActiveCardIndex(index)}
-              className={`rounded-2xl border p-4 text-left transition-all ${
-                isActive
-                  ? "border-emerald-500 bg-emerald-50"
-                  : "border-gray-200 bg-white hover:border-emerald-200 hover:bg-emerald-50/30"
-              }`}
-            >
-              <div className="flex items-center justify-between gap-2">
-                <strong className="text-sm font-black text-gray-900">
-                  {card.cardCompany || "등록 카드"}
-                </strong>
-
-                {isActive && (
-                  <span className="rounded-lg bg-emerald-100 px-2 py-1 text-[10px] font-black text-emerald-700">
-                    선택됨
-                  </span>
-                )}
+                    <button
+                      type="button"
+                      onClick={handleDeleteCard}
+                      className="rounded-xl border border-red-200 px-4 py-2 text-sm font-black text-red-500 transition-colors hover:bg-red-50"
+                    >
+                      삭제
+                    </button>
+                  </div>
+                </div>
               </div>
+              {/* 보유 카드 여러개 출력 */}
+              {cards.length > 1 && (
+              <div className="mt-8 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
+                {cards.map((card, index) => {
+                  const isActive = index === activeCardIndex;
 
-              <p className="mt-2 text-xs font-bold text-gray-400">
-                {card.cardNumberMasked || "**** **** **** ****"}
-              </p>
+                  return (
+                    <button
+                      key={card.cardSeq}
+                      type="button"
+                      onClick={() => setActiveCardIndex(index)}
+                      className={`rounded-2xl border p-4 text-left transition-all ${
+                        isActive
+                          ? "border-emerald-500 bg-emerald-50"
+                          : "border-gray-200 bg-white hover:border-emerald-200 hover:bg-emerald-50/30"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <strong className="text-sm font-black text-gray-900">
+                          {card.cardCompany || "등록 카드"}
+                        </strong>
 
-              <p className="mt-1 text-xs font-semibold text-gray-400">
-                {card.cardName || "자동결제 카드"}
-              </p>
-            </button>
-          );
-        })}
-      </div>
-    )}
-    </section>
+                        {isActive && (
+                          <span className="rounded-lg bg-emerald-100 px-2 py-1 text-[10px] font-black text-emerald-700">
+                            선택됨
+                          </span>
+                        )}
+                      </div>
+
+                      <p className="mt-2 text-xs font-bold text-gray-400">
+                        {card.cardNumberMasked || "**** **** **** ****"}
+                      </p>
+
+                      <p className="mt-1 text-xs font-semibold text-gray-400">
+                        {card.cardName || "자동결제 카드"}
+                      </p>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+            </section>)
             // <section className="rounded-[28px] border border-gray-100 bg-white p-8 text-gray-900 shadow-sm">
             //   <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
             //     <div className="flex items-center gap-5">
@@ -1162,7 +1135,6 @@ const handleRegisterCard = async () => {
           </section>
         </div>
       </main>
-
       {isTransferModalOpen && transferAccount && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
           <button
@@ -1693,7 +1665,6 @@ const handleRegisterCard = async () => {
           </div>
         </div>
       )}
-
       {isRegisterModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 overflow-y-auto">
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setIsRegisterModalOpen(false)}></div>
@@ -1765,7 +1736,6 @@ const handleRegisterCard = async () => {
           </div>
         </div>
       )}
-
       {/* 계좌 수정 모달 */}
       {isEditModalOpen && editingAccount && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 overflow-y-auto">
@@ -1831,7 +1801,6 @@ const handleRegisterCard = async () => {
           </div>
         </div>
       )}
-
     </div>
   );
 };

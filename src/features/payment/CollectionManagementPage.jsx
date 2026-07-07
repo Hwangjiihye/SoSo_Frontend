@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 // API 파일 위치: src/apis/paymentApi.js
 // payment 폴더에서 src까지 두 번 올라가야 하므로 ../../apis/paymentApi 사용
 import { getCollectionDashboard } from "../../apis/account";
+import MainFooter from "../../components/layout/MainFooter";
 
 const ROWS_PER_PAGE = 10;
 
@@ -68,11 +69,10 @@ function CollectionManagementPage() {
   // 수금관리 대시보드 데이터 조회 함수
   const fetchCollectionDashboard = async () => {
     // 현재 로그인한 거래처의 선택 매장 번호 가져오기
-    const storeSeq = localStorage.getItem('storeSeq');
+    const storeSeq = (JSON.parse(localStorage.getItem('soso-auth-storage'))?.state?.selectedStoreSeq);
 
     // storeSeq가 없으면 API 호출 중단
     if (!storeSeq) {
-      console.log('선택된 매장 없음');
       return;
     }
 
@@ -292,12 +292,11 @@ function CollectionManagementPage() {
             <div className="space-y-3">
               {depositAccounts.length === 0 ? (
                 // 입금 내역이 없을 때 표시
-                <p className="rounded-2xl bg-slate-50 p-4 text-sm font-bold text-slate-400">
-                  입금 내역이 없습니다.
-                </p>
+                (<p className="rounded-2xl bg-slate-50 p-4 text-sm font-bold text-slate-400">입금 내역이 없습니다.
+                                  </p>)
               ) : (
                 // 입금 내역이 있을 때 목록 출력
-                depositAccounts.map((item, index) => (
+                (depositAccounts.map((item, index) => (
                   <div
                     key={`${item.bank || 'bank'}-${index}`}
                     className="flex flex-col gap-3 rounded-2xl bg-slate-50 p-4 sm:flex-row sm:items-center sm:justify-between"
@@ -318,7 +317,7 @@ function CollectionManagementPage() {
                       <p className="mt-1 text-xs text-slate-400">{item.date || '-'}</p>
                     </div>
                   </div>
-                ))
+                )))
               )}
             </div>
 
@@ -380,11 +379,11 @@ function CollectionManagementPage() {
               <tbody className="divide-y divide-slate-100">
                 {filteredRows.length === 0 ? (
                   // 수금 이력이 없을 때 표시
-                  <tr>
+                  (<tr>
                     <td colSpan="6" className="px-6 py-10 text-center text-sm font-bold text-slate-400">
                       수금 내역이 없습니다.
                     </td>
-                  </tr>
+                  </tr>)
                 ) : (
                   // 수금 이력이 있을 때 테이블 행 출력
                   paginatedRows.map((row, index) => {
@@ -416,8 +415,8 @@ function CollectionManagementPage() {
                         </td>
                       </tr>
                     );
-                  })
-                )}
+                  }))
+                }
               </tbody>
             </table>
           </div>
@@ -462,6 +461,9 @@ function CollectionManagementPage() {
           </nav>
         </section>
       </main>
+      {/* 공통 Footer 출력 */}
+      <MainFooter />
+
     </div>
   );
 }

@@ -94,8 +94,6 @@ export const useLogin = () => {
       return;
     }
 
-    console.log(`${loginType === 'business' ? '사업자' : '거래처'} 로그인 시도:`, { ...formData, ...options });
-
     // 🚀 1. 백엔드로 진짜 로그인 데이터를 보냅니다 (POST 방식)
     const requestUserType = loginType === 'business' ? 'BUSINESS' : 'PARTNER';
 
@@ -105,49 +103,43 @@ export const useLogin = () => {
       user_type: requestUserType,
     })
       .then(resp => {
-        // 🚀 [추가] 탈퇴 회원 응답 처리
-        // 백엔드 컨트롤러가 status가 'isWithDraw'인 경우 그대로 member 객체를 반환함
-        if (resp.data.status === 'isWithDraw') {
-          alert("탈퇴한 회원입니다. 고객센터에 문의해주세요.");
-          setFormData({
-            user_id: '',
-            password: ''
-          })
-          return;
-        }
+      // 🚀 [추가] 탈퇴 회원 응답 처리
+      // 백엔드 컨트롤러가 status가 'isWithDraw'인 경우 그대로 member 객체를 반환함
+      if (resp.data.status === 'isWithDraw') {
+        alert("탈퇴한 회원입니다. 고객센터에 문의해주세요.");
+        setFormData({
+          user_id: '',
+          password: ''
+        })
+        return;
+      }
 
-        const token = resp.data.token;
-        const user_type = resp.data.user_type;
-        const user_seq = resp.data.user_seq;
-        const user_nickname = resp.data.user_nickname;
-        const bizname = resp.data.company_name;
-        const selectedStoreSeq = resp.data.selectedStoreSeq;
-        console.log("token:", token);
-        console.log("user_type:", user_type);
-        console.log("user_seq:", user_seq);
-        console.log("user_nickname:", user_nickname);
-        console.log("bizname:", bizname);
+      const token = resp.data.token;
+      const user_type = resp.data.user_type;
+      const user_seq = resp.data.user_seq;
+      const user_nickname = resp.data.user_nickname;
+      const bizname = resp.data.company_name;
+      const selectedStoreSeq = resp.data.selectedStoreSeq;
 
-        if (!token) {
-          alert("로그인 정보가 올바르지 않거나 권한이 없습니다.");
-          return;
-        }
+      if (!token) {
+        alert("로그인 정보가 올바르지 않거나 권한이 없습니다.");
+        return;
+      }
 
-        console.log("zustand 저장 전 백엔드 응답:", resp.data);
-        // 로그인 성공 시 받은 토큰과 사용자 정보를 전역 상태에 저장
-        login({
-          token: token,
-          user_seq: user_seq,
-          user_type: user_type,
-          user_nickname: user_nickname,
-          bizname: bizname,
-          selectedStoreSeq: selectedStoreSeq
-        });
+      // 로그인 성공 시 받은 토큰과 사용자 정보를 전역 상태에 저장
+      login({
+        token: token,
+        user_seq: user_seq,
+        user_type: user_type,
+        user_nickname: user_nickname,
+        bizname: bizname,
+        selectedStoreSeq: selectedStoreSeq
+      });
 
-        // 3. 성공했으니 메인 화면으로 이동
-        alert("로그인에 성공했습니다!");
-        navigate("/");
-      })
+      // 3. 성공했으니 메인 화면으로 이동
+      alert("로그인에 성공했습니다!");
+      navigate("/");
+    })
       .catch(error => {
         console.error("로그인 실패:", error);
 

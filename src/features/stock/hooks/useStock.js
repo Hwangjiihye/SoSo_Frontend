@@ -68,6 +68,14 @@ export const useStock = () => {
       return true;
     } catch (err) {
       console.error('Register Stock Error:', err);
+      if (err.response && err.response.data) {
+        // 서버에서 던진 에러 메시지 활용
+        const errorMsg = typeof err.response.data === 'string' ? err.response.data : err.response.data.message;
+        if (errorMsg) {
+          alert(errorMsg);
+          return false;
+        }
+      }
       alert('품목 등록에 실패했습니다.');
       return false;
     } finally {

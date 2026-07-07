@@ -24,20 +24,16 @@ function MainHeader({ activeMenu = '홈' }) {
   const [isLookupDropdownOpen, setIsLookupDropdownOpen] = useState(false);
 
   useEffect(() => {
+    // 💡 로그아웃 상태(비회원)이거나 비즈니스 회원이 아니면 자동 선택 로직을 실행하지 않음
+    if (user_type !== 'BUSINESS') return;
     if (!stores || stores.length === 0) return;
 
-    const savedStoreSeq = localStorage.getItem("storeSeq");
-
-    // localStorage에 매장 정보가 없으면 첫 번째 매장을 기본 선택으로 저장
-    if (!savedStoreSeq) {
+    // Zustand 스토어에 이미 값이 있는지 확인 (없으면 첫 번째 매장을 기본 선택)
+    if (!selectedStoreSeq) {
       const firstStore = stores[0];
-
       setSelectedStore(firstStore.storeSeq, firstStore.companyName);
-
-      localStorage.setItem("storeSeq", firstStore.storeSeq);
-      localStorage.setItem("storeName", firstStore.companyName);
     }
-  }, [stores]);
+  }, [stores, selectedStoreSeq, setSelectedStore, user_type]);
 
   const handleLogOut = () => {
     logout();
@@ -59,14 +55,6 @@ function MainHeader({ activeMenu = '홈' }) {
 
   const handleStoreSwitch = (storeSeq, companyName) => {
     setSelectedStore(storeSeq, companyName);
-
-    localStorage.setItem("storeSeq", storeSeq);
-    localStorage.setItem("storeName", companyName);
-
-    setIsProfileOpen(false);
-
-    // navigate('/business-mypage');
-
     setIsProfileOpen(false);
   };
 

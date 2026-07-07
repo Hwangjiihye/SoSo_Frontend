@@ -9,7 +9,7 @@ import { useFindId } from './hooks/useFindId';
  */
 const FindIdPage = () => {
   const navigate = useNavigate();
-  
+
   // 비즈니스 로직(상태 관리, 유효성 검사 등)은 커스텀 훅으로 100% 격리합니다.
   const {
     formData,
@@ -52,7 +52,7 @@ const FindIdPage = () => {
 
         {!isFound ? (
           /* 1단계: 정보 입력 및 인증 단계 */
-          <div className="space-y-4 sm:space-y-5">
+          <div className="space-y-6 pt-2">
             {/* 이름 입력 */}
             <div>
               <label htmlFor="name" className="block text-sm font-bold text-gray-700 mb-2 ml-1">
@@ -163,7 +163,7 @@ const FindIdPage = () => {
               </div>
             )}
 
-            <div className="text-center pt-1">
+            <div className="text-center pt-2">
               <button 
                 type="button"
                 onClick={() => navigate('/login')}
@@ -175,12 +175,13 @@ const FindIdPage = () => {
           </div>
         ) : (
           /* 3단계: 최종 결과 단계 */
-          <div className="space-y-4 -mt-1 animate-in fade-in zoom-in-95 duration-500">
-            <div className="bg-gray-50 rounded-2xl p-5 sm:p-6 text-center border border-gray-100 flex flex-col items-center justify-center">
-              <p className="text-gray-500 font-bold text-[16px] mb-4 break-keep">고객님의 아이디는 다음과 같습니다.</p>
-              <div className="w-full max-w-full py-4 px-6 sm:px-10 bg-white rounded-xl border border-gray-200 shadow-sm inline-block overflow-hidden">
-                {/* inline color style을 Tailwind arbitrary color 클래스로 변환 */}
-                <span className="text-[23px] sm:text-[25px] font-black tracking-tight text-[#1D9E75] break-all">
+          <div className="space-y-6 -mt-3 animate-in fade-in zoom-in-95 duration-500">
+            <div className="bg-gray-50 rounded-2xl p-8 text-center border border-gray-100 flex flex-col items-center justify-center">
+              <p className="text-gray-500 font-bold text-[16px] mb-4">
+                고객님의 아이디는 다음과 같습니다.
+              </p>
+              <div className="py-4 px-10 bg-white rounded-xl border border-gray-200 shadow-sm inline-block">
+                <span className="text-[25px] font-black tracking-tight" style={{ color: '#1D9E75' }}>
                   {foundId}
                 </span>
               </div>
@@ -195,6 +196,7 @@ const FindIdPage = () => {
               >
                 로그인하기
               </button>
+
               <button
                 onClick={() => navigate('/find-password')}
                 className="w-full py-2 px-4 border border-gray-200 text-ml font-black rounded-2xl text-gray-700 bg-white hover:bg-gray-100 transition-all transform active:scale-[0.98]"

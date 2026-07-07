@@ -140,15 +140,6 @@ const GroupBuyDeliveryPage = () => {
               </div>
               <div className="flex justify-between items-start gap-4">
                 <h2 className="text-3xl sm:text-4xl font-black mb-4 leading-tight tracking-tight">{groupBuy.title}</h2>
-                {/* 작성자(개설자)인 경우에만 상태 업데이트 버튼 표시 */}
-                {Number(groupBuy.userSeq) === Number(user_seq) && (
-                  <button
-                    onClick={() => setIsStatusModalOpen(true)}
-                    className="shrink-0 bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-xl text-[11px] font-black tracking-widest transition-all flex items-center gap-2 border border-white/10 shadow-sm"
-                  >
-                    상태 변경 ⚙️
-                  </button>
-                )}
               </div>
               <div className="flex items-center gap-4 text-gray-300 text-sm font-bold">
                 <span className="flex items-center gap-1.5">
@@ -229,7 +220,7 @@ const GroupBuyDeliveryPage = () => {
               </div>
             </section>
 
-            {/* 함께 참여 중인 멤버 */}
+            {/* 함께 참여 중인 멤버 (임시 주석 처리)
             <section className="space-y-4">
               <div className="flex items-center gap-2 mb-2">
                 <span className="w-1 h-3 bg-emerald-500 rounded-full"></span>
@@ -253,6 +244,7 @@ const GroupBuyDeliveryPage = () => {
                 ))}
               </div>
             </section>
+            */}
 
           </div>
         </div>

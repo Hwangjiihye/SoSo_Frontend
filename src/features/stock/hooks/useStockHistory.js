@@ -40,8 +40,7 @@ export const useStockHistory = () => {
     const safePage = Math.max(1, page);
     try {
       const data = await getStockHistoryModal({ page: safePage, size, storeSeq: selectedStoreSeq });
-      console.log(data)
-      
+
       // 백엔드 응답(data)이 없으면 안전하게 초기값(1페이지) 세팅
       setModalHistoryData(data || { 
         historyList: [], 

@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useGroupBuy } from './hooks/useGroupBuy';
 
+import { groupBuyApi } from '../../apis/groupBuyApi';
+
 /**
  * @file GroupBuyDetailPage.jsx
  * @description 사업자용 그룹 참여 상세 페이지
@@ -17,31 +19,34 @@ const GroupBuyDetailPage = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // 실제 연동 시 상세 조회 API 호출
     const fetchDetail = async () => {
-      // Mock 데이터
-      setTimeout(() => {
+      try {
+        const data = await groupBuyApi.getGroupBuyDetail(seq);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const end = new Date(data.endDate);
+        end.setHours(0, 0, 0, 0);
+        let dDay = 'D-Day';
+        if (!isNaN(end.getTime())) {
+          const diffTime = end.getTime() - today.getTime();
+          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+          if (diffDays > 0) dDay = `D-${diffDays}`;
+          else if (diffDays < 0) dDay = `D+${Math.abs(diffDays)}`;
+        }
         setItem({
-          seq: seq,
-          groupName: '한우 등심 (1+ 등급, 10kg)',
-          category: '육류',
-          partnerName: '상생 농장',
-          currentParticipants: 15,
-          targetParticipants: 20,
-          quantity: 1,
-          unitPrice: 380000,
-          totalAmount: 380000,
-          endDate: '2024-06-30',
-          d_day: 'D-12',
-          pickupLocation: '(06236) 서울특별시 강남구 테헤란로 123 1층 로비',
-          pickupTime: '매일 14:00 ~ 18:00',
-          notice: '매장 정문 앞 무인 택배함에 보관 예정입니다.',
+          ...data,
+          d_day: dDay
         });
+      } catch (error) {
+        console.error('Failed to fetch group buy detail:', error);
+        alert('상세 정보를 불러오는데 실패했습니다.');
+        navigate('/group-buy', { replace: true });
+      } finally {
         setIsLoading(false);
-      }, 500);
+      }
     };
     fetchDetail();
-  }, [seq]);
+  }, [seq, navigate]);
 
   if (isLoading) return <div className="min-h-screen flex items-center justify-center font-black text-gray-400">LOADING...</div>;
 
@@ -115,7 +120,7 @@ const GroupBuyDetailPage = () => {
             <div className="pt-6">
               <button 
                 onClick={() => {
-                  handleJoinGroupBuy(item.seq);
+                  handleJoinGroupBuy(item.groupBuySeq || item.seq);
                   navigate('/group-buy');
                 }}
                 className="w-full py-6 bg-emerald-600 text-white rounded-[28px] font-black text-xl hover:bg-emerald-700 transition-all shadow-xl shadow-emerald-100 active:scale-95 hover:-translate-y-1"

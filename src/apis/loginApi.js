@@ -111,3 +111,10 @@ export const checkPasswordCodeApi = (checkCodeData) => {
 export const resetPasswordApi = (resetPasswordData) => {
   return axiosInstance.put('/find/password/reset', resetPasswordData);
 };
+
+/**
+ * 로그아웃 요청 API
+ */
+export const logoutApi = () => {
+  return axiosInstance.post('/auth/logout');
+};

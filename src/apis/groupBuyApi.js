@@ -28,6 +28,14 @@ export const groupBuyApi = {
   },
 
   /**
+   * 내가 개설한 그룹 수 조회
+   */
+  getCreatedCount: async () => {
+    const response = await axiosInstance.get(`${GROUP_BUY_BASE_URL}/created/count`);
+    return response.data;
+  },
+
+  /**
    * 나의 참여그룹 수 조회
    */
   getParticipatedCount: async () => {
@@ -48,6 +56,14 @@ export const groupBuyApi = {
    */
   getCompletedGroupBuys: async () => {
     const response = await axiosInstance.get(`${GROUP_BUY_BASE_URL}/completed`);
+    return response.data;
+  },
+
+  /**
+   * 내가 직접 개설한 그룹 리스트 조회
+   */
+  getCreatedGroupBuys: async () => {
+    const response = await axiosInstance.get(`${GROUP_BUY_BASE_URL}/created`);
     return response.data;
   },
 

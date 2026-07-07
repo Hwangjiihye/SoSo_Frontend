@@ -115,7 +115,6 @@ export const getStockHistoryModal = async (params) => {
 
 export const getCategories = async () => {
   const response = await axiosInstance.get('/api/categories');
-  console.log(response.data)
   return response.data;
 };
 

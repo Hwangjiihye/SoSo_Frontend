@@ -15,7 +15,10 @@ const GroupBuyPage = () => {
     isLoading,
     filter,
     setFilter,
+    statusFilter,
+    setStatusFilter,
     myCount,
+    createdCount,
     globalStats,
     user_type,
     handleCreateGroupBuy,
@@ -66,7 +69,7 @@ const GroupBuyPage = () => {
     <div className="min-h-screen bg-[#F8F9FA] pb-24 font-sans">
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         {/* 상단 통계 바 */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
           <div className="bg-white p-8 rounded-[32px] shadow-sm border border-gray-100">
             <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">참여 가능한 그룹</p>
             <h3 className="text-3xl font-black text-gray-900">{globalStats.ongoing}건</h3>
@@ -74,6 +77,10 @@ const GroupBuyPage = () => {
           <div className="bg-white p-8 rounded-[32px] shadow-sm border border-gray-100">
             <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">나의 참여 그룹</p>
             <h3 className="text-3xl font-black text-emerald-600">{myCount}건</h3>
+          </div>
+          <div className="bg-white p-8 rounded-[32px] shadow-sm border border-gray-100">
+            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">내가 개설한 그룹</p>
+            <h3 className="text-3xl font-black text-purple-600">{createdCount}건</h3>
           </div>
           <div className="bg-white p-8 rounded-[32px] shadow-sm border border-gray-100">
             <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">완료된 그룹</p>
@@ -124,6 +131,14 @@ const GroupBuyPage = () => {
             나의 참여 그룹
           </button>
           <button
+            onClick={() => setFilter('created')}
+            className={`px-6 sm:px-8 py-3 rounded-[16px] text-sm font-black transition-all ${
+              filter === 'created' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-100' : 'text-gray-400 hover:text-gray-600'
+            }`}
+          >
+            내가 개설한 그룹
+          </button>
+          <button
             onClick={() => setFilter('completed')}
             className={`px-6 sm:px-8 py-3 rounded-[16px] text-sm font-black transition-all ${
               filter === 'completed' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-100' : 'text-gray-400 hover:text-gray-600'
@@ -168,19 +183,35 @@ const GroupBuyPage = () => {
                 <div 
                   key={item.groupBuySeq} 
                   className={`group bg-white rounded-[24px] border-2 transition-all duration-500 flex flex-col lg:flex-row overflow-hidden hover:-translate-y-1 ${
-                    isJoined 
-                      ? 'border-emerald-500 shadow-[0_10px_30px_rgba(16,185,129,0.15)] bg-emerald-50/5' 
-                      : 'border-gray-50 shadow-sm hover:shadow-lg'
+                    item.status === 'COMPLETED'
+                      ? 'border-red-400 bg-gray-50/80 grayscale-[20%] opacity-90 shadow-[0_5px_15px_rgba(248,113,113,0.15)]'
+                      : item.isOwner
+                        ? 'border-purple-400 shadow-[0_10px_30px_rgba(168,85,247,0.15)] bg-purple-50/10'
+                        : isJoined 
+                          ? 'border-emerald-500 shadow-[0_10px_30px_rgba(16,185,129,0.15)] bg-emerald-50/5' 
+                          : 'border-gray-50 shadow-sm hover:shadow-lg'
                   }`}
                 >
                   {/* 좌측/상단: 메인 콘텐츠 및 메타 정보 */}
-                  <div className="p-5 flex-1 flex flex-col justify-between">
-                    <div>
+                  <div className="p-5 flex-1 flex flex-col justify-between relative">
+                    {/* 백그라운드 워터마크 표시 (완료된 경우) */}
+                    {item.status === 'COMPLETED' && (
+                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0 overflow-hidden">
+                        <span className="text-gray-200/40 text-7xl font-black -rotate-12 transform scale-150 select-none">COMPLETED</span>
+                      </div>
+                    )}
+                    
+                    <div className="relative z-10">
                       <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
-                        <div className="flex flex-wrap gap-2">
+                        <div className="flex flex-wrap gap-2 items-center">
                           <span className={`px-3 py-1 rounded-lg text-[10px] font-black border tracking-wider transition-colors ${statusColors[displayStatus] || 'bg-gray-100 text-gray-600'}`}>
                             {displayStatus}
                           </span>
+                          {item.isOwner && (
+                            <span className="bg-purple-100 text-purple-700 px-3 py-1 rounded-lg text-[10px] font-black border border-purple-200 shadow-sm flex items-center gap-1">
+                              <span>👑</span> 내가 개설한 그룹
+                            </span>
+                          )}
                           {/* 사업자 / 거래처 제안 구분 뱃지 나중에 필요 시 해제
                           {item.creatorType === 'BUSINESS' ? (
                             <span className="bg-blue-50 text-blue-600 px-3 py-1 rounded-lg text-[10px] font-black border border-blue-100 shadow-sm">
@@ -192,12 +223,12 @@ const GroupBuyPage = () => {
                             </span>
                           )}
                           */}
-                          {item.paymentStatus && (
+                          {item.paymentStatus && item.paymentStatus.toUpperCase() !== 'PENDING' && (
                             <span className="bg-indigo-50 text-indigo-600 px-3 py-1 rounded-lg text-[10px] font-black border border-indigo-100 shadow-sm">
                               💳 {item.paymentStatus}
                             </span>
                           )}
-                          {item.deliveryStatus && (
+                          {item.deliveryStatus && item.deliveryStatus.toUpperCase() !== 'PENDING' && (
                             <span className="bg-teal-50 text-teal-600 px-3 py-1 rounded-lg text-[10px] font-black border border-teal-100 shadow-sm">
                               📦 {item.deliveryStatus}
                             </span>
@@ -231,17 +262,17 @@ const GroupBuyPage = () => {
                       </div>
                     </div>
 
-                    <div className="space-y-2 mt-auto">
+                    <div className="space-y-2 mt-auto relative z-10">
                       <div className="flex justify-between items-end">
                         <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Progress</span>
                         <div className="text-right">
-                          <span className="text-lg font-black text-emerald-600">{item.currentParticipants}</span>
+                          <span className={`text-lg font-black ${item.status === 'COMPLETED' ? 'text-gray-500' : item.isOwner ? 'text-purple-600' : 'text-emerald-600'}`}>{item.currentParticipants}</span>
                           <span className="text-xs font-bold text-gray-300"> / {item.targetParticipants}명</span>
                         </div>
                       </div>
                       <div className="w-full bg-gray-100 h-1.5 rounded-full overflow-hidden border border-gray-50">
                         <div 
-                          className="bg-emerald-500 h-full rounded-full transition-all duration-1000" 
+                          className={`${item.status === 'COMPLETED' ? 'bg-gray-400' : item.isOwner ? 'bg-purple-500' : 'bg-emerald-500'} h-full rounded-full transition-all duration-1000`} 
                           style={{ width: `${progress}%` }}
                         ></div>
                       </div>
@@ -249,7 +280,9 @@ const GroupBuyPage = () => {
                   </div>
 
                   {/* 우측/하단: 결제 금액 및 액션 버튼 */}
-                  <div className="w-full lg:w-[260px] p-5 bg-gray-50/50 border-t lg:border-t-0 lg:border-l border-gray-100 flex flex-col justify-center shrink-0">
+                  <div className={`w-full lg:w-[260px] p-5 border-t lg:border-t-0 lg:border-l flex flex-col justify-center shrink-0 relative z-10 ${
+                    item.status === 'COMPLETED' ? 'bg-gray-100/50 border-red-200' : item.isOwner ? 'bg-purple-50/50 border-purple-100' : 'bg-gray-50/50 border-gray-100'
+                  }`}>
                     {!isPartner && (
                       <div className="mb-4">
                         <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">총 참여 금액</p>
@@ -270,7 +303,11 @@ const GroupBuyPage = () => {
                           <div className="grid grid-cols-2 gap-2">
                             <button
                               onClick={() => navigate(`/group-buy/${item.groupBuySeq || item.seq}/info`, { state: { item } })}
-                              className="py-2.5 bg-emerald-50 text-emerald-600 rounded-xl font-black text-xs hover:bg-emerald-100 transition-all"
+                              className={`py-2.5 rounded-xl font-black text-xs transition-all ${
+                                item.status === 'COMPLETED' ? 'bg-gray-200 text-gray-700 hover:bg-gray-300' :
+                                item.isOwner ? 'bg-purple-100 text-purple-700 hover:bg-purple-200' :
+                                'bg-emerald-50 text-emerald-600 hover:bg-emerald-100'
+                              }`}
                             >
                               상세 정보 내역
                             </button>
@@ -292,7 +329,7 @@ const GroupBuyPage = () => {
                         </>
                       )}
                       
-                      {isPartner && (
+                      {item.isOwner && item.status !== 'COMPLETED' && (
                         <button
                           onClick={() => {
                             setSelectedGroupBuy(item);

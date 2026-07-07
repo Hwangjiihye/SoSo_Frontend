@@ -21,7 +21,6 @@ export const useBusinessInfo = () => {
         setIsLoading(true);
         // [수정] selectedStoreSeq를 파라미터로 넘겨 해당 매장 정보를 요청합니다.
         const result = await getBusinessProfileApi(selectedStoreSeq);
-        console.log("사업자 프로필 데이터:", result);
         setData(result);
         setIsLoading(false);
       } catch (err) {

@@ -26,12 +26,12 @@ const FindPasswordPage = () => {
 
   // 비밀번호 변경 성공 시 로그인 페이지로 이동
   const onResetSubmit = async () => {
-  const result = await handleResetPasswordSubmit();
+    const result = await handleResetPasswordSubmit();
 
-  if (result) {
-    navigate('/login');
-  }
-};
+    if (result) {
+      navigate('/login');
+    }
+  };
 
   return (
     <div className="w-full min-h-[calc(100dvh-170px)] overflow-y-auto flex items-start justify-center bg-gray-50 px-4 pt-4 pb-8 sm:px-6 sm:pt-5">
@@ -50,9 +50,11 @@ const FindPasswordPage = () => {
               SoSo
             </h1>
           </div>
+
           <h2 className="mt-4 text-[24px] font-extrabold text-gray-900">
             {isResetStep ? '비밀번호 재설정' : '비밀번호 찾기'}
           </h2>
+
           <p className="mt-2 w-full max-w-none text-[13px] sm:text-[15px] text-gray-500 font-medium text-center break-keep leading-relaxed">
             {isResetStep 
               ? '새롭게 사용할 비밀번호를 입력해주세요.'
@@ -68,8 +70,8 @@ const FindPasswordPage = () => {
 
         {!isResetStep ? (
           /* 1단계 & 2단계: 정보 입력 및 이메일 인증 */
-          <div className="space-y-4 sm:space-y-5">
-            {/* 이름 입력 */}
+          <div className="space-y-6 pt-0">
+            {/* 아이디 입력 */}
             <div>
               <label htmlFor="userId" className="block text-sm font-bold text-gray-700 mb-2 ml-1">
                 아이디
@@ -125,7 +127,7 @@ const FindPasswordPage = () => {
               )}
             </div>
 
-            {/* 비밀번호 찾기(인증번호 발송) 버튼 */}
+            {/* 비밀번호 찾기 버튼 */}
             <div className="pt-2">
               <button
                 onClick={handleSendCodeClick}
@@ -166,6 +168,7 @@ const FindPasswordPage = () => {
                       확인
                     </button>
                   </div>
+
                   {errors.verificationCode ? (
                     <p className="mt-2.5 ml-1 text-[12px] font-semibold text-red-500 animate-in fade-in slide-in-from-top-1">
                       {errors.verificationCode}
@@ -179,7 +182,7 @@ const FindPasswordPage = () => {
               </div>
             )}
 
-            <div className="text-center pt-1">
+            <div className="text-center pt-2">
               <button 
                 onClick={() => navigate('/login')}
                 className="text-[15px] font-bold text-[#0D6B50] hover:underline underline-offset-4 transition-all"
@@ -189,8 +192,8 @@ const FindPasswordPage = () => {
             </div>
           </div>
         ) : (
-          /* 3단계: 비밀번호 재설정 단계 (비밀번호 찾기2.jpg 참고) */
-          <div className="space-y-4 sm:space-y-5 animate-in fade-in slide-in-from-right-4 duration-500">
+          /* 3단계: 비밀번호 재설정 단계 */
+          <div className="space-y-6 pt-0 animate-in fade-in slide-in-from-right-4 duration-500">
             {/* 새 비밀번호 입력 */}
             <div>
               <label htmlFor="newPassword" className="block text-sm font-bold text-gray-700 mb-2 ml-1">
@@ -227,7 +230,6 @@ const FindPasswordPage = () => {
                 type="password"
                 value={formData.confirmPassword}
                 onChange={handleInputChange}
-                // onKeyUp={passwordcheck}
                 className={`block w-full px-5 py-3 rounded-2xl border outline-none transition-all ${
                   errors.confirmPassword
                     ? 'border-red-400 focus:ring-2 focus:ring-red-100 focus:border-red-400 bg-gray-50'

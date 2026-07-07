@@ -123,7 +123,7 @@ export const getAllStoresApi = async () => {
  */
 export const updateBusinessProfileApi = async (updateData, exteriorImg, interiorImg) => {
   const formData = new FormData();
-  
+
   // 1. ⚠️ 중요: JSON.stringify를 하지 않고, 객체의 각 필드를 낱개로 풀어 append 합니다.
   // 이래야 백엔드의 @ModelAttribute가 DTO 필드명과 매칭을 시켜줄 수 있어!
   Object.keys(updateData).forEach((key) => {
@@ -132,17 +132,15 @@ export const updateBusinessProfileApi = async (updateData, exteriorImg, interior
       formData.append(key, updateData[key]);
     }
   });
-  
+
   // 2. 파일 추가 (기존 코드 유지)
   if (exteriorImg instanceof File) {
     formData.append('exteriorImg', exteriorImg);
   }
-  
+
   if (interiorImg instanceof File) {
     formData.append('interiorImg', interiorImg);
   }
-
-  console.log("멤버API 요청 전송 시작", formData);
 
   const response = await axiosInstance.put('/api/member/business/update', formData, {
     headers: {

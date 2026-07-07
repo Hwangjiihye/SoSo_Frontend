@@ -7,7 +7,6 @@ import { useNavigate } from 'react-router-dom';
  * @description 발주 신청 페이지의 비즈니스 로직을 담당하는 커스텀 훅입니다.
  */
 export const useOrderApply = () => {
-
   // 기본 정보 상태
   const [orderInfo, setOrderInfo] = useState({
     orderDate: new Date().toISOString().split('T')[0],
@@ -27,54 +26,51 @@ export const useOrderApply = () => {
 
   const navi = useNavigate();
 
-// 페이지 렌더링 시작할 때, 사업자 정보 불러오기
-const identityInfoCheck = async () => {
-  try {
-    const storeSeq = Number(localStorage.getItem('storeSeq'));
+  // 페이지 렌더링 시작할 때, 사업자 정보 불러오기
+  const identityInfoCheck = async () => {
+    try {
+      const storeSeq = Number((JSON.parse(localStorage.getItem('soso-auth-storage'))?.state?.selectedStoreSeq));
 
-    if (!storeSeq) {
-      console.log('storeSeq 없음');
-      return;
+      if (!storeSeq) {
+        return;
+      }
+
+      const data = await identityCheck(storeSeq);
+
+      const companyName =
+        data.companyName ||
+        data.company_name ||
+        data.storeName ||
+        data.store_name ||
+        '';
+
+      const zoneCode =
+        data.zoneCode ||
+        data.zonecode ||
+        data.zone_code ||
+        '';
+
+      const address1 = data.address1 || '';
+      const address2 = data.address2 || '';
+
+      const fullAddress =
+        zoneCode || address1
+          ? `(${zoneCode}) ${address1} ${address2}`
+          : '';
+
+      setOrderInfo(prev => ({
+        ...prev,
+        companyName,
+        manager: companyName,
+        zonecode: zoneCode,
+        address1,
+        address2,
+        deliveryAddress: fullAddress,
+      }));
+    } catch (error) {
+      console.error('사업자명/주소 조회 실패:', error);
     }
-
-    const data = await identityCheck(storeSeq);
-
-    console.log('사업자 정보 조회 결과:', data);
-
-    const companyName =
-      data.companyName ||
-      data.company_name ||
-      data.storeName ||
-      data.store_name ||
-      '';
-
-    const zoneCode =
-      data.zoneCode ||
-      data.zonecode ||
-      data.zone_code ||
-      '';
-
-    const address1 = data.address1 || '';
-    const address2 = data.address2 || '';
-
-    const fullAddress =
-      zoneCode || address1
-        ? `(${zoneCode}) ${address1} ${address2}`
-        : '';
-
-    setOrderInfo(prev => ({
-      ...prev,
-      companyName,
-      manager: companyName,
-      zonecode: zoneCode,
-      address1,
-      address2,
-      deliveryAddress: fullAddress,
-    }));
-  } catch (error) {
-    console.error('사업자명/주소 조회 실패:', error);
-  }
-};
+  };
 
   // 페이지 렌더링 시작할 때, 사업자 정보 불러오기
 
@@ -107,9 +103,6 @@ const identityInfoCheck = async () => {
       ? data
       : data.results || data.list || data.data || [];
 
-    console.log('거래처 품목 목록:', list);
-    console.log('첫 번째 데이터:', list[0]);
-
     setSupplierItems(list);
   } catch (error) {
     console.error('거래처 품목 목록 조회 실패:', error);
@@ -118,62 +111,57 @@ const identityInfoCheck = async () => {
   }
 };
 
-const [supplierList, setSupplierList] = useState([]);
+  const [supplierList, setSupplierList] = useState([]);
 
-const supplierListCheck = async () => {
-  try {
-    const storeSeq = Number(localStorage.getItem('storeSeq'));
+  const supplierListCheck = async () => {
+    try {
+      const storeSeq = Number((JSON.parse(localStorage.getItem('soso-auth-storage'))?.state?.selectedStoreSeq));
 
-    if (!storeSeq) {
-      console.log('storeSeq 없음');
-      return;
+      if (!storeSeq) {
+        return;
+      }
+
+      const data = await getSupplierList(storeSeq);
+
+      const rawList = Array.isArray(data)
+        ? data
+        : data.results || data.list || data.data || [];
+
+      const list = rawList.map((supplier) => ({
+        relationSeq: supplier.relationSeq ?? supplier.relation_seq,
+        storeSeq:
+          supplier.partnerSeq ??
+          supplier.partner_seq ??
+          supplier.storeSeq ??
+          supplier.store_seq,
+        userSeq: supplier.userSeq ?? supplier.user_seq,
+        companyName:
+          supplier.companyName ??
+          supplier.company_name ??
+          supplier.partnerName ??
+          supplier.partner_name ??
+          supplier.partnerCompanyName ??
+          supplier.partner_company_name,
+        ceoName: supplier.ceoName ?? supplier.ceo_name,
+        bizNumber: supplier.bizNumber ?? supplier.biz_number,
+        memo: supplier.memo ?? '',
+        address1: supplier.address1 ?? '',
+        address2: supplier.address2 ?? '',
+        zonecode: supplier.zonecode ?? supplier.zoneCode ?? '',
+      }));
+
+      setSupplierList(list);
+    } catch (error) {
+      console.error('공급업체 목록 조회 실패:', error);
+      setSupplierList([]);
     }
+  };
 
-    const data = await getSupplierList(storeSeq);
-
-    console.log('공급업체 목록 조회 원본:', data);
-
-    const rawList = Array.isArray(data)
-      ? data
-      : data.results || data.list || data.data || [];
-
-    const list = rawList.map((supplier) => ({
-      relationSeq: supplier.relationSeq ?? supplier.relation_seq,
-      storeSeq:
-        supplier.partnerSeq ??
-        supplier.partner_seq ??
-        supplier.storeSeq ??
-        supplier.store_seq,
-      userSeq: supplier.userSeq ?? supplier.user_seq,
-      companyName:
-        supplier.companyName ??
-        supplier.company_name ??
-        supplier.partnerName ??
-        supplier.partner_name ??
-        supplier.partnerCompanyName ??
-        supplier.partner_company_name,
-      ceoName: supplier.ceoName ?? supplier.ceo_name,
-      bizNumber: supplier.bizNumber ?? supplier.biz_number,
-      memo: supplier.memo ?? '',
-      address1: supplier.address1 ?? '',
-      address2: supplier.address2 ?? '',
-      zonecode: supplier.zonecode ?? supplier.zoneCode ?? '',
-    }));
-
-    console.log('공급업체 목록 정리 후:', list);
-
-    setSupplierList(list);
-  } catch (error) {
-    console.error('공급업체 목록 조회 실패:', error);
-    setSupplierList([]);
-  }
-};
-
-useEffect(() => {
-  identityInfoCheck();
-  supplierItemsCheck();
-  supplierListCheck();
-}, []);
+  useEffect(() => {
+    identityInfoCheck();
+    supplierItemsCheck();
+    supplierListCheck();
+  }, []);
 
 
 
@@ -182,20 +170,16 @@ useEffect(() => {
   String(supplier.storeSeq) === String(orderInfo.supplier)
 );
 
-const filteredSupplierItems = orderInfo.supplier
-  ? supplierItems.filter((item) =>
-      String(
-        item.storeSeq ??
-        item.store_seq ??
-        item.partnerSeq ??
-        item.partner_seq
-      ) === String(orderInfo.supplier)
-    )
-  : [];
-
-  console.log('선택한 공급업체 값:', orderInfo.supplier);
-console.log('전체 거래처 품목:', supplierItems);
-console.log('필터된 거래처 품목:', filteredSupplierItems);
+  const filteredSupplierItems = orderInfo.supplier
+    ? supplierItems.filter((item) =>
+        String(
+          item.storeSeq ??
+          item.store_seq ??
+          item.partnerSeq ??
+          item.partner_seq
+        ) === String(orderInfo.supplier)
+      )
+    : [];
 
   // 물품 선택 시 발주 목록에 추가
   const addSelectedItem = (selectedItem) => {
@@ -304,21 +288,18 @@ console.log('필터된 거래처 품목:', filteredSupplierItems);
       alert('공급업체를 선택해주세요.');
       return;
     }
-    if (items.length === 0 || items.some(item => !item.itemName || item.quantity <= 0)) {
-      alert('발주할 품목을 선택하고 수량을 정확히 입력해주세요.');
-      return;
-    }
+      if (items.length === 0 || items.some(item => !item.itemName || item.quantity <= 0)) {
+        alert('발주할 품목을 선택하고 수량을 정확히 입력해주세요.');
+        return;
+      }
 
-    console.log("orderInfo:", orderInfo);
-    console.log("zonecode:", orderInfo.zonecode);
-
-    if (orderInfo.paymentMethod !== '카드결제') {
-      alert('결제 방식을 선택해주세요.');
-      return;
-}
+      if (orderInfo.paymentMethod !== '카드결제') {
+        alert('결제 방식을 선택해주세요.');
+        return;
+  }
 
       const orderData = {
-        buyerSeq: Number(localStorage.getItem('storeSeq')),
+        buyerSeq: Number((JSON.parse(localStorage.getItem('soso-auth-storage'))?.state?.selectedStoreSeq)),
         sellerSeq: Number(orderInfo.supplier),
         totalAmount: totalSummary.total,
         orderMemo: orderInfo.deliveryNotes,
@@ -337,28 +318,20 @@ console.log('필터된 거래처 품목:', filteredSupplierItems);
         })),
       };
 
-    console.log('최종 발주 데이터:', JSON.stringify(orderData, null, 2));
+      // API 호출
+      const result = await orderForm(orderData);
 
-    // API 호출
-    const result = await orderForm(orderData);
 
-  
-    console.log('발주 신청 결과:', result);
-    console.log('발주 신청 데이터:', orderData);
+      alert('발주 신청이 완료되었습니다.');
 
-    // alert('발주 신청이 완료되었습니다.');
-
-    // navi('/orders');
-
-    return true;
-
-  } catch (error) {
+      return true;
+    } catch (error) {
     console.error('발주 신청 실패:', error);
     alert('발주 신청 중 오류가 발생했습니다.');
     return false;
   }
 }
-  
+
 
   return {
     orderInfo,

@@ -88,20 +88,39 @@ function BusinessMain({ setRole }) {
   setLoading(true);
 
   try {
+    // const result = await askRag({
+    //   message: userQuestion,
+    //   storeSeq: selectedStoreSeq,
+    //   userSeq: userSeq,
+    //   userType: user_type
+    // });
+
+    //   setMessages((prev) => [
+    //     ...prev,
+    //     {
+    //       role: "ai",
+    //       content: result.answer,
+    //     },
+    //   ]);
+
+    console.log("로그인 userSeq:", userSeq);
+console.log("선택된 매장 selectedStoreSeq:", selectedStoreSeq);
+console.log("챗봇 질문:", userQuestion);
+
     const result = await askRag({
       message: userQuestion,
       storeSeq: selectedStoreSeq,
       userSeq: userSeq,
-      userType: user_type
+      userType: user_type,
     });
 
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: "ai",
-          content: result.answer,
-        },
-      ]);
+    setMessages((prev) => [
+      ...prev,
+      {
+        role: "ai",
+        content: result,
+      },
+    ]);
     } catch (error) {
       console.error(error);
 

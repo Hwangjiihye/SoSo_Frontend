@@ -28,8 +28,9 @@ export const useGroupBuy = () => {
     }, { replace: true });
   }, [setSearchParams]);
   const [myCount, setMyCount] = useState(0);
+  const [createdCount, setCreatedCount] = useState(0);
   const [globalStats, setGlobalStats] = useState({ ongoing: 0, delivered: 0 });
-  const { user_type } = authStore();
+  const { user_type, user_seq } = authStore();
 
   const calculateDDay = (endDateStr) => {
     if (!endDateStr) return 'D-Day';
@@ -55,6 +56,7 @@ export const useGroupBuy = () => {
       seq: seq,
       groupBuySeq: seq,
       isJoined: isMyFilter ? true : (item.isJoined || false),
+      isOwner: filter === 'created' || item.userSeq === user_seq || item.isOwner,
       dDay: calculateDDay(item.endDate),
       status: item.status || 'RECRUITING',
       category: item.category || '기타'
@@ -69,12 +71,19 @@ export const useGroupBuy = () => {
       if (filter === 'my') {
         data = await groupBuyApi.getParticipatedGroupBuys();
       } else if (filter === 'completed') {
-        data = await groupBuyApi.getCompletedGroupBuys();
+        const participatedCompleted = await groupBuyApi.getCompletedGroupBuys();
+        const createdAll = await groupBuyApi.getCreatedGroupBuys();
+        const createdCompleted = createdAll.filter(item => item.status === 'COMPLETED');
+        const merged = [...participatedCompleted, ...createdCompleted];
+        // 중복 제거 (seq 기준)
+        data = merged.filter((v, i, a) => a.findIndex(t => (t.groupBuySeq || t.seq) === (v.groupBuySeq || v.seq)) === i);
+      } else if (filter === 'created') {
+        data = await groupBuyApi.getCreatedGroupBuys();
       } else {
         data = await groupBuyApi.getGroupBuys(filter);
       }
       // 데이터 변환 및 기본값 설정
-      const formattedData = data.map((item, index) => mapGroupBuyData(item, index, filter === 'my' || filter === 'completed'));
+      const formattedData = data.map((item, index) => mapGroupBuyData(item, index, filter === 'my' || filter === 'completed' || filter === 'created'));
       latestData = formattedData;
       setGroupBuys(formattedData);
     } catch (error) {
@@ -88,13 +97,29 @@ export const useGroupBuy = () => {
     // 상단바 통계용 참여 개수 조회 (독립적으로 실행)
     try {
       const countData = await groupBuyApi.getParticipatedCount();
-      // 백엔드가 숫자만 반환할 수도 있고 { count: 5 } 형태일 수도 있으므로 방어 코드 작성
-      const countVal = typeof countData === 'number' ? countData : (countData?.count || 0);
+      let countVal = 0;
+      if (typeof countData === 'object' && countData !== null) {
+        countVal = countData.count || 0;
+      } else {
+        countVal = Number(countData) || 0;
+      }
       setMyCount(countVal);
     } catch (countError) {
       console.error('Failed to fetch participated count:', countError);
-      // 백엔드 API 연결 실패 시 최신 데이터에서 추론하도록 폴백 처리
-      setMyCount(latestData.filter(i => i.isJoined).length);
+    }
+
+    // 상단바 통계용 개설 개수 조회
+    try {
+      const createdData = await groupBuyApi.getCreatedCount();
+      let createdVal = 0;
+      if (typeof createdData === 'object' && createdData !== null) {
+        createdVal = createdData.count || 0;
+      } else {
+        createdVal = Number(createdData) || 0;
+      }
+      setCreatedCount(createdVal);
+    } catch (error) {
+      console.error('Failed to fetch created count:', error);
     }
 
     // 상단바 통계용 전체 현황 및 완료된 그룹 수 조회
@@ -103,14 +128,16 @@ export const useGroupBuy = () => {
       const ongoing = allData.filter(i => i.status === 'RECRUITING').length;
       
       const completedData = await groupBuyApi.getCompletedCount();
-      const delivered = typeof completedData === 'number' ? completedData : (completedData?.count || 0);
+      let delivered = 0;
+      if (typeof completedData === 'object' && completedData !== null) {
+        delivered = completedData.count || 0;
+      } else {
+        delivered = Number(completedData) || 0;
+      }
       
       setGlobalStats({ ongoing, delivered });
     } catch (statsError) {
       console.error('Failed to fetch global stats:', statsError);
-      const ongoing = latestData.filter(i => i.status === 'RECRUITING').length;
-      const delivered = latestData.filter(i => i.status === 'COMPLETED').length;
-      setGlobalStats({ ongoing, delivered });
     }
   }, [filter]);
 
@@ -167,8 +194,11 @@ export const useGroupBuy = () => {
     }
     
     // 2. 종류(전체, 참여, 주최자) 필터
-    if (filter === 'my' && !item.isJoined) {
-      return false;
+    if (filter === 'my') {
+      if (!item.isJoined || item.status === 'COMPLETED') return false;
+    }
+    if (filter === 'created') {
+      if (item.status === 'COMPLETED') return false;
     }
     if (filter === 'completed' && (!item.isJoined || item.status !== 'COMPLETED')) {
       return false;
@@ -191,6 +221,7 @@ export const useGroupBuy = () => {
     statusFilter,
     setStatusFilter,
     myCount,
+    createdCount,
     globalStats,
     user_type,
     handleCreateGroupBuy,

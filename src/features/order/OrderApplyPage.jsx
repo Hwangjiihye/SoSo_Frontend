@@ -37,42 +37,37 @@ const supplierRealName = suppliers.find(
 
   // 재고랑 발주랑 맞는지 확인 후 선택
   const handleSelectSupplierItem = async (item) => {
-  console.log('선택한 품목:', item);
+    try {
+      const storeSeq = Number((JSON.parse(localStorage.getItem('soso-auth-storage'))?.state?.selectedStoreSeq));
 
-  try {
-    const storeSeq = Number(localStorage.getItem('storeSeq'));
+      if (!storeSeq) {
+        alert('선택된 매장이 없습니다.');
+        return;
+      }
 
-    if (!storeSeq) {
-      alert('선택된 매장이 없습니다.');
-      return;
-    }
+      const result = await check(item.itemName, storeSeq);
+      const list = Array.isArray(result) ? result : [];
 
-    const result = await check(item.itemName, storeSeq);
-    const list = Array.isArray(result) ? result : [];
+      setSelectedSupplierItem(item);
+      setRecommendedStocks(list);
 
-    console.log('재고 추천 응답:', list);
+      // 비슷한 재고가 없으면 그냥 바로 발주 품목 목록에 추가
+      if (list.length === 0) {
+        addSelectedItem(item);
+      }
 
-    setSelectedSupplierItem(item);
-    setRecommendedStocks(list);
+      // 추천 있든 없든 모달은 띄움
+      setOpenModal(true);
+    } catch (error) {
+      console.error('재고 추천 조회 실패:', error);
 
-    // 비슷한 재고가 없으면 그냥 바로 발주 품목 목록에 추가
-    if (list.length === 0) {
+      // 추천 조회 실패해도 발주 품목 추가는 막지 않음
       addSelectedItem(item);
+      setSelectedSupplierItem(item);
+      setRecommendedStocks([]);
+      setOpenModal(true);
     }
-
-    // 추천 있든 없든 모달은 띄움
-    setOpenModal(true);
-
-  } catch (error) {
-    console.error('재고 추천 조회 실패:', error);
-
-    // 추천 조회 실패해도 발주 품목 추가는 막지 않음
-    addSelectedItem(item);
-    setSelectedSupplierItem(item);
-    setRecommendedStocks([]);
-    setOpenModal(true);
-  }
-};
+  };
 
 // 모달 Close
 const handleCloseModal = () => {
@@ -112,7 +107,7 @@ const handleConnectStock = (stock) => {
 // 발주 신청 + 연결된 재고 입고 처리
 const handleSubmitWithStockIncoming = async () => {
   try {
-    const storeSeq = Number(localStorage.getItem('storeSeq'));
+    const storeSeq = Number((JSON.parse(localStorage.getItem('soso-auth-storage'))?.state?.selectedStoreSeq));
 
     if (!storeSeq) {
       alert('선택된 매장이 없습니다.');
@@ -526,5 +521,4 @@ const handleSubmitWithStockIncoming = async () => {
     </div>
   );
 }
-
 export default OrderApplyPage;

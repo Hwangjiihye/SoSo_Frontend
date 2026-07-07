@@ -46,6 +46,14 @@ const StockEditModal = ({ isOpen, onClose, stock, onEdit }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (formData.safetyStock !== '' && Number(formData.safetyStock) <= 0) {
+      alert('안전 재고 수량은 1개 이상으로 설정해야 합니다.');
+      return;
+    }
+    if (formData.defaultExpiryDays !== '' && Number(formData.defaultExpiryDays) <= 0) {
+      alert('기본 소비기한은 1일 이상으로 설정해야 합니다.');
+      return;
+    }
     // stock.stockSeq를 식별자로 사용하여 수정 요청
     onEdit(stock.stockSeq, formData);
     onClose();
@@ -125,6 +133,7 @@ const StockEditModal = ({ isOpen, onClose, stock, onEdit }) => {
                 value={formData.safetyStock}
                 onChange={handleChange}
                 className={inputStyle}
+                min="1"
               />
             </div>
             <div>
@@ -136,6 +145,7 @@ const StockEditModal = ({ isOpen, onClose, stock, onEdit }) => {
                   value={formData.defaultExpiryDays}
                   onChange={handleChange}
                   className={`${inputStyle} pr-12`}
+                  min="1"
                 />
                 <span className="absolute right-5 top-1/2 -translate-y-1/2 text-xs font-black text-gray-400">DAYS</span>
               </div>

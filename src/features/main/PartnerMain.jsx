@@ -250,7 +250,8 @@ function PartnerMain({ setRole }) {
               </div>
            </div>
 
-           {/*
+           {/* 임시 주석 처리 (공동 발주 현황)
+
            <div className="bg-white rounded-[2.5rem] border border-gray-200 p-8 shadow-sm">
               <h3 className="text-xl font-black mb-8 flex justify-between items-center text-gray-900">
                 공동 발주 현황

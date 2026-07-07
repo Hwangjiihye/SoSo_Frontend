@@ -23,9 +23,6 @@ export const usePartnerSmartNotification = () => {
   const handleSave = async () => {
     setIsSubmitting(true);
     try {
-      // API 연동 시 실제 데이터 전송
-      console.log('알림 설정 저장:', settings);
-      
       // 가상 딜레이
       await new Promise(resolve => setTimeout(resolve, 800));
       alert('알림 설정이 저장되었습니다.');
