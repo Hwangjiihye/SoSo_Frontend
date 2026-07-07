@@ -110,6 +110,8 @@ console.log("챗봇 질문:", userQuestion);
     const result = await askRag({
       message: userQuestion,
       storeSeq: selectedStoreSeq,
+      userSeq: userSeq,
+      userType: user_type,
     });
 
     setMessages((prev) => [

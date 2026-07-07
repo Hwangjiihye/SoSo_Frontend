@@ -5,6 +5,8 @@ export const askRag = async ({ message, storeSeq }) => {
     params: {
       message,
       storeSeq,
+      userSeq,
+      userType
     },
   });
 
