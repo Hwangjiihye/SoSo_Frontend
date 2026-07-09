@@ -1,5 +1,7 @@
 {
   "projects": {
-    "default": "soso-test-1dd3d"
-  }
+    "default": "soso-43d04"
+  },
+  "targets": {},
+  "etags": {}
 }
